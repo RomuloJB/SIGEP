@@ -8,6 +8,21 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}%}">
 </head>
 <body>
-    <h3>Sistema Integrado de Gestão de Pedidos</h3>
+    <div class="menu">
+        <ul>
+            <li><a href="{% url 'index' %}">Home</a></li>
+            <li><a href="{% url 'company' %}">Empresas</a></li>
+            <li><a href="{% url 'manager' %}">Gerentes</a></li>
+            <li><a href="{% url 'vendor' %}">Vendedores</a></li>
+            <li><a href="{% url 'client' %}">Clientes</a></li>
+            <li><a href="{% url 'contact' %}">Contato</a></li>
+            <li><a href="{% url 'about' %}">Sobre</a></li>
+        </ul>
+    </div>
+    {% block content %}
+    <h3>Modelos de Dados</h3>
+
+    {% endblock content %}
+
 </body>
 </html>
