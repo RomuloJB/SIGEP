@@ -17,7 +17,10 @@ comando = f"git commit -m \"{msg_commit}\""
 os.system(comando)
 
 print("\nEnviando ao GitHub. Abra a outra janela para se autenticar...")
-comando = "git push"
-os.system(comando)
+comando = "git push -u origin HEAD"
+resultado = os.system(comando)
 
-print("\nEnvio realizado com sucesso!!!")
+if resultado == 0:
+    print("\nEnvio realizado com sucesso!!!")
+else:
+    print("\nErro ao enviar para o GitHub!")
