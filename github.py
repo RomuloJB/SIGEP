@@ -20,4 +20,4 @@ print("\nEnviando ao GitHub. Abra a outra janela para se autenticar...")
 comando = "git push"
 os.system(comando)
 
-print("\nEnvio realizado com sucesso...")
+print("\nEnvio realizado com sucesso!!!")

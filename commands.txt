@@ -2,6 +2,13 @@
 pip install django==5.2.12
 
 # Rodar o projeto
-python .\manage.py runserver
+python manage.py runserver
 
-pegar o resto no github do zottesso
+# Conferir o models e preparar o SQL para o banco
+python manage.py makemigrations
+
+# Usar o SQL criado para efetivamente atualizar o banco
+python manage.py migrate
+
+# Criar um superusuário no banco: admin/admin
+python manage.py createsuperuser
