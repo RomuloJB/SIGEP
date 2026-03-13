@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     # ativas os meus apps
     'website.apps.WebsiteConfig',
+    "sigep.apps.SigepConfig",
 ]
 
 MIDDLEWARE = [

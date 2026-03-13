@@ -21,4 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # importar urls dos outros apps
     path('',include('website.urls')),
+    path('sigep/', include('sigep.urls')),
 ]
