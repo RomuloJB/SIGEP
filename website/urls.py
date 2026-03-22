@@ -1,11 +1,7 @@
 from django.urls import path
 from .views import (
     CompanyDetailView, CompanyListView, IndexView, ContactView, AboutView, CompanyView,
-    ManagerView, ManagerListView, ManagerDetailView,
-    VendorView, VendorListView, VendorDetailView,
-    ClientView, ClientListView, ClientDetailView,
-    ProductView, ProductListView, ProductDetailView,
-    PedidoView, PedidoListView, PedidoDetailView
+    ManagerView, ManagerListView, ManagerDetailView, VendorView, VendorListView, VendorDetailView, ClientView, ClientListView, ClientDetailView, ProductView, ProductListView, ProductDetailView, PedidoView, PedidoListView, PedidoDetailView, CompanyChartsView, CompanyListView
 )
 
 urlpatterns = [
@@ -14,12 +10,15 @@ urlpatterns = [
     path("contact/", ContactView.as_view(), name="contact"),
     path("sobre/", AboutView.as_view(), name="about"),
 
+    #Paginas sidenav
+    path("company-chart/", CompanyChartsView.as_view(), name="company-chart"),
+    path("company-list/", CompanyListView.as_view(), name="company-list"),
+
     # Empresas
     path("company/", CompanyView.as_view(), name="company"),
     path("company/list/", CompanyListView.as_view(), name="company_list"),
     path("company/detail/", CompanyDetailView.as_view(), name="company_detail"),
 
-    
     # Gerentes
     path("manager/", ManagerView.as_view(), name="manager"),
     path("manager/list/", ManagerListView.as_view(), name="manager_list"),

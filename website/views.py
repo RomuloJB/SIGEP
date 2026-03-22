@@ -10,15 +10,21 @@ class ContactView(TemplateView):
 class AboutView(TemplateView):
     template_name = "website/about.html"
 
+# paginas sidenav
+
 # empresas
 class CompanyView(TemplateView):
     template_name = "website/company.html"
 
 class CompanyListView(TemplateView):
-    template_name = "website/company_list.html"
+    template_name = "website/startbootstrap-sigep/company-list.html"
 
 class CompanyDetailView(TemplateView):
     template_name = "website/company_detail.html"
+
+class CompanyChartsView(TemplateView):
+    template_name = "website/startbootstrap-sigep/company-chart.html"
+
 
 # gerentes
 class ManagerView(TemplateView):
@@ -74,4 +80,13 @@ class PedidoListView(TemplateView):
 class PedidoDetailView(TemplateView):
     template_name = "website/pedido_detail.html"
 
-# 
+# erros
+
+class CompanyChartsView(TemplateView):
+    template_name = "website/startbootstrap-sigep/errors/401.html"
+
+class CompanyChartsView(TemplateView):
+    template_name = "website/startbootstrap-sigep/errors/404.html"
+
+class CompanyChartsView(TemplateView):
+    template_name = "website/startbootstrap-sigep/errors/500.html"
