@@ -43,7 +43,9 @@ INSTALLED_APPS = [
 
     # ativas os meus apps
     'website.apps.WebsiteConfig',
-    "sigep.apps.SigepConfig",
+    'sigep.apps.SigepConfig',
+    'cadastros.apps.CadastrosConfig',
+    
 ]
 
 MIDDLEWARE = [
