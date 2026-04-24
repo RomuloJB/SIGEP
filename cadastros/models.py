@@ -19,24 +19,48 @@ class Company(models.Model):
         return "{} ({})".format(self.field.name, self.cnpj)
 
 class User_Profile(models.Model):
-    name = models.CharField(max_length=255, verbose_name="nome")
-    phone = models.CharField(max_length=11, verbose_name="telefone")
+    field = models.ForeignKey(Field, on_delete=models.PROTECT)
+    phone = models.CharField(max_length=11, verbose_name="Telefone")
     cpf = models.CharField(max_length=11)
 
     def __str__(self):
         return "{}".format(self.name)
 
 class Order(models.Model):
-    # type = models. sei la
-    # company = models.Company()
-    # sales_rep = models.Sales_Rep()
-    # client = models.Client()
-    payment_method = models.Payment()
-
-
-class Recharge(models.Model):
-
-class License(models.Model):
+    # type = models.??
+    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+    # sales_rep = models.??()
+    # client = models.??()
+    field = models.ForeignKey(Field, on_delete=models.PROTECT)
+    payment_method = models.Payment(verbose_name="Método de Pagamento")
+    total_value = models.FloatField(verbose_name="Valor Total")
+    address = models.CharField(max_length=255, verbose_name="Endereço")
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.field.name)
+        return "{} | {} -> {} = {}".format(self.id, self.client, self.sales_rep, self.value)
+
+class MeasureUnit(models.TextChoices):
+    UNIT = "UND", "Unidade"
+    KIT = "KIT"
+    CX6 = "CX6", "Caixa com 6 peças"
+    CX7 = "CX7", "Caixa com 7 peças"
+    CX8 = "CX8", "Caixa com 8 peças"
+
+class Product(models.Model):
+    field = models.ForeignKey(Field, on_delete=models.PROTECT)
+    sku = models.CharField(max_length=20)
+    color = models.CharField(max_length=50, verbose_name="Cor")
+    unit_value = models.FloatField(verbose_name="Valor Unitario")
+    stock = models.PositiveIntegerField(verbose_name="Estoque")
+    measure_unit = models.CharField(choices=MeasureUnit.choices, default=MeasureUnit.UN, verbose_name="Unidade de Medida")
+    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+
+    def __str__(self):
+        return "{} | {} -> {} = {}".format(self.sku, self.field.name, self.stock, self.unit_value)
+
+# class Recharge(models.Model):
+    
+
+# class License(models.Model):
+
+
