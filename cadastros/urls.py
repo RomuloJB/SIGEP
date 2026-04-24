@@ -47,4 +47,3 @@ urlpatterns = [
     path('detalhar/product/<int:pk>/', ProductDetail.as_view(), name='product-detail'),
 
 ]
-]
