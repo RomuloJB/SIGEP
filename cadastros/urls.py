@@ -10,6 +10,8 @@ from .views import (
 )
 
 urlpatterns = [
+    
+    path('', IndexView.as_view(), name="index"),
 
     # Field (Ramo)
     path('cadastrar/field/', FieldCreate.as_view(), name='field-create'),

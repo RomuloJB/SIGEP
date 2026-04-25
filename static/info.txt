@@ -1,0 +1,1 @@
+Somente os arquivos HTML ficam dentro da pasta templates de cada app porque eles podem ser exclusivos daquele app. A ideia da pasta “static” é disponibilizar imagens, arquivos js e css para todos os apps e não somente um.

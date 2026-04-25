@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
+from django.views.generic import TemplateView
 
 # Buscar a rota da url pelo name dela (urls.py)
 from django.urls import reverse_lazy
@@ -9,6 +10,12 @@ from django.urls import reverse_lazy
 from .models import Field, Company, User_Profile, Order, Product
 
 # Create your views here.
+
+class IndexView(TemplateView):
+    template_name = "cadastros/index.html"
+
+
+
 
 class FieldCreate(CreateView):
     model = Field
