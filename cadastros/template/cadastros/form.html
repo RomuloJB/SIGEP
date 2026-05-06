@@ -1,3 +1,12 @@
 {% extends "website/model.html" %}
 {% load static %}
 
+<form method="POST">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-success">
+        Cadastrar
+    </button>
+</form>

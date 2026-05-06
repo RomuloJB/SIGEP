@@ -2,7 +2,7 @@ from django.urls import path
 #from .views import ()
 
 from .views import (
-    FieldCreate, FieldUpdate, FieldDelete, FieldList, FieldDetail,
+    IndexView ,FieldCreate, FieldUpdate, FieldDelete, FieldList, FieldDetail,
     CompanyCreate, CompanyUpdate, CompanyDelete, CompanyList, CompanyDetail,
     UserProfileCreate, UserProfileUpdate, UserProfileDelete, UserProfileList, UserProfileDetail,
     OrderCreate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
