@@ -2,29 +2,40 @@ from django.db import models
 
 # Create your models here.
 
-class Field(models.Model):
+class User_Profile(models.Model):
+    name = models.CharField(max_length=255, verbose_name="nome")
+    phone = models.CharField(max_length=11, verbose_name="telefone")
+    cpf = models.CharField(max_length=14, verbose_name="CPF")
+
+    def __str__(self):
+        return "{}".format(self.name)
+
+
+class Audithory(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="criado em")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
+    created_by = models.ForeignKey('auth.User', on_delete=models.PROTECT, related_name='%(app_label)s_%(class)s_created_by', verbose_name="criado por")
+
+
+class Company(Audithory):
     name = models.CharField(max_length=255, verbose_name="nome")
     description = models.CharField(max_length=255, verbose_name="descrição")
-
-    def __str__(self): # O metodo self é igual ao método this do java
-        return "{} ({})".format(self.name, self.description) # define a forma como aparecerão os itens na tabela
-    
-class Company(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.PROTECT)
     cnpj = models.CharField(max_length=14)
-    # manager = models.Manager(verbose_name= "gerente") ?????
-    # sales_rep = models.Sales_Rep(verbose_name= "representante") ?????
+    manager = models.ForeignKey('auth.User', on_delete=models.PROTECT, related_name='%(app_label)s_%(class)s_manager', verbose_name="Gerente")
+    sales_rep = models.ManyToManyField('auth.User', verbose_name="representantes")
 
     def __str__(self):
         return "{} ({})".format(self.field.name, self.cnpj)
 
-class User_Profile(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.PROTECT)
-    phone = models.CharField(max_length=11, verbose_name="Telefone")
-    cpf = models.CharField(max_length=11)
+
+class Client(Audithory):
+    name = models.CharField(max_length=255, verbose_name="nome")
+    cnpj_cpf = models.CharField(max_length=14, verbose_name="CNPJ/CPF")
+    uf = models.CharField(max_length=2, verbose_name="UF")
 
     def __str__(self):
-        return "{}".format(self.name)
+        return "{} ({})".format(self.field.name, self.cnpj_cpf)
+
 
 class MeasureUnit(models.TextChoices):
     UNIT = "UND", "Unidade"
@@ -32,6 +43,7 @@ class MeasureUnit(models.TextChoices):
     CX6 = "CX6", "Caixa com 6 peças"
     CX7 = "CX7", "Caixa com 7 peças"
     CX8 = "CX8", "Caixa com 8 peças"
+
 
 class PaymentMethod(models.TextChoices):
     DINHEIRO = "1", "Dinheiro"
@@ -43,34 +55,43 @@ class PaymentMethod(models.TextChoices):
     DEBITO = "7", "Débito"
     CREDIARIO =  "8", "Crediário"
 
-class Order(models.Model):
-    # type = models.??
-    company = models.ForeignKey(Company, on_delete=models.PROTECT)
-    # sales_rep = models.??()
-    # client = models.??()
-    field = models.ForeignKey(Field, on_delete=models.PROTECT)
-    payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.PIX, verbose_name="Método de Pagamento")
-    total_value = models.FloatField(verbose_name="Valor Total")
-    address = models.CharField(max_length=255, verbose_name="Endereço")
-
-    def __str__(self):
-        return "{} | {} -> {} = {}".format(self.id, self.client, self.sales_rep, self.value)
 
 class Product(models.Model):
-    field = models.ForeignKey(Field, on_delete=models.PROTECT)
-    sku = models.CharField(max_length=20)
-    color = models.CharField(max_length=50, verbose_name="Cor")
-    unit_value = models.FloatField(verbose_name="Valor Unitario")
-    stock = models.PositiveIntegerField(verbose_name="Estoque")
-    measure_unit = models.CharField(max_length=5, choices=MeasureUnit.choices, default=MeasureUnit.UNIT, verbose_name="Unidade de Medida")
+    name = models.CharField(max_length=255, verbose_name="nome")
+    description = models.CharField(max_length=255, verbose_name="descrição")
+    sku = models.CharField(max_length=20, verbose_name="SKU")
+    color = models.CharField(max_length=50, verbose_name="cor")
+    unit_value = models.FloatField(verbose_name="valor unitário")
+    stock = models.PositiveIntegerField(verbose_name="estoque")
+    measure_unit = models.CharField(max_length=5, choices=MeasureUnit.choices, default=MeasureUnit.UNIT, verbose_name="unidade de medida")
     company = models.ForeignKey(Company, on_delete=models.PROTECT)
 
     def __str__(self):
         return "{} | {} -> {} = {}".format(self.sku, self.field.name, self.stock, self.unit_value)
 
-# class Recharge(models.Model):
+
+class Order(Audithory):
+    TYPES=(
+        ("IN", "Entrada"),
+        ("OUT", "Saída"),
+    )
+    type = models.CharField(max_length=3, choices=TYPES, default="IN", verbose_name="tipo")
+    company = models.ForeignKey(Company, on_delete=models.PROTECT)
+    client = models.ForeignKey(Client, on_delete=models.PROTECT)
+    payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.PIX, verbose_name="método de pagamento")
+    total_value = models.FloatField(verbose_name="valor total")
+    address = models.CharField(max_length=255, verbose_name="endereço")
+
+    def __str__(self):
+        return "{} | {} -> {} = {}".format(self.id, self.client, self.sales_rep, self.value)
     
 
-# class License(models.Model):
+class ProductOrder(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(verbose_name="quantidade")
+    unit_value = models.FloatField(verbose_name="valor unitário")
+    total_value = models.FloatField(verbose_name="valor total")
 
-
+    def __str__(self):
+        return "{} | {} -> {} = {}".format(self.order.id, self.product.name, self.quantity, self.total_value)

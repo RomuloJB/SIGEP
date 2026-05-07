@@ -1,0 +1,31 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Field</th>
+            <th>Phone</th>
+            <th>CPF</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for user_profile in user_profile_list %}
+        <tr>
+            <td>{{ user_profile.pk }}</td>
+            <td>{{ user_profile.field.name }}</td>
+            <td>{{ user_profile.phone }}</td>
+            <td>{{ user_profile.cpf }}</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'userprofile-detail' user_profile.pk %}">View</a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'userprofile-update' user_profile.pk %}">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'userprofile-delete' user_profile.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No user profiles registered.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

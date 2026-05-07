@@ -1,0 +1,39 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>SKU</th>
+            <th>Field</th>
+            <th>Company</th>
+            <th>Color</th>
+            <th>Unit Value</th>
+            <th>Stock</th>
+            <th>Measure Unit</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for product in product_list %}
+        <tr>
+            <td>{{ product.pk }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.field.name }}</td>
+            <td>{{ product.company }}</td>
+            <td>{{ product.color }}</td>
+            <td>{{ product.unit_value|floatformat:2 }}</td>
+            <td>{{ product.stock }}</td>
+            <td>{{ product.get_measure_unit_display }}</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'product-detail' product.pk %}">View</a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'product-update' product.pk %}">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'product-delete' product.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="9">No products registered.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,29 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Field</th>
+            <th>CNPJ</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for company in company_list %}
+        <tr>
+            <td>{{ company.pk }}</td>
+            <td>{{ company.field.name }}</td>
+            <td>{{ company.cnpj }}</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'company-detail' company.pk %}">View</a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'company-update' company.pk %}">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'company-delete' company.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No companies registered.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

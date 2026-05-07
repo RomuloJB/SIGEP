@@ -1,0 +1,29 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for field in field_list %}
+        <tr>
+            <td>{{ field.pk }}</td>
+            <td>{{ field.name }}</td>
+            <td>{{ field.description }}</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'field-detail' field.pk %}">View</a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'field-update' field.pk %}">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'field-delete' field.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No fields registered.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
