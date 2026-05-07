@@ -14,7 +14,7 @@ class AboutView(TemplateView):
 
 # empresas
 class CompanyView(TemplateView):
-    template_name = "website/company.html"
+    template_name = "website/startbootstrap-sigep/company.html"
 
 class CompanyListView(TemplateView):
     template_name = "website/startbootstrap-sigep/company-list.html"

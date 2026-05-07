@@ -2,6 +2,10 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">{{ titulo }}</li>
+{% endblock breadcrumb %}
+
 {% block content %}
 <form action="" method="POST">
     {% csrf_token %}

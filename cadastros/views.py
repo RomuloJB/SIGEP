@@ -33,7 +33,7 @@ class CompanyDelete(DeleteView):
 
 class CompanyList(ListView):
     model = Company
-    template_name = "cadastros/list/company.html"
+    template_name = "cadastros/list/company_list.html"
     paginate_by = 20
 
 class CompanyDetail(DetailView):
@@ -64,7 +64,7 @@ class ClientDelete(DeleteView):
 
 class ClientList(ListView):
     model = Client
-    template_name = "cadastros/list/client.html"
+    template_name = "cadastros/list/client_list.html"
     paginate_by = 20
 
 class ClientDetail(DetailView):
@@ -95,7 +95,7 @@ class UserProfileDelete(DeleteView):
 
 class UserProfileList(ListView):
     model = User_Profile
-    template_name = "cadastros/list/userprofile.html"
+    template_name = "cadastros/list/userprofile_list.html"
     paginate_by = 20
 
 class UserProfileDetail(DetailView):
@@ -126,7 +126,7 @@ class ProductDelete(DeleteView):
 
 class ProductList(ListView):
     model = Product
-    template_name = "cadastros/list/product.html"
+    template_name = "cadastros/list/product_list.html"
     paginate_by = 20
 
 class ProductDetail(DetailView):
@@ -157,7 +157,7 @@ class OrderDelete(DeleteView):
 
 class OrderList(ListView):
     model = Order
-    template_name = "cadastros/list/order.html"
+    template_name = "cadastros/list/order_list.html"
     paginate_by = 20
 
 class OrderDetail(DetailView):
