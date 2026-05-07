@@ -10,186 +10,156 @@ class IndexView(TemplateView):
     template_name = "cadastros/index.html"
 
 
-# -----------------------
 # Company
-# -----------------------
 class CompanyCreate(CreateView):
     model = Company
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"titulo": "Cadastro de Empresa", "botao": "Criar Empresa"}
-
 
 class CompanyUpdate(UpdateView):
     model = Company
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"titulo": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
 
-
 class CompanyDelete(DeleteView):
     model = Company
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"titulo": "Excluir Empresa", "botao": "Sim, excluir!"}
 
-
 class CompanyList(ListView):
     model = Company
-    template_name = "core/list/company.html"
+    template_name = "cadastros/list/company.html"
     paginate_by = 20
-
 
 class CompanyDetail(DetailView):
     model = Company
-    template_name = "core/detail/company.html"
+    template_name = "cadastros/detail/company.html"
 
 
-# -----------------------
 # Client
-# -----------------------
 class ClientCreate(CreateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"titulo": "Cadastro de Cliente", "botao": "Criar Cliente"}
-
 
 class ClientUpdate(UpdateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"titulo": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
 
-
 class ClientDelete(DeleteView):
     model = Client
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"titulo": "Excluir Cliente", "botao": "Sim, excluir!"}
 
-
 class ClientList(ListView):
     model = Client
-    template_name = "core/list/client.html"
+    template_name = "cadastros/list/client.html"
     paginate_by = 20
-
 
 class ClientDetail(DetailView):
     model = Client
-    template_name = "core/detail/client.html"
+    template_name = "cadastros/detail/client.html"
 
 
-# -----------------------
 # User Profile
-# -----------------------
 class UserProfileCreate(CreateView):
     model = User_Profile
     fields = ["name", "phone", "cpf"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"titulo": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
-
 
 class UserProfileUpdate(UpdateView):
     model = User_Profile
     fields = ["name", "phone", "cpf"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"titulo": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
 
-
 class UserProfileDelete(DeleteView):
     model = User_Profile
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"titulo": "Excluir Perfil de Usuário", "botao": "Sim, excluir!"}
 
-
 class UserProfileList(ListView):
     model = User_Profile
-    template_name = "core/list/userprofile.html"
+    template_name = "cadastros/list/userprofile.html"
     paginate_by = 20
-
 
 class UserProfileDetail(DetailView):
     model = User_Profile
-    template_name = "core/detail/userprofile.html"
+    template_name = "cadastros/detail/userprofile.html"
 
 
-# -----------------------
 # Product
-# -----------------------
 class ProductCreate(CreateView):
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"titulo": "Cadastro de Produto", "botao": "Criar Produto"}
-
 
 class ProductUpdate(UpdateView):
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"titulo": "Editar dados do Produto", "botao": "Atualizar Produto"}
 
-
 class ProductDelete(DeleteView):
     model = Product
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"titulo": "Excluir Produto", "botao": "Sim, excluir!"}
 
-
 class ProductList(ListView):
     model = Product
-    template_name = "core/list/product.html"
+    template_name = "cadastros/list/product.html"
     paginate_by = 20
-
 
 class ProductDetail(DetailView):
     model = Product
-    template_name = "core/detail/product.html"
+    template_name = "cadastros/detail/product.html"
 
 
-# -----------------------
 # Order
-# -----------------------
 class OrderCreate(CreateView):
     model = Order
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"titulo": "Cadastro de Pedido", "botao": "Criar Pedido"}
-
 
 class OrderUpdate(UpdateView):
     model = Order
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"titulo": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
 
-
 class OrderDelete(DeleteView):
     model = Order
-    template_name = "core/form.html"
+    template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"titulo": "Excluir Pedido", "botao": "Sim, excluir!"}
 
-
 class OrderList(ListView):
     model = Order
-    template_name = "core/list/order.html"
+    template_name = "cadastros/list/order.html"
     paginate_by = 20
-
 
 class OrderDetail(DetailView):
     model = Order
-    template_name = "core/detail/order.html"
+    template_name = "cadastros/detail/order.html"

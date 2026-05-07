@@ -11,13 +11,15 @@ class User_Profile(models.Model):
         return "{}".format(self.name)
 
 
-class Audithory(models.Model):
+class BaseClass(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
     created_by = models.ForeignKey('auth.User', on_delete=models.PROTECT, related_name='%(app_label)s_%(class)s_created_by', verbose_name="criado por")
+    
+    class Meta: abstract = True
 
 
-class Company(Audithory):
+class Company(BaseClass):
     name = models.CharField(max_length=255, verbose_name="nome")
     description = models.CharField(max_length=255, verbose_name="descrição")
     cnpj = models.CharField(max_length=14)
@@ -25,16 +27,16 @@ class Company(Audithory):
     sales_rep = models.ManyToManyField('auth.User', verbose_name="representantes")
 
     def __str__(self):
-        return "{} ({})".format(self.field.name, self.cnpj)
+        return "{} ({})".format(self.name, self.cnpj)
 
 
-class Client(Audithory):
+class Client(BaseClass):
     name = models.CharField(max_length=255, verbose_name="nome")
     cnpj_cpf = models.CharField(max_length=14, verbose_name="CNPJ/CPF")
     uf = models.CharField(max_length=2, verbose_name="UF")
 
     def __str__(self):
-        return "{} ({})".format(self.field.name, self.cnpj_cpf)
+        return "{} ({})".format(self.name, self.cnpj_cpf)
 
 
 class MeasureUnit(models.TextChoices):
@@ -70,7 +72,7 @@ class Product(models.Model):
         return "{} | {} -> {} = {}".format(self.sku, self.field.name, self.stock, self.unit_value)
 
 
-class Order(Audithory):
+class Order(BaseClass):
     TYPES=(
         ("IN", "Entrada"),
         ("OUT", "Saída"),
