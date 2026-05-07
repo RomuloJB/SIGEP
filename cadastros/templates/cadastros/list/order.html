@@ -3,7 +3,7 @@
         <tr>
             <th>ID</th>
             <th>Company</th>
-            <th>Field</th>
+            <th>Client</th>
             <th>Payment Method</th>
             <th>Total Value</th>
             <th>Address</th>
@@ -16,7 +16,7 @@
         <tr>
             <td>{{ order.pk }}</td>
             <td>{{ order.company }}</td>
-            <td>{{ order.field.name }}</td>
+            <td>{{ order.client }}</td>
             <td>{{ order.get_payment_method_display }}</td>
             <td>{{ order.total_value|floatformat:2 }}</td>
             <td>{{ order.address }}</td>

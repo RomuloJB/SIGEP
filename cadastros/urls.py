@@ -13,13 +13,6 @@ urlpatterns = [
     
     path('', IndexView.as_view(), name="index"),
 
-    # Field (Ramo)
-    path('cadastrar/field/', FieldCreate.as_view(), name='field-create'),
-    path('atualizar/field/<int:pk>/', FieldUpdate.as_view(), name='field-update'),
-    path('excluir/field/<int:pk>/', FieldDelete.as_view(), name='field-delete'),
-    path('listar/field/', FieldList.as_view(), name='field-list'),
-    path('detalhar/field/<int:pk>/', FieldDetail.as_view(), name='field-detail'),
-
     # Company (Empresa)
     path('cadastrar/company/', CompanyCreate.as_view(), name='company-create'),
     path('atualizar/company/<int:pk>/', CompanyUpdate.as_view(), name='company-update'),

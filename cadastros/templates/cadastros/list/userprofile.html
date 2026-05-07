@@ -2,7 +2,7 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>Field</th>
+            <th>Name</th>
             <th>Phone</th>
             <th>CPF</th>
             <th>Options</th>
@@ -13,7 +13,7 @@
         {% for user_profile in user_profile_list %}
         <tr>
             <td>{{ user_profile.pk }}</td>
-            <td>{{ user_profile.field.name }}</td>
+            <td>{{ user_profile.name }}</td>
             <td>{{ user_profile.phone }}</td>
             <td>{{ user_profile.cpf }}</td>
             <td>

@@ -1,0 +1,31 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>CNPJ/CPF</th>
+            <th>UF</th>
+            <th>Options</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for client in client_list %}
+        <tr>
+            <td>{{ client.pk }}</td>
+            <td>{{ client.name }}</td>
+            <td>{{ client.cnpj_cpf }}</td>
+            <td>{{ client.uf }}</td>
+            <td>
+                <a class="btn btn-sm btn-outline-secondary" href="{% url 'client-detail' client.pk %}">View</a>
+                <a class="btn btn-sm btn-outline-primary" href="{% url 'client-update' client.pk %}">Edit</a>
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'client-delete' client.pk %}">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No clients registered.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
