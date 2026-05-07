@@ -6,6 +6,9 @@
 <form action="" method="POST">
     {% csrf_token %}
 
+    <h2>{{ title }}</h2>
+    <p>Preencha todos os campos obrigátorios<p>
+    
     {{ form|crispy }}
 
     <button type="submit" class="btn btn-success">
