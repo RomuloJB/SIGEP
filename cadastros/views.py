@@ -2,6 +2,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, TemplateVie
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.urls import reverse_lazy
+from django.db.models import Sum
 
 from .models import Company, Client, User_Profile, Order, Product
 
@@ -16,20 +17,20 @@ class CompanyCreate(CreateView):
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
-    extra_context = {"titulo": "Cadastro de Empresa", "botao": "Criar Empresa"}
+    extra_context = {"title": "Cadastro de Empresa", "botao": "Criar Empresa"}
 
 class CompanyUpdate(UpdateView):
     model = Company
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
-    extra_context = {"titulo": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
+    extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
 
 class CompanyDelete(DeleteView):
     model = Company
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
-    extra_context = {"titulo": "Excluir Empresa", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Empresa", "botao": "Sim, excluir!"}
 
 class CompanyList(ListView):
     model = Company
@@ -47,20 +48,20 @@ class ClientCreate(CreateView):
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
-    extra_context = {"titulo": "Cadastro de Cliente", "botao": "Criar Cliente"}
+    extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
 
 class ClientUpdate(UpdateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
-    extra_context = {"titulo": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
+    extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
 
 class ClientDelete(DeleteView):
     model = Client
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
-    extra_context = {"titulo": "Excluir Cliente", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Cliente", "botao": "Sim, excluir!"}
 
 class ClientList(ListView):
     model = Client
@@ -78,20 +79,20 @@ class UserProfileCreate(CreateView):
     fields = ["name", "phone", "cpf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
-    extra_context = {"titulo": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
+    extra_context = {"title": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
 
 class UserProfileUpdate(UpdateView):
     model = User_Profile
     fields = ["name", "phone", "cpf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
-    extra_context = {"titulo": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
+    extra_context = {"title": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
 
 class UserProfileDelete(DeleteView):
     model = User_Profile
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
-    extra_context = {"titulo": "Excluir Perfil de Usuário", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Perfil de Usuário", "botao": "Sim, excluir!"}
 
 class UserProfileList(ListView):
     model = User_Profile
@@ -109,20 +110,20 @@ class ProductCreate(CreateView):
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
-    extra_context = {"titulo": "Cadastro de Produto", "botao": "Criar Produto"}
+    extra_context = {"title": "Cadastro de Produto", "botao": "Criar Produto"}
 
 class ProductUpdate(UpdateView):
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
-    extra_context = {"titulo": "Editar dados do Produto", "botao": "Atualizar Produto"}
+    extra_context = {"title": "Editar dados do Produto", "botao": "Atualizar Produto"}
 
 class ProductDelete(DeleteView):
     model = Product
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
-    extra_context = {"titulo": "Excluir Produto", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Produto", "botao": "Sim, excluir!"}
 
 class ProductList(ListView):
     model = Product
@@ -140,20 +141,20 @@ class OrderCreate(CreateView):
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
-    extra_context = {"titulo": "Cadastro de Pedido", "botao": "Criar Pedido"}
+    extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
 
 class OrderUpdate(UpdateView):
     model = Order
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
-    extra_context = {"titulo": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
+    extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
 
 class OrderDelete(DeleteView):
     model = Order
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
-    extra_context = {"titulo": "Excluir Pedido", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Pedido", "botao": "Sim, excluir!"}
 
 class OrderList(ListView):
     model = Order
@@ -162,4 +163,25 @@ class OrderList(ListView):
 
 class OrderDetail(DetailView):
     model = Order
-    template_name = "cadastros/detail/order.html"
+    template_name = "cadastros/detail/order_detail.html"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .select_related("company", "client", "created_by")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        product_orders = (
+            self.object.productorder_set.select_related("product")
+            .all()
+            .order_by("id")
+        )
+        context["product_orders"] = product_orders
+        context["product_orders_total"] = (
+            product_orders.aggregate(total=Sum("total_value")).get("total") or 0
+        )
+        return context

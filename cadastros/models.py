@@ -85,7 +85,7 @@ class Order(BaseClass):
     address = models.CharField(max_length=255, verbose_name="endereço")
 
     def __str__(self):
-        return "{} | {} -> {} = {}".format(self.id, self.client, self.sales_rep, self.value)
+        return "{} | {} -> {} = {}".format(self.id, self.client, self.created_by, self.total_value)
     
 
 class ProductOrder(models.Model):
