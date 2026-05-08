@@ -1,0 +1,70 @@
+{% extends "website/model.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4">
+	<h1 class="mt-4">Sobre</h1>
+	<ol class="breadcrumb mb-4">
+		<li class="breadcrumb-item"><a href="{% url 'index' %}" style="text-decoration: none; color: var(--bs-breadcrumb-item-active-color)">Dashboard</a></li>
+		<li class="breadcrumb-item active">Sobre</li>
+	</ol>
+
+	<div class="card mb-4">
+		<div class="card-header">
+			<i class="fas fa-circle-info me-1"></i>
+			Descricao do projeto
+		</div>
+		<div class="card-body">
+			<p class="mb-0">
+				O presente trabalho propõe o desenvolvimento do Sistema Integrado de Gestão de Pedidos (SIGEP), uma solução tecnológica web, com telas responsivas, destinada à gestão estruturada de pedidos comerciais entre representantes de vendas e empresas.
+				O sistema visa substituir processos manuais e informais de registro de pedidos por uma solução informatizada que contemple:
+			</p>
+			<ul>
+				<li> Cadastro de empresas, usuários e produtos;</li>
+				<li> Registro e gerenciamento de pedidos de entrada e saída;</li>
+				<li> Controle automático de estoque;</li>
+				<li> Controle de permissões por perfil de usuário;</li>
+				<li> Registro do ciclo de vida do pedido;</li>
+				<li> Notificações automatizadas por e-mail.</li>
+			</ul>
+			<p>
+				O projeto será desenvolvido utilizando a linguagem Python com o framework Django no backend, banco de dados relacional.<br/>
+				Trata-se de uma pesquisa aplicada com desenvolvimento tecnológico, focada na construção e validação de um sistema computacional para resolver um problema real de gestão comercial.
+			</p>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-12 col-lg-6">
+			<div class="card mb-4">
+				<div class="card-header">
+					<i class="fas fa-diagram-project me-1"></i>
+					Diagrama de caso de uso
+				</div>
+				<div class="card-body text-center">
+					<img
+						src="{% static 'assets/img/diagrama-de-casos-de-uso.png' %}"
+						class="img-fluid rounded border"
+						alt="Diagrama de caso de uso do SIGEP" style="height: 60vh"
+					/>
+				</div>
+			</div>
+		</div>
+		<div class="col-12 col-lg-6">
+			<div class="card mb-4">
+				<div class="card-header">
+					<i class="fas fa-sitemap me-1"></i>
+					Diagrama de classes
+				</div>
+				<div class="card-body text-center">
+					<img
+						src="{% static 'assets/img/diagrama-de-classes.png' %}"
+						class="img-fluid rounded border"
+						alt="Diagrama de classes do SIGEP" style="height: 60vh"
+					/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
