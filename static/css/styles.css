@@ -11245,11 +11245,13 @@ body {
 }
 
 /* LOGIN */
+
+
 .auth-shell{
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 2rem 0;
+  padding: 0;
 }
 .auth-card{
   border: 0;
