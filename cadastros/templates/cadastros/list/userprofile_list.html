@@ -7,35 +7,109 @@
 
 {% block content %}
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Phone</th>
-            <th>CPF</th>
-            <th>Options</th>
-        </tr>
-    </thead>
+<div class="container-fluid px-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4 mb-3">
+        <div>
+            <h1 class="h3 mb-1">Perfis de Usuario</h1>
+            <div class="text-muted small">Lista de perfis cadastrados</div>
+        </div>
+        <a class="btn btn-success btn-sm" href="{% url 'userprofile-create' %}">
+            <i class="fas fa-plus me-1"></i>
+            Novo Perfil
+        </a>
+    </div>
 
-    <tbody>
-        {% for user_profile in user_profile_list %}
-        <tr>
-            <td>{{ user_profile.pk }}</td>
-            <td>{{ user_profile.name }}</td>
-            <td>{{ user_profile.phone }}</td>
-            <td>{{ user_profile.cpf }}</td>
-            <td>
-                <a class="btn btn-sm btn-outline-secondary" href="{% url 'userprofile-detail' user_profile.pk %}">View</a>
-                <a class="btn btn-sm btn-outline-primary" href="{% url 'userprofile-update' user_profile.pk %}">Edit</a>
-                <a class="btn btn-sm btn-outline-danger" href="{% url 'userprofile-delete' user_profile.pk %}">Delete</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5">No user profiles registered.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <div class="card shadow-sm border-0 list-card">
+        <div class="card-header bg-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="small text-muted">Total: {{ page_obj.paginator.count }}</div>
+            <span class="badge bg-light text-dark">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase small">
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Telefone</th>
+                        <th>CPF</th>
+                        <th class="text-nowrap">Acoes</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for user_profile in user_profile_list %}
+                    <tr>
+                        <td>{{ user_profile.pk }}</td>
+                        <td>{{ user_profile.name }}</td>
+                        <td>{{ user_profile.phone }}</td>
+                        <td>{{ user_profile.cpf }}</td>
+                        <td class="text-nowrap">
+                            <div class="list-actions">
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'userprofile-detail' user_profile.pk %}">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Detalhes
+                                </a>
+                                <a class="btn btn-sm btn-outline-warning" href="{% url 'userprofile-update' user_profile.pk %}">
+                                    <i class="fas fa-pen-to-square me-1"></i>
+                                    Editar
+                                </a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'userprofile-delete' user_profile.pk %}">
+                                    <i class="fas fa-trash me-1"></i>
+                                    Excluir
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">Nenhum perfil cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-footer bg-white d-flex align-items-center justify-content-between flex-wrap gap-2">
+            {% if is_paginated %}
+            <nav aria-label="Paginacao de perfis">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                        {% if page_obj.has_previous %}
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&per_page={{ page_obj.paginator.per_page }}">Anterior</a>
+                        {% else %}
+                        <span class="page-link">Anterior</span>
+                        {% endif %}
+                    </li>
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if num == page_obj.number %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}&per_page={{ page_obj.paginator.per_page }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                        {% if page_obj.has_next %}
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&per_page={{ page_obj.paginator.per_page }}">Proxima</a>
+                        {% else %}
+                        <span class="page-link">Proxima</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </nav>
+            {% else %}
+            <span class="small text-muted">Mostrando todos os registros.</span>
+            {% endif %}
+
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-muted">Itens por pagina</span>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Itens por pagina">
+                    {% for option in per_page_options %}
+                        <a class="btn btn-outline-secondary {% if page_obj.paginator.per_page == option %}active{% endif %}" href="?per_page={{ option }}">{{ option }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

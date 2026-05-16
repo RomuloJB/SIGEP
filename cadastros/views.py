@@ -11,6 +11,28 @@ class IndexView(TemplateView):
     template_name = "cadastros/index.html"
 
 
+class PaginatedListView(ListView):
+    paginate_by = 10
+    paginate_by_options = (10, 20, 40)
+
+    def get_paginate_by(self, queryset):
+        per_page = self.request.GET.get("per_page", self.paginate_by)
+        try:
+            per_page = int(per_page)
+        except (TypeError, ValueError):
+            return self.paginate_by
+
+        if per_page in self.paginate_by_options:
+            return per_page
+
+        return self.paginate_by
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["per_page_options"] = self.paginate_by_options
+        return context
+
+
 # Company
 class CompanyCreate(CreateView):
     model = Company
@@ -32,10 +54,9 @@ class CompanyDelete(DeleteView):
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Excluir Empresa", "botao": "Sim, excluir!"}
 
-class CompanyList(ListView):
+class CompanyList(PaginatedListView):
     model = Company
     template_name = "cadastros/list/company_list.html"
-    paginate_by = 20
 
 class CompanyDetail(DetailView):
     model = Company
@@ -63,10 +84,9 @@ class ClientDelete(DeleteView):
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Excluir Cliente", "botao": "Sim, excluir!"}
 
-class ClientList(ListView):
+class ClientList(PaginatedListView):
     model = Client
     template_name = "cadastros/list/client_list.html"
-    paginate_by = 20
 
 class ClientDetail(DetailView):
     model = Client
@@ -94,10 +114,9 @@ class UserProfileDelete(DeleteView):
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Excluir Perfil de Usuário", "botao": "Sim, excluir!"}
 
-class UserProfileList(ListView):
+class UserProfileList(PaginatedListView):
     model = User_Profile
     template_name = "cadastros/list/userprofile_list.html"
-    paginate_by = 20
 
 class UserProfileDetail(DetailView):
     model = User_Profile
@@ -125,10 +144,9 @@ class ProductDelete(DeleteView):
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Excluir Produto", "botao": "Sim, excluir!"}
 
-class ProductList(ListView):
+class ProductList(PaginatedListView):
     model = Product
     template_name = "cadastros/list/product_list.html"
-    paginate_by = 20
 
 class ProductDetail(DetailView):
     model = Product
@@ -156,10 +174,9 @@ class OrderDelete(DeleteView):
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Excluir Pedido", "botao": "Sim, excluir!"}
 
-class OrderList(ListView):
+class OrderList(PaginatedListView):
     model = Order
     template_name = "cadastros/list/order_list.html"
-    paginate_by = 20
 
 class OrderDetail(DetailView):
     model = Order

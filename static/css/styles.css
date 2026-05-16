@@ -11031,7 +11031,7 @@ body {
   color: rgba(255, 255, 255, 0.7);
 }
 .sb-sidenav-dark .sb-sidenav-menu .nav-link .sb-nav-link-icon {
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.8);
 }
 .sb-sidenav-dark .sb-sidenav-menu .nav-link .sb-sidenav-collapse-arrow {
   color: rgba(255, 255, 255, 0.25);
@@ -11317,4 +11317,25 @@ body {
   flex: 1;
   height: 1px;
   background: rgba(0,0,0,.12);
+}
+
+/* List pages */
+.list-card .card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.list-card .table thead th {
+  letter-spacing: 0.04em;
+}
+.list-card .table tbody tr:hover {
+  background-color: #f8fafc;
+}
+.list-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.list-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
