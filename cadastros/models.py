@@ -40,22 +40,22 @@ class Client(BaseClass):
 
 
 class MeasureUnit(models.TextChoices):
-    UNIT = "UND", "Unidade"
-    KIT = "KIT", "Kit"
-    CX6 = "CX6", "Caixa com 6 peças"
-    CX7 = "CX7", "Caixa com 7 peças"
-    CX8 = "CX8", "Caixa com 8 peças"
+    UNIT = "UND", "[UND] Unidade"
+    KIT = "KIT", "[KIT] Kit"
+    CX6 = "CX6", "[CX6] Caixa com 6 peças"
+    CX7 = "CX7", "[CX7] Caixa com 7 peças"
+    CX8 = "CX8", "[CX8] Caixa com 8 peças"
 
 
 class PaymentMethod(models.TextChoices):
-    DINHEIRO = "1", "Dinheiro"
-    PIX = "2", "Pix"
-    BOLETO = "3", "Boleto(30)"
-    BOLETO15 = "4", "Boleto(15)"
-    BOLETO7 = "5", "Boleto(7)"
-    CREDITO = "6", "Crédito"
-    DEBITO = "7", "Débito"
-    CREDIARIO =  "8", "Crediário"
+    DINHEIRO = "dinheiro", "1 - Dinheiro"
+    PIX = "pix", "2 - Pix"
+    BOLETO = "boleto 30dias", "3 - Boleto(30)"
+    BOLETO15 = "boleto 15dias", "4 - Boleto(15)"
+    BOLETO7 = "boleto 7dias", "5 - Boleto(7)"
+    CREDITO = "credito", "6 - Crédito"
+    DEBITO = "debido", "7 - Débito"
+    CREDIARIO =  "crediario", "8 - Crediário"
 
 
 class Product(models.Model):
