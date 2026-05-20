@@ -11322,13 +11322,13 @@ body {
 
 /* Cadastros pages */
 .cadastros-shell{
-  padding: 2rem 1.5rem 3rem;
+  padding: 0rem;
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 70%);
   font-family: "Manrope", var(--bs-font-sans-serif);
 }
 .cadastros-container{
   width: 100%;
-  max-width: 1400px;
+  max-width: 95%;
   margin: 0 auto;
 }
 .cadastros-header{

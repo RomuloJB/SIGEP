@@ -90,7 +90,7 @@ class ClientList(PaginatedListView):
 
 class ClientDetail(DetailView):
     model = Client
-    template_name = "cadastros/detail/client.html"
+    template_name = "cadastros/detail/client_detail.html"
 
 
 # User Profile
