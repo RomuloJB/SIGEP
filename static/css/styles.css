@@ -11322,7 +11322,7 @@ body {
 
 /* Cadastros pages */
 .cadastros-shell{
-  padding: 0rem;
+  padding-top: 2rem;
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 70%);
   font-family: "Manrope", var(--bs-font-sans-serif);
 }
