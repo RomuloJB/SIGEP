@@ -7,21 +7,32 @@
 {% endblock breadcrumb %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    {% block page_content %}
-    <form action="" method="POST">
-        {% csrf_token %}
+<div class="cadastros-shell">
+    <div class="cadastros-container">
+        {% block cadastros_content %}
+        <div class="cadastros-header">
+            <div>
+                <h1 class="cadastros-title">{{ title }}</h1>
+                <p class="cadastros-subtitle">Preencha todos os campos obrigatorios.</p>
+            </div>
+        </div>
 
-        <h2>{{ title }}</h2>
-        <p>Preencha todos os campos obrigátorios<p>
-        
-        {{ form|crispy }}
+        <div class="card cadastros-card">
+            <div class="card-body">
+                <form class="cadastros-form" action="" method="POST">
+                    {% csrf_token %}
 
-        <button type="submit" class="btn btn-success">
-            Cadastrar
-        </button>
+                    {{ form|crispy }}
 
-    </form>
-    {% endblock %}
+                    <div class="cadastros-actions">
+                        <button type="submit" class="btn btn-success">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endblock cadastros_content %}
+    </div>
 </div>
 {% endblock %}

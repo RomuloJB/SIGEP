@@ -6,13 +6,62 @@
 	<li class="breadcrumb-item active" aria-current="page">Pedido #{{ object.pk }}</li>
 {% endblock breadcrumb %}
 
-{% block page_content %}
-	<div class="d-flex align-items-center justify-content-between mb-3 mt-4">
-		<h2 class="mb-0">Pedido #{{ object.pk }}</h2>
-		<div class="d-flex gap-2">
-			<a class="btn btn-outline-secondary" href="{% url 'order-list' %}">Voltar</a>
-			<a class="btn btn-outline-primary" href="{% url 'order-update' object.pk %}">Editar</a>
-			<a class="btn btn-outline-danger" href="{% url 'order-delete' object.pk %}">Excluir</a>
+{% block cadastros_content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+	<h2 class="mb-0">Pedido #{{ object.pk }}</h2>
+	<div class="d-flex gap-2">
+		<a class="btn btn-outline-secondary" href="{% url 'order-list' %}">Voltar</a>
+		<a class="btn btn-outline-primary" href="{% url 'order-update' object.pk %}">Editar</a>
+		<a class="btn btn-outline-danger" href="{% url 'order-delete' object.pk %}">Excluir</a>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-6">
+		<div class="card mb-4">
+			<div class="card-header">Dados do pedido</div>
+			<div class="card-body p-0">
+				<table class="table mb-0">
+					<tbody>
+						<tr>
+							<th class="w-50">Tipo</th>
+							<td>{{ object.get_type_display }}</td>
+						</tr>
+						<tr>
+							<th>Empresa</th>
+							<td>{{ object.company.name }}</td>
+						</tr>
+						<tr>
+							<th>Cliente</th>
+							<td>{{ object.client.name }}</td>
+						</tr>
+						<tr>
+							<th>Método de pagamento</th>
+							<td>{{ object.get_payment_method_display }}</td>
+						</tr>
+						<tr>
+							<th>Valor total (pedido)</th>
+							<td>R$ {{ object.total_value|floatformat:2 }}</td>
+						</tr>
+						<tr>
+							<th>Endereço</th>
+							<td>{{ object.address }}</td>
+						</tr>
+						<tr>
+							<th>Criado por</th>
+							<td>{{ object.created_by }}</td>
+						</tr>
+						<tr>
+							<th>Criado em</th>
+							<td>{{ object.created_at }}</td>
+						</tr>
+						<tr>
+							<th>Atualizado em</th>
+							<td>{{ object.updated_at }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 
@@ -114,4 +163,5 @@
 			</table>
 		</div>
 	</div>
-{% endblock %}
+</div>
+{% endblock cadastros_content %}

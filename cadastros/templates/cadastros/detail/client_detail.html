@@ -6,13 +6,50 @@
 	<li class="breadcrumb-item active" aria-current="page">Cliente #{{ object.pk }}</li>
 {% endblock breadcrumb %}
 
-{% block page_content %}
-	<div class="d-flex align-items-center justify-content-between mb-3 mt-4">
-		<h2 class="mb-0">Cliente #{{ object.pk }}</h2>
-		<div class="d-flex gap-2">
-			<a class="btn btn-outline-secondary" href="{% url 'client-list' %}">Voltar</a>
-			<a class="btn btn-outline-primary" href="{% url 'client-update' object.pk %}">Editar</a>
-			<a class="btn btn-outline-danger" href="{% url 'client-delete' object.pk %}">Excluir</a>
+{% block cadastros_content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+	<h2 class="mb-0">Cliente #{{ object.pk }}</h2>
+	<div class="d-flex gap-2">
+		<a class="btn btn-outline-secondary" href="{% url 'client-list' %}">Voltar</a>
+		<a class="btn btn-outline-primary" href="{% url 'client-update' object.pk %}">Editar</a>
+		<a class="btn btn-outline-danger" href="{% url 'client-delete' object.pk %}">Excluir</a>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-lg-6">
+		<div class="card mb-4">
+			<div class="card-header">Dados do cliente</div>
+			<div class="card-body p-0">
+				<table class="table mb-0">
+					<tbody>
+						<tr>
+							<th class="w-50">Nome</th>
+							<td>{{ object.name|default:"-" }}</td>
+						</tr>
+						<tr>
+							<th>CNPJ/CPF</th>
+							<td>{{ object.cnpj_cpf|default:"-" }}</td>
+						</tr>
+						<tr>
+							<th>UF</th>
+							<td>{{ object.uf|default:"-" }}</td>
+						</tr>
+						<tr>
+							<th>Criado por</th>
+							<td>{{ object.created_by|default:"-" }}</td>
+						</tr>
+						<tr>
+							<th>Criado em</th>
+							<td>{{ object.created_at|default:"-" }}</td>
+						</tr>
+						<tr>
+							<th>Atualizado em</th>
+							<td>{{ object.updated_at|default:"-" }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 
@@ -104,4 +141,5 @@
 			</table>
 		</div>
 	</div>
-{% endblock %}
+</div>
+{% endblock cadastros_content %}
