@@ -53,93 +53,55 @@
 		</div>
 	</div>
 
-	<div class="row">
-		<div class="col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">Dados do cliente</div>
-				<div class="card-body p-0">
-					<table class="table mb-0">
-						<tbody>
-							<tr>
-								<th class="w-50">Nome</th>
-								<td>{{ object.name|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>CNPJ/CPF</th>
-								<td>{{ object.cnpj_cpf|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>UF</th>
-								<td>{{ object.uf|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Criado por</th>
-								<td>{{ object.created_by|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Criado em</th>
-								<td>{{ object.created_at|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Atualizado em</th>
-								<td>{{ object.updated_at|default:"-" }}</td>
-							</tr>
-						</tbody>
-					</table>
+	<div class="col-lg-6">
+		<div class="card mb-4">
+			<div class="card-header">Resumo de pedidos</div>
+			<div class="card-body">
+				<div class="d-flex align-items-center justify-content-between">
+					<span>Total de pedidos</span>
+					<strong>{{ object.order_set.count }}</strong>
 				</div>
-			</div>
-		</div>
-
-		<div class="col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">Resumo de pedidos</div>
-				<div class="card-body">
-					<div class="d-flex align-items-center justify-content-between">
-						<span>Total de pedidos</span>
-						<strong>{{ object.order_set.count }}</strong>
-					</div>
-					<div class="text-muted small mt-2">
-						Observacao: este total considera pedidos associados a este cliente.
-					</div>
+				<div class="text-muted small mt-2">
+					Observacao: este total considera pedidos associados a este cliente.
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
 
-	<div class="card mb-4">
-		<div class="card-header">Pedidos do cliente</div>
-		<div class="card-body p-0">
-			<table class="table table-striped mb-0">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Tipo</th>
-						<th>Empresa</th>
-						<th>Metodo</th>
-						<th class="text-end">Valor total</th>
-						<th>Criado em</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for order in object.order_set.all %}
-					<tr>
-						<td>
-							<a href="{% url 'order-detail' order.pk %}">Pedido #{{ order.pk }}</a>
-						</td>
-						<td>{{ order.get_type_display|default:"-" }}</td>
-						<td>{{ order.company.name|default:"-" }}</td>
-						<td>{{ order.get_payment_method_display|default:"-" }}</td>
-						<td class="text-end">R$ {{ order.total_value|default_if_none:0|floatformat:2 }}</td>
-						<td>{{ order.created_at|default:"-" }}</td>
-					</tr>
-					{% empty %}
-					<tr>
-						<td colspan="6" class="text-center text-muted py-4">Nenhum pedido cadastrado para este cliente.</td>
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
+<div class="card mb-4">
+	<div class="card-header">Pedidos do cliente</div>
+	<div class="card-body p-0">
+		<table class="table table-striped mb-0">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Tipo</th>
+					<th>Empresa</th>
+					<th>Metodo</th>
+					<th class="text-end">Valor total</th>
+					<th>Criado em</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for order in object.order_set.all %}
+				<tr>
+					<td>
+						<a href="{% url 'order-detail' order.pk %}">Pedido #{{ order.pk }}</a>
+					</td>
+					<td>{{ order.get_type_display|default:"-" }}</td>
+					<td>{{ order.company.name|default:"-" }}</td>
+					<td>{{ order.get_payment_method_display|default:"-" }}</td>
+					<td class="text-end">R$ {{ order.total_value|default_if_none:0|floatformat:2 }}</td>
+					<td>{{ order.created_at|default:"-" }}</td>
+				</tr>
+				{% empty %}
+				<tr>
+					<td colspan="6" class="text-center text-muted py-4">Nenhum pedido cadastrado para este cliente.</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 	</div>
 </div>
 {% endblock cadastros_content %}

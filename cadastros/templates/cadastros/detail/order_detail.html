@@ -65,103 +65,53 @@
 		</div>
 	</div>
 
-	<div class="row">
-		<div class="col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">Dados do pedido</div>
-				<div class="card-body p-0">
-					<table class="table mb-0">
-						<tbody>
-							<tr>
-								<th class="w-50">Tipo</th>
-								<td>{{ object.get_type_display }}</td>
-							</tr>
-							<tr>
-								<th>Empresa</th>
-								<td>{{ object.company.name }}</td>
-							</tr>
-							<tr>
-								<th>Cliente</th>
-								<td>{{ object.client.name }}</td>
-							</tr>
-							<tr>
-								<th>Método de pagamento</th>
-								<td>{{ object.get_payment_method_display }}</td>
-							</tr>
-							<tr>
-								<th>Valor total (pedido)</th>
-								<td>R$ {{ object.total_value|floatformat:2 }}</td>
-							</tr>
-							<tr>
-								<th>Endereço</th>
-								<td>{{ object.address }}</td>
-							</tr>
-							<tr>
-								<th>Criado por</th>
-								<td>{{ object.created_by }}</td>
-							</tr>
-							<tr>
-								<th>Criado em</th>
-								<td>{{ object.created_at }}</td>
-							</tr>
-							<tr>
-								<th>Atualizado em</th>
-								<td>{{ object.updated_at }}</td>
-							</tr>
-						</tbody>
-					</table>
+	<div class="col-lg-6">
+		<div class="card mb-4">
+			<div class="card-header">Resumo de itens</div>
+			<div class="card-body">
+				<div class="d-flex align-items-center justify-content-between">
+					<span>Total (itens)</span>
+					<strong>R$ {{ product_orders_total|floatformat:2 }}</strong>
 				</div>
-			</div>
-		</div>
-
-		<div class="col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">Resumo de itens</div>
-				<div class="card-body">
-					<div class="d-flex align-items-center justify-content-between">
-						<span>Total (itens)</span>
-						<strong>R$ {{ product_orders_total|floatformat:2 }}</strong>
-					</div>
-					<div class="text-muted small mt-2">
-						Observação: este total é a soma dos itens cadastrados em ProductOrder.
-					</div>
+				<div class="text-muted small mt-2">
+					Observação: este total é a soma dos itens cadastrados em ProductOrder.
 				</div>
 			</div>
 		</div>
 	</div>
+</div>
 
-	<div class="card mb-4">
-		<div class="card-header">Itens do pedido</div>
-		<div class="card-body p-0">
-			<table class="table table-striped mb-0">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>SKU</th>
-						<th>Produto</th>
-						<th class="text-end">Qtd</th>
-						<th class="text-end">Vlr. unit.</th>
-						<th class="text-end">Total</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for item in product_orders %}
-					<tr>
-						<td>{{ item.pk }}</td>
-						<td>{{ item.product.sku }}</td>
-						<td>{{ item.product.name }}</td>
-						<td class="text-end">{{ item.quantity }}</td>
-						<td class="text-end">{{ item.unit_value|floatformat:2 }}</td>
-						<td class="text-end">{{ item.total_value|floatformat:2 }}</td>
-					</tr>
-					{% empty %}
-					<tr>
-						<td colspan="6" class="text-center text-muted py-4">Nenhum item cadastrado para este pedido.</td>
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
+<div class="card mb-4">
+	<div class="card-header">Itens do pedido</div>
+	<div class="card-body p-0">
+		<table class="table table-striped mb-0">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>SKU</th>
+					<th>Produto</th>
+					<th class="text-end">Qtd</th>
+					<th class="text-end">Vlr. unit.</th>
+					<th class="text-end">Total</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in product_orders %}
+				<tr>
+					<td>{{ item.pk }}</td>
+					<td>{{ item.product.sku }}</td>
+					<td>{{ item.product.name }}</td>
+					<td class="text-end">{{ item.quantity }}</td>
+					<td class="text-end">{{ item.unit_value|floatformat:2 }}</td>
+					<td class="text-end">{{ item.total_value|floatformat:2 }}</td>
+				</tr>
+				{% empty %}
+				<tr>
+					<td colspan="6" class="text-center text-muted py-4">Nenhum item cadastrado para este pedido.</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
 	</div>
 </div>
 {% endblock cadastros_content %}
