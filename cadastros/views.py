@@ -60,7 +60,7 @@ class CompanyList(PaginatedListView):
 
 class CompanyDetail(DetailView):
     model = Company
-    template_name = "cadastros/detail/company.html"
+    template_name = "cadastros/detail/company_detail.html"
 
 
 # Client
@@ -120,7 +120,7 @@ class UserProfileList(PaginatedListView):
 
 class UserProfileDetail(DetailView):
     model = User_Profile
-    template_name = "cadastros/detail/userprofile.html"
+    template_name = "cadastros/detail/userprofile_detail.html"
 
 
 # Product
@@ -150,7 +150,7 @@ class ProductList(PaginatedListView):
 
 class ProductDetail(DetailView):
     model = Product
-    template_name = "cadastros/detail/product.html"
+    template_name = "cadastros/detail/product_detail.html"
 
 
 # Order

@@ -7,17 +7,21 @@
 {% endblock breadcrumb %}
 
 {% block content %}
-<form action="" method="POST">
-    {% csrf_token %}
+<div class="container-fluid px-4">
+    {% block page_content %}
+    <form action="" method="POST">
+        {% csrf_token %}
 
-    <h2>{{ title }}</h2>
-    <p>Preencha todos os campos obrigátorios<p>
-    
-    {{ form|crispy }}
+        <h2>{{ title }}</h2>
+        <p>Preencha todos os campos obrigátorios<p>
+        
+        {{ form|crispy }}
 
-    <button type="submit" class="btn btn-success">
-        Cadastrar
-    </button>
+        <button type="submit" class="btn btn-success">
+            Cadastrar
+        </button>
 
-</form>
+    </form>
+    {% endblock %}
+</div>
 {% endblock %}

@@ -1,0 +1,44 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+	<li class="breadcrumb-item"><a href="{% url 'userprofile-list' %}">Perfis de usuario</a></li>
+	<li class="breadcrumb-item active" aria-current="page">Perfil #{{ object.pk }}</li>
+{% endblock breadcrumb %}
+
+{% block page_content %}
+	<div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+		<h2 class="mb-0">Perfil #{{ object.pk }}</h2>
+		<div class="d-flex gap-2">
+			<a class="btn btn-outline-secondary" href="{% url 'userprofile-list' %}">Voltar</a>
+			<a class="btn btn-outline-primary" href="{% url 'userprofile-update' object.pk %}">Editar</a>
+			<a class="btn btn-outline-danger" href="{% url 'userprofile-delete' object.pk %}">Excluir</a>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card mb-4">
+				<div class="card-header">Dados do perfil</div>
+				<div class="card-body p-0">
+					<table class="table mb-0">
+						<tbody>
+							<tr>
+								<th class="w-50">Nome</th>
+								<td>{{ object.name|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Telefone</th>
+								<td>{{ object.phone|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>CPF</th>
+								<td>{{ object.cpf|default:"-" }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

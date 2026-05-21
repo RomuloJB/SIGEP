@@ -1,0 +1,119 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+	<li class="breadcrumb-item"><a href="{% url 'product-list' %}">Produtos</a></li>
+	<li class="breadcrumb-item active" aria-current="page">Produto #{{ object.pk }}</li>
+{% endblock breadcrumb %}
+
+{% block page_content %}
+	<div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+		<h2 class="mb-0">Produto #{{ object.pk }}</h2>
+		<div class="d-flex gap-2">
+			<a class="btn btn-outline-secondary" href="{% url 'product-list' %}">Voltar</a>
+			<a class="btn btn-outline-primary" href="{% url 'product-update' object.pk %}">Editar</a>
+			<a class="btn btn-outline-danger" href="{% url 'product-delete' object.pk %}">Excluir</a>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card mb-4">
+				<div class="card-header">Dados do produto</div>
+				<div class="card-body p-0">
+					<table class="table mb-0">
+						<tbody>
+							<tr>
+								<th class="w-50">Nome</th>
+								<td>{{ object.name|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>SKU</th>
+								<td>{{ object.sku|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Empresa</th>
+								<td>{{ object.company|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Cor</th>
+								<td>{{ object.color|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Unidade</th>
+								<td>{{ object.get_measure_unit_display|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Valor unitário</th>
+								<td>R$ {{ object.unit_value|default_if_none:0|floatformat:2 }}</td>
+							</tr>
+							<tr>
+								<th>Estoque</th>
+								<td>{{ object.stock|default_if_none:0 }}</td>
+							</tr>
+							<tr>
+								<th>Descrição</th>
+								<td>{{ object.description|default:"-" }}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-lg-6">
+			<div class="card mb-4">
+				<div class="card-header">Resumo de movimentações</div>
+				<div class="card-body">
+					<div class="d-flex align-items-center justify-content-between">
+						<span>Total de itens em pedidos</span>
+						<strong>{{ object.productorder_set.count }}</strong>
+					</div>
+					<div class="text-muted small mt-2">
+						Observação: este total considera os itens cadastrados em ProductOrder.
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="card mb-4">
+		<div class="card-header">Pedidos com este produto</div>
+		<div class="card-body p-0">
+			<table class="table table-striped mb-0">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Pedido</th>
+						<th>Cliente</th>
+						<th class="text-end">Qtd</th>
+						<th class="text-end">Vlr. unit.</th>
+						<th class="text-end">Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for item in object.productorder_set.all %}
+					<tr>
+						<td>{{ item.pk }}</td>
+						<td>
+							{% if item.order %}
+							<a href="{% url 'order-detail' item.order.pk %}">Pedido #{{ item.order.pk }}</a>
+							{% else %}
+							-
+							{% endif %}
+						</td>
+						<td>{{ item.order.client.name|default:"-" }}</td>
+						<td class="text-end">{{ item.quantity|default_if_none:0 }}</td>
+						<td class="text-end">{{ item.unit_value|default_if_none:0|floatformat:2 }}</td>
+						<td class="text-end">{{ item.total_value|default_if_none:0|floatformat:2 }}</td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td colspan="6" class="text-center text-muted py-4">Nenhum pedido cadastrado para este produto.</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+{% endblock %}

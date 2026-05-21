@@ -2,24 +2,24 @@
 {% load static %}
 
 {% block breadcrumb %}
-	<li class="breadcrumb-item"><a href="{% url 'client-list' %}">Clientes</a></li>
-	<li class="breadcrumb-item active" aria-current="page">Cliente #{{ object.pk }}</li>
+	<li class="breadcrumb-item"><a href="{% url 'company-list' %}">Empresas</a></li>
+	<li class="breadcrumb-item active" aria-current="page">Empresa #{{ object.pk }}</li>
 {% endblock breadcrumb %}
 
 {% block page_content %}
 	<div class="d-flex align-items-center justify-content-between mb-3 mt-4">
-		<h2 class="mb-0">Cliente #{{ object.pk }}</h2>
+		<h2 class="mb-0">Empresa #{{ object.pk }}</h2>
 		<div class="d-flex gap-2">
-			<a class="btn btn-outline-secondary" href="{% url 'client-list' %}">Voltar</a>
-			<a class="btn btn-outline-primary" href="{% url 'client-update' object.pk %}">Editar</a>
-			<a class="btn btn-outline-danger" href="{% url 'client-delete' object.pk %}">Excluir</a>
+			<a class="btn btn-outline-secondary" href="{% url 'company-list' %}">Voltar</a>
+			<a class="btn btn-outline-primary" href="{% url 'company-update' object.pk %}">Editar</a>
+			<a class="btn btn-outline-danger" href="{% url 'company-delete' object.pk %}">Excluir</a>
 		</div>
 	</div>
 
 	<div class="row">
 		<div class="col-lg-6">
 			<div class="card mb-4">
-				<div class="card-header">Dados do cliente</div>
+				<div class="card-header">Dados da empresa</div>
 				<div class="card-body p-0">
 					<table class="table mb-0">
 						<tbody>
@@ -28,12 +28,26 @@
 								<td>{{ object.name|default:"-" }}</td>
 							</tr>
 							<tr>
-								<th>CNPJ/CPF</th>
-								<td>{{ object.cnpj_cpf|default:"-" }}</td>
+								<th>Descrição</th>
+								<td>{{ object.description|default:"-" }}</td>
 							</tr>
 							<tr>
-								<th>UF</th>
-								<td>{{ object.uf|default:"-" }}</td>
+								<th>CNPJ</th>
+								<td>{{ object.cnpj|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Gerente</th>
+								<td>{{ object.manager|default:"-" }}</td>
+							</tr>
+							<tr>
+								<th>Representantes</th>
+								<td>
+									{% for rep in object.sales_rep.all %}
+										<span class="badge bg-light text-dark me-1">{{ rep }}</span>
+									{% empty %}
+										-
+									{% endfor %}
+								</td>
 							</tr>
 							<tr>
 								<th>Criado por</th>
@@ -55,14 +69,22 @@
 
 		<div class="col-lg-6">
 			<div class="card mb-4">
-				<div class="card-header">Resumo de pedidos</div>
+				<div class="card-header">Resumo da empresa</div>
 				<div class="card-body">
 					<div class="d-flex align-items-center justify-content-between">
+						<span>Total de produtos</span>
+						<strong>{{ object.product_set.count }}</strong>
+					</div>
+					<div class="d-flex align-items-center justify-content-between mt-2">
 						<span>Total de pedidos</span>
 						<strong>{{ object.order_set.count }}</strong>
 					</div>
+					<div class="d-flex align-items-center justify-content-between mt-2">
+						<span>Total de representantes</span>
+						<strong>{{ object.sales_rep.count }}</strong>
+					</div>
 					<div class="text-muted small mt-2">
-						Observacao: este total considera pedidos associados a este cliente.
+						Observação: os totais refletem os registros associados a esta empresa.
 					</div>
 				</div>
 			</div>
@@ -70,14 +92,14 @@
 	</div>
 
 	<div class="card mb-4">
-		<div class="card-header">Pedidos do cliente</div>
+		<div class="card-header">Pedidos da empresa</div>
 		<div class="card-body p-0">
 			<table class="table table-striped mb-0">
 				<thead>
 					<tr>
 						<th>ID</th>
 						<th>Tipo</th>
-						<th>Empresa</th>
+						<th>Cliente</th>
 						<th>Metodo</th>
 						<th class="text-end">Valor total</th>
 						<th>Criado em</th>
@@ -90,14 +112,14 @@
 							<a href="{% url 'order-detail' order.pk %}">Pedido #{{ order.pk }}</a>
 						</td>
 						<td>{{ order.get_type_display|default:"-" }}</td>
-						<td>{{ order.company.name|default:"-" }}</td>
+						<td>{{ order.client.name|default:"-" }}</td>
 						<td>{{ order.get_payment_method_display|default:"-" }}</td>
 						<td class="text-end">R$ {{ order.total_value|default_if_none:0|floatformat:2 }}</td>
 						<td>{{ order.created_at|default:"-" }}</td>
 					</tr>
 					{% empty %}
 					<tr>
-						<td colspan="6" class="text-center text-muted py-4">Nenhum pedido cadastrado para este cliente.</td>
+						<td colspan="6" class="text-center text-muted py-4">Nenhum pedido cadastrado para esta empresa.</td>
 					</tr>
 					{% endfor %}
 				</tbody>
