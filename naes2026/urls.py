@@ -23,5 +23,6 @@ urlpatterns = [
     path('',include('website.urls')),
     path('sigep/', include('sigep.urls')),
     path('', include('cadastros.urls')),
+    path('', include('usuarios.urls')),
 
 ]

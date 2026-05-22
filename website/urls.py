@@ -1,7 +1,6 @@
 from django.urls import path
 from .views import (
-    IndexView, ContactView, AboutView, CompanyChartsView,
-    UserLoginView, UserLogoutView,
+    IndexView, ContactView, AboutView, CompanyChartsView
 )
 
 urlpatterns = [
@@ -9,9 +8,6 @@ urlpatterns = [
     path("", IndexView.as_view(), name="index"),
     path("contact/", ContactView.as_view(), name="contact"),
     path("about/", AboutView.as_view(), name="about"),
-
-    path("login/", UserLoginView.as_view(), name="login"),
-    path("logout/", UserLogoutView.as_view(), name="logout"),
 
     #Paginas sidenav
     path("company-chart/", CompanyChartsView.as_view(), name="company-chart"),

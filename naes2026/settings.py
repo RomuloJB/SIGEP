@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'website.apps.WebsiteConfig',
     'sigep.apps.SigepConfig',
     'cadastros.apps.CadastrosConfig',
+    'usuarios.apps.UsuariosConfig',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
