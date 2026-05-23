@@ -35,6 +35,7 @@
                         {% if request.user.is_authenticated %}
                             <li><span class="dropdown-item-text">Ola, {{ request.user.get_username }}</span></li>
                             <li><hr class="dropdown-divider" /></li>
+                            <li class="dropdown-item">Alterar senha</li>
                             <li>
                                 <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}
@@ -79,8 +80,8 @@
                                     Relatórios
                                 </a>
                                 <a class="nav-link" href="{% url 'company-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
-                                    Tables
+                                    <div class="sb-nav-link-icon"><i class="fas fa-phone"></i></div>
+                                    Suporte
                                 </a>
                                 <a class="nav-link" href="{% url 'about' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-circle-info"></i></div>
@@ -262,5 +263,107 @@
         <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
         <script src="{% static 'js/datatables-simple-demo.js' %}"></script>
         {% endblock %}
+        <script>
+            (function () {
+                function restoreButton(button) {
+                    if (!button || button.dataset.loading !== "1") {
+                        return;
+                    }
+
+                    if (button.tagName === "INPUT") {
+                        if (button.dataset.originalValue) {
+                            button.value = button.dataset.originalValue;
+                        }
+                    } else if (button.dataset.originalHtml) {
+                        button.innerHTML = button.dataset.originalHtml;
+                    }
+
+                    button.disabled = false;
+                    button.removeAttribute("aria-disabled");
+                    button.dataset.loading = "0";
+                }
+
+                function restoreAllButtons() {
+                    var buttons = document.querySelectorAll(
+                        "button.btnLoading[data-loading='1'], input.btnLoading[data-loading='1']"
+                    );
+
+                    buttons.forEach(restoreButton);
+                }
+
+                function restoreAllForms() {
+                    var forms = document.querySelectorAll("form[data-submitting='1']");
+
+                    forms.forEach(function (form) {
+                        form.dataset.submitting = "0";
+                        form.removeAttribute("aria-busy");
+                    });
+                }
+
+                function setLoading(button) {
+                    if (!button || button.dataset.loading === "1") {
+                        return;
+                    }
+
+                    if (button.tagName === "INPUT") {
+                        button.dataset.originalValue = button.dataset.originalValue || button.value;
+                        button.value = "Aguarde";
+                    } else {
+                        button.dataset.originalHtml = button.dataset.originalHtml || button.innerHTML;
+                        button.innerHTML =
+                            '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Aguarde';
+                    }
+
+                    button.disabled = true;
+                    button.setAttribute("aria-disabled", "true");
+                    button.dataset.loading = "1";
+                }
+
+                document.addEventListener("submit", function (event) {
+                    var form = event.target;
+                    if (!(form instanceof HTMLFormElement)) {
+                        return;
+                    }
+
+                    var submitter = event.submitter;
+                    var button = null;
+
+                    if (submitter && submitter.classList && submitter.classList.contains("btnLoading")) {
+                        button = submitter;
+                    } else {
+                        button = form.querySelector("button.btnLoading[type='submit'], input.btnLoading[type='submit']");
+                    }
+
+                    if (!button) {
+                        return;
+                    }
+
+                    if (form.dataset.submitting === "1") {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    setLoading(button);
+                    form.dataset.submitting = "1";
+                    form.setAttribute("aria-busy", "true");
+
+                    window.setTimeout(function () {
+                        if (event.defaultPrevented) {
+                            restoreButton(button);
+                            restoreAllForms();
+                        }
+                    }, 0);
+                });
+
+                window.addEventListener("pageshow", function () {
+                    restoreAllButtons();
+                    restoreAllForms();
+                });
+                document.addEventListener("DOMContentLoaded", function () {
+                    restoreAllButtons();
+                    restoreAllForms();
+                });
+            })();
+        </script>
     </body>
 </html>

@@ -6,11 +6,23 @@ from django.db.models import Sum
 
 from .models import Company, Client, User_Profile, Order, Product
 
+# Importar o LoginRequiredMixin para proteger as views
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+# Adicionar um Mixin para verificar se tem alguma empresa na sessão, caso não tiver, enviar o usuario para a pagina de seleção de empresa
+
+# Define a permissão de um certo grupo para certas ações
+from braces.views import GroupRequiredMixin
+
 
 class IndexView(TemplateView):
     template_name = "cadastros/index.html"
 
+#BaseLogin
+class BaseLoginMixin(LoginRequiredMixin):
+    login_url = reverse_lazy('login')
 
+# Listas Paginadas
 class PaginatedListView(ListView):
     paginate_by = 10
     paginate_by_options = (10, 20, 40)
@@ -34,151 +46,158 @@ class PaginatedListView(ListView):
 
 
 # Company
-class CompanyCreate(CreateView):
+class CompanyCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
+    group_required = ['Manager']
     model = Company
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Cadastro de Empresa", "botao": "Criar Empresa"}
 
-class CompanyUpdate(UpdateView):
+class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
+    group_required = ['Manager']
     model = Company
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
 
-class CompanyDelete(DeleteView):
+class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
+    group_required = ['Manager']
     model = Company
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Excluir Empresa", "botao": "Sim, excluir!"}
 
-class CompanyList(PaginatedListView):
+class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
+    group_required = ['Manager']
     model = Company
     template_name = "cadastros/list/company_list.html"
 
-class CompanyDetail(DetailView):
+class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
+    group_required = ['Manager']
     model = Company
     template_name = "cadastros/detail/company_detail.html"
 
 
 # Client
-class ClientCreate(CreateView):
+class ClientCreate(BaseLoginMixin, CreateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
 
-class ClientUpdate(UpdateView):
+class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
+    group_required = ['Manager']
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
 
-class ClientDelete(DeleteView):
+class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
+    group_required = ['Manager']
     model = Client
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Excluir Cliente", "botao": "Sim, excluir!"}
 
-class ClientList(PaginatedListView):
+class ClientList(BaseLoginMixin, PaginatedListView):
     model = Client
     template_name = "cadastros/list/client_list.html"
 
-class ClientDetail(DetailView):
+class ClientDetail(BaseLoginMixin, DetailView):
     model = Client
     template_name = "cadastros/detail/client_detail.html"
 
 
 # User Profile
-class UserProfileCreate(CreateView):
+class UserProfileCreate(BaseLoginMixin, CreateView):
     model = User_Profile
     fields = ["name", "phone", "cpf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
 
-class UserProfileUpdate(UpdateView):
+class UserProfileUpdate(BaseLoginMixin, UpdateView):
     model = User_Profile
     fields = ["name", "phone", "cpf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
 
-class UserProfileDelete(DeleteView):
+class UserProfileDelete(BaseLoginMixin, DeleteView):
     model = User_Profile
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Excluir Perfil de Usuário", "botao": "Sim, excluir!"}
 
-class UserProfileList(PaginatedListView):
+class UserProfileList(BaseLoginMixin, PaginatedListView):
     model = User_Profile
     template_name = "cadastros/list/userprofile_list.html"
 
-class UserProfileDetail(DetailView):
+class UserProfileDetail(BaseLoginMixin, DetailView):
     model = User_Profile
     template_name = "cadastros/detail/userprofile_detail.html"
 
 
 # Product
-class ProductCreate(CreateView):
+class ProductCreate(BaseLoginMixin, CreateView):
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Cadastro de Produto", "botao": "Criar Produto"}
 
-class ProductUpdate(UpdateView):
+class ProductUpdate(BaseLoginMixin, UpdateView):
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Editar dados do Produto", "botao": "Atualizar Produto"}
 
-class ProductDelete(DeleteView):
+class ProductDelete(BaseLoginMixin, DeleteView):
     model = Product
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Excluir Produto", "botao": "Sim, excluir!"}
 
-class ProductList(PaginatedListView):
+class ProductList(BaseLoginMixin, PaginatedListView):
     model = Product
     template_name = "cadastros/list/product_list.html"
 
-class ProductDetail(DetailView):
+class ProductDetail(BaseLoginMixin, DetailView):
     model = Product
     template_name = "cadastros/detail/product_detail.html"
 
 
 # Order
-class OrderCreate(CreateView):
+class OrderCreate(BaseLoginMixin, CreateView):
     model = Order
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
 
-class OrderUpdate(UpdateView):
+class OrderUpdate(BaseLoginMixin, UpdateView):
     model = Order
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
 
-class OrderDelete(DeleteView):
+class OrderDelete(BaseLoginMixin, DeleteView):
     model = Order
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Excluir Pedido", "botao": "Sim, excluir!"}
 
-class OrderList(PaginatedListView):
+class OrderList(BaseLoginMixin, PaginatedListView):
     model = Order
     template_name = "cadastros/list/order_list.html"
 
-class OrderDetail(DetailView):
+class OrderDetail(BaseLoginMixin, DetailView):
     model = Order
     template_name = "cadastros/detail/order_detail.html"
 
