@@ -13,11 +13,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from urllib.parse import urlparse, parse_qsl
+from dotenv import load_dotenv
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -92,7 +93,9 @@ WSGI_APPLICATION = 'naes2026.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Replace the DATABASES section of your settings.py with this
-DATABASE_URL = 'postgresql://neondb_owner:npg_UgZl3fNpVF9t@ep-aged-heart-ac0gi63v-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL não configurada")
 tmpPostgres = urlparse(DATABASE_URL)
 
 DATABASES = {

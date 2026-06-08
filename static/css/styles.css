@@ -11251,7 +11251,6 @@ body {
   min-height: 100vh;
   margin: 0;
   overflow-x: hidden;
-  background: #08120b;
   font-family: "Manrope", var(--bs-font-sans-serif);
 }
 .auth-viewport{
@@ -11264,6 +11263,7 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
   position: relative;
+  background: url("../assets/img/bg-login-sigep.png") center/cover no-repeat;
 }
 .auth-viewport::before{
   content: "";
@@ -11469,4 +11469,46 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+/* FORM_DELETE */
+.delete-overlay{
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.delete-modal{
+  width: min(100%, 520px);
+  background: #fff;
+  border-radius: 1.25rem;
+  padding: 2rem;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+
+.delete-title{
+  margin-bottom: 1rem;
+  font-weight: 800;
+}
+
+.delete-message{
+  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+}
+
+.delete-warning{
+  color: #dc3545;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.delete-actions{
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }

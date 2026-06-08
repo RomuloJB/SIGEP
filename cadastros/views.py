@@ -65,9 +65,9 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
 class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     group_required = ['Manager']
     model = Company
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("company-list")
-    extra_context = {"title": "Excluir Empresa", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Empresa"}
 
 class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
     group_required = ['Manager']
@@ -99,9 +99,9 @@ class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
 class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     group_required = ['Manager']
     model = Client
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("client-list")
-    extra_context = {"title": "Excluir Cliente", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Cliente"}
 
 class ClientList(BaseLoginMixin, PaginatedListView):
     model = Client
@@ -129,9 +129,9 @@ class UserProfileUpdate(BaseLoginMixin, UpdateView):
 
 class UserProfileDelete(BaseLoginMixin, DeleteView):
     model = User_Profile
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Excluir Perfil de Usuário", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Perfil de Usuário"}
 
 class UserProfileList(BaseLoginMixin, PaginatedListView):
     model = User_Profile
@@ -159,9 +159,9 @@ class ProductUpdate(BaseLoginMixin, UpdateView):
 
 class ProductDelete(BaseLoginMixin, DeleteView):
     model = Product
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("product-list")
-    extra_context = {"title": "Excluir Produto", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Produto"}
 
 class ProductList(BaseLoginMixin, PaginatedListView):
     model = Product
@@ -189,9 +189,9 @@ class OrderUpdate(BaseLoginMixin, UpdateView):
 
 class OrderDelete(BaseLoginMixin, DeleteView):
     model = Order
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("order-list")
-    extra_context = {"title": "Excluir Pedido", "botao": "Sim, excluir!"}
+    extra_context = {"title": "Excluir Pedido"}
 
 class OrderList(BaseLoginMixin, PaginatedListView):
     model = Order

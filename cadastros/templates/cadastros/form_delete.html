@@ -1,0 +1,26 @@
+{% extends "website/model.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="delete-overlay">
+    <div class="delete-modal">
+        <h1 class="delete-title">{{ title }}</h1>
+        <p class="delete-message">Deseja mesmo excluir o item selecionado?</p>
+        <p class="delete-warning">ATENÇÃO: Esta ação é irreversível!</p>
+
+        <form method="post" class="delete-actions">
+            {% csrf_token %}
+            <button type="button" class="btn btn-outline-secondary" onclick="history.back()">
+                Cancelar
+            </button>
+            <button type="submit" class="btn btn-danger">
+                Sim, excluir
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
