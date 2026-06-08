@@ -122,7 +122,8 @@
                                 <div class="card bg-success text-white mb-4">
                                     <div class="card-body">Total em vendas</div>
                                     <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">R$0,00</h1>
+                                        <!-- Alterado: Usamos a variável {{ total_vendas }} com formatação de float -->
+                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">R$ {{ total_vendas|floatformat:2 }}</h1>
                                     </div>
                                 </div>
                             </div>
@@ -130,7 +131,8 @@
                                 <div class="card bg-success text-white mb-4">
                                     <div class="card-body">Vendas este mês</div>
                                     <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">R$0,00</h1>
+                                        <!-- Alterado -->
+                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">R$ {{ vendas_mes|floatformat:2 }}</h1>
                                     </div>
                                 </div>
                             </div>
@@ -138,7 +140,8 @@
                                 <div class="card bg-success text-white mb-4">
                                     <div class="card-body">Quantidade de vendas</div>
                                     <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">0</h1>
+                                        <!-- Alterado -->
+                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">{{ qtd_vendas }}</h1>
                                     </div>
                                 </div>
                             </div>
@@ -146,7 +149,8 @@
                                 <div class="card bg-success text-white mb-4">
                                     <div class="card-body">Quantidade de clientes</div>
                                     <div class="card-footer d-flex align-items-center justify-content-between">
-                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">0</h1>
+                                        <!-- Alterado -->
+                                        <h1 class="small text-white stretched-link" style="font-size: 1.25rem;">{{ qtd_clientes }}</h1>
                                     </div>
                                 </div>
                             </div>
@@ -180,57 +184,39 @@
                                 <table id="datatablesSimple">
                                     <thead>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Position</th>
-                                            <th>Office</th>
-                                            <th>Age</th>
-                                            <th>Start date</th>
-                                            <th>Salary</th>
+                                            <th>ID Pedido</th>
+                                            <th>Cliente</th>
+                                            <th>Tipo</th>
+                                            <th>Pagamento</th>
+                                            <th>Data</th>
+                                            <th>Valor</th>
                                         </tr>
                                     </thead>
                                     <tfoot>
                                         <tr>
-                                            <th>Name</th>
-                                            <th>Position</th>
-                                            <th>Office</th>
-                                            <th>Age</th>
-                                            <th>Start date</th>
-                                            <th>Salary</th>
+                                            <th>ID Pedido</th>
+                                            <th>Cliente</th>
+                                            <th>Tipo</th>
+                                            <th>Pagamento</th>
+                                            <th>Data</th>
+                                            <th>Valor</th>
                                         </tr>
                                     </tfoot>
                                     <tbody>
+                                        {% for pedido in ultimos_pedidos %}
                                         <tr>
-                                            <td>Tiger Nixon</td>
-                                            <td>System Architect</td>
-                                            <td>Edinburgh</td>
-                                            <td>61</td>
-                                            <td>2011/04/25</td>
-                                            <td>$320,800</td>
+                                            <td>#{{ pedido.id }}</td>
+                                            <td>{{ pedido.client.name|default:"Excluído/Não associado" }}</td>
+                                            <td>{{ pedido.get_type_display }}</td>
+                                            <td>{{ pedido.get_payment_method_display }}</td>
+                                            <td>{{ pedido.created_at|date:"d/m/Y" }}</td>
+                                            <td>R$ {{ pedido.total_value|floatformat:2 }}</td>
                                         </tr>
+                                        {% empty %}
                                         <tr>
-                                            <td>Garrett Winters</td>
-                                            <td>Accountant</td>
-                                            <td>Tokyo</td>
-                                            <td>63</td>
-                                            <td>2011/07/25</td>
-                                            <td>$170,750</td>
+                                            <td colspan="6" class="text-center">Nenhum pedido realizado ainda.</td>
                                         </tr>
-                                        <tr>
-                                            <td>Ashton Cox</td>
-                                            <td>Junior Technical Author</td>
-                                            <td>San Francisco</td>
-                                            <td>66</td>
-                                            <td>2009/01/12</td>
-                                            <td>$86,000</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Cedric Kelly</td>
-                                            <td>Senior Javascript Developer</td>
-                                            <td>Edinburgh</td>
-                                            <td>22</td>
-                                            <td>2012/03/29</td>
-                                            <td>$433,060</td>
-                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
