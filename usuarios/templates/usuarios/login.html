@@ -14,82 +14,48 @@
     <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
 </head>
 
-<body>
-    <div class="container auth-shell">
-        <div class="row justify-content-center w-100">
-            <div class="col-12 col-md-10 col-lg-8 col-xl-11">
-                <div class="card auth-card">
-                    <div class="row g-0">
-                        <!-- Lado visual -->
-                        <div class="col-md-6 d-none d-md-block">
-                            <div class="auth-aside">
-                                <div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="brand-badge">SG</div>
-                                        <div>
-                                            <div class="fw-bold" style="line-height:1.05;">SIGEP</div>
-                                            <div class="hint">Sistema de Gestão</div>
-                                        </div>
-                                    </div>
-
-                                    <h2 class="mt-4 mb-2 fw-bold" style="line-height:1.15;">
-                                        Entre para acessar o painel
-                                    </h2>
-                                    <p class="mb-0 hint">
-                                        Use suas credenciais para continuar. Se tiver problemas, contate o administrador.
-                                    </p>
-                                </div>
-
-                                <div class="hint">
-                                    <div class="small">© {% now "Y" %} SIGEP</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Form -->
-                        <div class="col-12 col-md-5">
-                            <div class="auth-main">
-                                <div class="mb-3">
-                                    <h1 class="auth-title h3 mb-1">Login</h1>
-                                    <div class="text-muted form-text-small">
-                                        Informe usuário e senha para entrar.
-                                    </div>
-                                </div>
-
-                                {% if form.errors %}
-                                    <div class="alert alert-danger" role="alert">
-                                        Usuário ou senha inválidos. Verifique e tente novamente.
-                                    </div>
-                                {% endif %}
-
-                                <form method="post" novalidate>
-                                    {% csrf_token %}
-                                    {{ form|crispy }}
-
-                                    <div class="d-grid mt-3">
-                                        <button class="btn btn-primary" type="submit">
-                                            Entrar
-                                        </button>
-                                    </div>
-
-                                    <div class="divider my-4">ou</div>
-
-                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                        <a class="link-secondary text-decoration-none" href="{% url 'index' %}">
-                                            Voltar para o site
-                                        </a>
-
-                                        {# Se você tiver rota de reset de senha, pode habilitar aqui #}
-                                        {# <a class="link-secondary text-decoration-none" href="{% url 'password_reset' %}">Esqueci minha senha</a> #}
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<body class="auth-page">
+    <main
+        class="auth-viewport"
+        style="background-image: url('{% static "assets/img/bg-login-sigep.png" %}');"
+    >
+        <section class="auth-panel">
+            <div class="mb-4">
+                <h1 class="auth-title h3 mb-2">Login</h1>
+                <p class="auth-description mb-0">
+                    Informe usuário e senha para entrar no sistema.
+                </p>
             </div>
-        </div>
-    </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger" role="alert">
+                    Usuário ou senha inválidos. Verifique e tente novamente.
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <div class="d-grid mt-4">
+                    <button class="btn btn-primary" type="submit">
+                        Entrar
+                    </button>
+                </div>
+
+                <div class="divider my-4">ou</div>
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 auth-links">
+                    <a class="link-secondary text-decoration-none" href="{% url 'index' %}">
+                        Voltar para o site
+                    </a>
+
+                    {# Se você tiver rota de reset de senha, pode habilitar aqui #}
+                    {# <a class="link-secondary text-decoration-none" href="{% url 'password_reset' %}">Esqueci minha senha</a> #}
+                </div>
+            </form>
+        </section>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>

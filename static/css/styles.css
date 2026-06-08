@@ -11247,64 +11247,84 @@ body {
 
 /* LOGIN */
 
-
-.auth-shell{
+.auth-page{
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  background: #08120b;
+  font-family: "Manrope", var(--bs-font-sans-serif);
+}
+.auth-viewport{
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding: 0;
+  justify-content: flex-end;
+  padding: clamp(1rem, 3vw, 3rem);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
 }
-.auth-card{
-  border: 0;
-  border-radius: 1rem;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.45);
-  background: rgba(255,255,255,.92);
-  backdrop-filter: blur(8px);
+.auth-viewport::before{
+  content: "";
+  position: absolute;
+  inset: 0;
 }
-.auth-aside{
-  background: var(--primary-color);
-  color: var(--secondary-color);
-  padding: 2.25rem;
-  height: 100%;
+.auth-panel{
+  position: relative;
+  z-index: 1;
+  width: min(100%, 460px);
+  margin-left: auto;
+  padding: clamp(1.5rem, 2.5vw, 2.25rem);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
+}
+.auth-panel__header{
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.brand-badge{
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,.18);
-  border: 1px solid rgba(255,255,255,.25);
-  font-weight: 700;
-  letter-spacing: .5px;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
 }
-.auth-main{
-  padding: 2.25rem;
-}
+
 .auth-title{
   font-weight: 800;
   letter-spacing: -.02em;
+  color: var(--primary-color);
 }
-.hint{
-  color: rgba(255,255,255,.85);
-  font-size: .95rem;
+.auth-description{
+  color: #5f6f65;
+  font-size: .96rem;
 }
-.form-text-small{
-  font-size: .9rem;
+.auth-panel .alert{
+  border-radius: 1rem;
 }
-/* deixa os inputs do crispy mais “modernos” sem depender do template pack */
-.auth-main input{
-  border-radius: .75rem !important;
-  padding: .75rem .9rem !important;
-}
-.auth-main .btn{
-  border-radius: .75rem;
-  padding: .75rem 1rem;
+.auth-panel .form-label{
+  color: #274130;
   font-weight: 600;
+}
+.auth-panel input,
+.auth-panel select,
+.auth-panel textarea,
+.auth-panel .form-control{
+  border-radius: .85rem !important;
+  padding: .8rem .95rem !important;
+  border-color: rgba(25, 52, 33, 0.18);
+}
+.auth-panel .form-control:focus,
+.auth-panel input:focus,
+.auth-panel select:focus,
+.auth-panel textarea:focus{
+  border-color: #2f7d37;
+  box-shadow: 0 0 0 .2rem rgba(47, 125, 55, .14);
+}
+.auth-panel .btn{
+  border-radius: .85rem;
+  padding: .8rem 1rem;
+  font-weight: 700;
 }
 .divider{
   display: flex;
@@ -11313,11 +11333,35 @@ body {
   color: #6c757d;
   font-size: .9rem;
 }
-.divider::before, .divider::after{
+.divider::before,
+.divider::after{
   content:"";
   flex: 1;
   height: 1px;
   background: rgba(0,0,0,.12);
+}
+.auth-links a{
+  font-weight: 600;
+}
+
+@media (max-width: 767.98px){
+  .auth-viewport{
+    justify-content: center;
+    align-items: flex-end;
+    padding: 1rem;
+  }
+  .auth-panel{
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+  }
+  .auth-panel__header{
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .auth-kicker{
+    align-self: flex-start;
+  }
 }
 
 /* Cadastros pages */
