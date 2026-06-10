@@ -31,7 +31,6 @@
                         <th>Nome</th>
                         <th>CNPJ</th>
                         <th>Gestor</th>
-                        <th class="text-nowrap">Acoes</th>
                     </tr>
                 </thead>
 
@@ -42,20 +41,31 @@
                         <td>{{ company.name }}</td>
                         <td>{{ company.cnpj }}</td>
                         <td>{{ company.manager }}</td>
-                        <td class="text-nowrap">
-                            <div class="list-actions">
-                                <a class="btn btn-sm btn-outline-primary" href="{% url 'company-detail' company.pk %}">
-                                    <i class="fas fa-eye me-1"></i>
-                                    Detalhes
-                                </a>
-                                <a class="btn btn-sm btn-outline-warning" href="{% url 'company-update' company.pk %}">
-                                    <i class="fas fa-pen-to-square me-1"></i>
-                                    Editar
-                                </a>
-                                <a class="btn btn-sm btn-outline-danger" href="{% url 'company-delete' company.pk %}">
-                                    <i class="fas fa-trash me-1"></i>
-                                    Excluir
-                                </a>
+                        <td class="text-nowrap text-end">
+                            <div class="dropdown d-inline-block">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Ações
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'company-detail' company.pk %}">
+                                            <i class="fas fa-eye me-1"></i>
+                                            Detalhes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'company-update' company.pk %}">
+                                            <i class="fas fa-pen-to-square me-1"></i>
+                                            Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{% url 'company-delete' company.pk %}">
+                                            <i class="fas fa-trash me-1"></i>
+                                            Excluir
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
                         </td>
                     </tr>
