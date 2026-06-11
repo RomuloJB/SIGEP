@@ -2,69 +2,348 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid px-4">
-	<h1 class="mt-4">Sobre</h1>
-	<ol class="breadcrumb mb-4">
-		<li class="breadcrumb-item"><a href="{% url 'index' %}" style="text-decoration: none; color: var(--bs-breadcrumb-item-active-color)">Dashboard</a></li>
-		<li class="breadcrumb-item active">Sobre</li>
-	</ol>
+<div class="about-page">
 
-	<div class="card mb-4">
-		<div class="card-header">
-			<i class="fas fa-circle-info me-1"></i>
-			Descricao do projeto
-		</div>
-		<div class="card-body">
-			<p class="mb-0">
-				O presente trabalho propõe o desenvolvimento do Sistema Integrado de Gestão de Pedidos (SIGEP), uma solução tecnológica web, com telas responsivas, destinada à gestão estruturada de pedidos comerciais entre representantes de vendas e empresas.
-				O sistema visa substituir processos manuais e informais de registro de pedidos por uma solução informatizada que contemple:
-			</p>
-			<ul>
-				<li> Cadastro de empresas, usuários e produtos;</li>
-				<li> Registro e gerenciamento de pedidos de entrada e saída;</li>
-				<li> Controle automático de estoque;</li>
-				<li> Controle de permissões por perfil de usuário;</li>
-				<li> Registro do ciclo de vida do pedido;</li>
-				<li> Notificações automatizadas por e-mail.</li>
-			</ul>
-			<p>
-				O projeto será desenvolvido utilizando a linguagem Python com o framework Django no backend, banco de dados relacional.<br/>
-				Trata-se de uma pesquisa aplicada com desenvolvimento tecnológico, focada na construção e validação de um sistema computacional para resolver um problema real de gestão comercial.
-			</p>
-		</div>
-	</div>
+    <!-- ─── HERO ──────────────────────────────────────────────────────────── -->
+    <section class="about-hero">
+        <div class="about-hero__inner">
+            <div class="about-hero__eyebrow">
+                <span class="about-badge">Trabalho de Conclusão de Curso · 2026</span>
+            </div>
+            <h1 class="about-hero__title">
+                Sistema Integrado de<br>
+                <span class="about-hero__accent">Gestão de Pedidos</span>
+            </h1>
+            <p class="about-hero__sub">
+                Uma solução web responsiva para digitalizar e estruturar o fluxo de pedidos comerciais entre representantes de vendas e empresas, desenvolvida com Python, Django e arquitetura MVT.
+            </p>
+            <div class="about-hero__meta">
+                <div class="about-meta-chip">
+                    <i class="fas fa-user-graduate"></i>
+                    Rômulo Jordão Bogoni
+                </div>
+                <div class="about-meta-chip">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    Orientador: Prof. Dr. Rafael Zottesso
+                </div>
+                <div class="about-meta-chip">
+                    <i class="fas fa-university"></i>
+                    IFPR · Campus Paranavaí
+                </div>
+            </div>
+        </div>
+    </section>
 
-	<div class="row">
-		<div class="col-12 col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">
-					<i class="fas fa-diagram-project me-1"></i>
-					Diagrama de caso de uso
-				</div>
-				<div class="card-body text-center">
-					<img
-						src="{% static 'assets/img/diagrama-de-casos-de-uso.png' %}"
-						class="img-fluid rounded border"
-						alt="Diagrama de caso de uso do SIGEP" style="height: 60vh"
-					/>
-				</div>
-			</div>
-		</div>
-		<div class="col-12 col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">
-					<i class="fas fa-sitemap me-1"></i>
-					Diagrama de classes
-				</div>
-				<div class="card-body text-center">
-					<img
-						src="{% static 'assets/img/diagrama-de-classes.png' %}"
-						class="img-fluid rounded border"
-						alt="Diagrama de classes do SIGEP" style="height: 60vh"
-					/>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+    <div class="about-content">
+
+        <!-- ─── RESUMO ──────────────────────────────────────────────────────── -->
+        <section class="about-section">
+            <div class="about-section__header">
+                <span class="about-section__label">Visão Geral</span>
+                <h2 class="about-section__title">O que é o SIGEP?</h2>
+            </div>
+            <div class="about-lead-grid">
+                <div class="about-lead-text">
+                    <p>
+                        O SIGEP propõe substituir processos manuais e informais de registro de pedidos — como planilhas e aplicativos de mensagens — por uma plataforma web integrada. O sistema organiza todo o ciclo de vida do pedido, desde o cadastro de produtos até a aprovação final pelo gerente.
+                    </p>
+                    <p>
+                        Desenvolvido como pesquisa aplicada no curso de Bacharelado em Engenharia de Software do IFPR, o projeto foi validado em quatro empresas que operam com representantes comerciais.
+                    </p>
+                </div>
+                <div class="about-lead-features">
+                    <div class="about-feature-item">
+                        <div class="about-feature-icon"><i class="fas fa-building"></i></div>
+                        <div>Cadastro de empresas, usuários e produtos</div>
+                    </div>
+                    <div class="about-feature-item">
+                        <div class="about-feature-icon"><i class="fas fa-dolly"></i></div>
+                        <div>Registro e gerenciamento de pedidos de entrada e saída</div>
+                    </div>
+                    <div class="about-feature-item">
+                        <div class="about-feature-icon"><i class="fas fa-boxes-stacked"></i></div>
+                        <div>Controle automático de estoque</div>
+                    </div>
+                    <div class="about-feature-item">
+                        <div class="about-feature-icon"><i class="fas fa-shield-halved"></i></div>
+                        <div>Controle de permissões por perfil de usuário</div>
+                    </div>
+                    <div class="about-feature-item">
+                        <div class="about-feature-icon"><i class="fas fa-timeline"></i></div>
+                        <div>Registro do ciclo de vida do pedido</div>
+                    </div>
+                    <div class="about-feature-item">
+                        <div class="about-feature-icon"><i class="fas fa-envelope"></i></div>
+                        <div>Notificações automatizadas por e-mail</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── PROBLEMA & JUSTIFICATIVA ───────────────────────────────────── -->
+        <section class="about-section about-section--alt">
+            <div class="about-two-col">
+                <div class="about-panel about-panel--problem">
+                    <div class="about-panel__icon"><i class="fas fa-triangle-exclamation"></i></div>
+                    <h3 class="about-panel__title">O Problema</h3>
+                    <p class="about-panel__text">
+                        Muitas empresas ainda controlam pedidos de forma manual — cadernos, planilhas, mensagens informais. Esse modelo gera falta de padronização, erros de cálculo, inconsistências no estoque, falhas de comunicação entre representantes e gestores, e baixa rastreabilidade do histórico de operações.
+                    </p>
+                    <div class="about-panel__question">
+                        <i class="fas fa-quote-left"></i>
+                        Como desenvolver um sistema web que permita a gestão integrada de pedidos, garantindo organização, controle de estoque, rastreabilidade e confiabilidade?
+                    </div>
+                </div>
+                <div class="about-panel about-panel--solution">
+                    <div class="about-panel__icon"><i class="fas fa-lightbulb"></i></div>
+                    <h3 class="about-panel__title">A Justificativa</h3>
+                    <p class="about-panel__text">
+                        Sob a perspectiva acadêmica, o projeto aplica conceitos centrais da Engenharia de Software: levantamento de requisitos, modelagem UML, regras de negócio e arquitetura MVT. Do ponto de vista prático, resolve problemas concretos em empresas comerciais, reduzindo erros operacionais e aumentando a agilidade no processo de vendas.
+                    </p>
+                    <p class="about-panel__text">
+                        O SIGEP foi validado em quatro empresas com operação real de representantes comerciais, demonstrando potencial de impacto mensurável na eficiência dos processos.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── REQUISITOS ──────────────────────────────────────────────────── -->
+        <section class="about-section">
+            <div class="about-section__header">
+                <span class="about-section__label">Especificação</span>
+                <h2 class="about-section__title">Requisitos do Sistema</h2>
+            </div>
+            <div class="about-req-grid">
+                <div class="about-req-group">
+                    <div class="about-req-group__header">
+                        <i class="fas fa-key"></i> Controle de Acesso
+                    </div>
+                    <ul class="about-req-list">
+                        <li><span class="about-req-id">RF01</span> Autenticação por login e senha</li>
+                        <li><span class="about-req-id">RF02</span> Admin master cadastra empresas</li>
+                        <li><span class="about-req-id">RF03</span> Cadastro de gerentes e representantes</li>
+                        <li><span class="about-req-id">RF04</span> Gerente cadastra representantes vinculados</li>
+                        <li><span class="about-req-id">RF05</span> Redefinição de senha via e-mail</li>
+                    </ul>
+                </div>
+                <div class="about-req-group">
+                    <div class="about-req-group__header">
+                        <i class="fas fa-box"></i> Produtos & Estoque
+                    </div>
+                    <ul class="about-req-list">
+                        <li><span class="about-req-id">RF06</span> Cadastro de produtos com código, nome, cor, preço e estoque</li>
+                        <li><span class="about-req-id">RF07</span> Bloqueio de pedido com estoque insuficiente</li>
+                        <li><span class="about-req-id">RF14</span> Baixa automática de estoque ao lançar pedido</li>
+                        <li><span class="about-req-id">RF15</span> Estorno de estoque ao cancelar pedido aprovado</li>
+                    </ul>
+                </div>
+                <div class="about-req-group">
+                    <div class="about-req-group__header">
+                        <i class="fas fa-file-invoice"></i> Pedidos
+                    </div>
+                    <ul class="about-req-list">
+                        <li><span class="about-req-id">RF09</span> Criação de pedidos em estado "Em Digitação"</li>
+                        <li><span class="about-req-id">RF10–11</span> Adição de produtos e cálculo automático de totais</li>
+                        <li><span class="about-req-id">RF12–13</span> Edição e duplicação de pedido</li>
+                        <li><span class="about-req-id">RF16–18</span> Visualização, aprovação e rejeição por perfil</li>
+                        <li><span class="about-req-id">RF08</span> Notificação por e-mail ao gerente</li>
+                    </ul>
+                </div>
+                <div class="about-req-group about-req-group--nfr">
+                    <div class="about-req-group__header">
+                        <i class="fas fa-gauge-high"></i> Não Funcionais
+                    </div>
+                    <ul class="about-req-list">
+                        <li><span class="about-req-id about-req-id--nfr">RNF01–03</span> Senhas criptografadas, HTTPS e controle por perfis</li>
+                        <li><span class="about-req-id about-req-id--nfr">RNF04–05</span> Resposta em até 3 s; cálculo em menos de 2 s</li>
+                        <li><span class="about-req-id about-req-id--nfr">RNF06–07</span> Interface responsiva com mensagens de erro claras</li>
+                        <li><span class="about-req-id about-req-id--nfr">RNF08–09</span> Integridade de dados e consistência de estoque</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── ARQUITETURA + TECNOLOGIAS ───────────────────────────────────── -->
+        <section class="about-section about-section--alt">
+            <div class="about-section__header">
+                <span class="about-section__label">Stack Técnica</span>
+                <h2 class="about-section__title">Arquitetura e Tecnologias</h2>
+            </div>
+
+            <div class="about-arch-block">
+                <div class="about-arch-diagram">
+                    <div class="about-arch-layer about-arch-layer--template">
+                        <span class="about-arch-layer__label">Template</span>
+                        <span class="about-arch-layer__desc">HTML5 · CSS3 · Bootstrap 5 · Manrope</span>
+                        <span class="about-arch-layer__note">Camada de apresentação — responsiva para web e mobile</span>
+                    </div>
+                    <div class="about-arch-arrow"><i class="fas fa-arrows-up-down"></i></div>
+                    <div class="about-arch-layer about-arch-layer--view">
+                        <span class="about-arch-layer__label">View</span>
+                        <span class="about-arch-layer__desc">Django · Python · Class-Based Views · Crispy Forms</span>
+                        <span class="about-arch-layer__note">Lógica de controle, regras de negócio e roteamento HTTP</span>
+                    </div>
+                    <div class="about-arch-arrow"><i class="fas fa-arrows-up-down"></i></div>
+                    <div class="about-arch-layer about-arch-layer--model">
+                        <span class="about-arch-layer__label">Model</span>
+                        <span class="about-arch-layer__desc">Django ORM · PostgreSQL · Neon Cloud</span>
+                        <span class="about-arch-layer__note">Persistência de dados com integridade transacional (ACID)</span>
+                    </div>
+                </div>
+                <div class="about-tech-list">
+                    <div class="about-tech-card">
+                        <div class="about-tech-card__icon"><i class="fab fa-python"></i></div>
+                        <div class="about-tech-card__body">
+                            <div class="about-tech-card__name">Python + Django</div>
+                            <div class="about-tech-card__desc">Framework MVT de alto nível com ORM, autenticação e painel admin nativos. Princípio DRY aplicado ao longo do projeto.</div>
+                        </div>
+                    </div>
+                    <div class="about-tech-card">
+                        <div class="about-tech-card__icon"><i class="fab fa-bootstrap"></i></div>
+                        <div class="about-tech-card__body">
+                            <div class="about-tech-card__name">Bootstrap 5</div>
+                            <div class="about-tech-card__desc">Sistema de grid responsivo e componentes visuais pré-construídos, garantindo usabilidade em desktops e dispositivos móveis.</div>
+                        </div>
+                    </div>
+                    <div class="about-tech-card">
+                        <div class="about-tech-card__icon"><i class="fas fa-database"></i></div>
+                        <div class="about-tech-card__body">
+                            <div class="about-tech-card__name">PostgreSQL (Neon)</div>
+                            <div class="about-tech-card__desc">Banco relacional com suporte a transações ACID, hospedado em nuvem. Garante integridade referencial entre entidades do sistema.</div>
+                        </div>
+                    </div>
+                    <div class="about-tech-card">
+                        <div class="about-tech-card__icon"><i class="fab fa-google"></i></div>
+                        <div class="about-tech-card__body">
+                            <div class="about-tech-card__name">Google Cloud Platform</div>
+                            <div class="about-tech-card__desc">Hospedagem em nuvem com alta disponibilidade, acesso remoto e escalabilidade, eliminando a necessidade de servidores físicos.</div>
+                        </div>
+                    </div>
+                    <div class="about-tech-card">
+                        <div class="about-tech-card__icon"><i class="fab fa-git-alt"></i></div>
+                        <div class="about-tech-card__body">
+                            <div class="about-tech-card__name">Git + GitHub</div>
+                            <div class="about-tech-card__desc">Controle de versão distribuído para rastreamento de alterações, histórico de desenvolvimento e organização das entregas.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── METODOLOGIA / TIMELINE ──────────────────────────────────────── -->
+        <section class="about-section">
+            <div class="about-section__header">
+                <span class="about-section__label">Processo</span>
+                <h2 class="about-section__title">Metodologia de Desenvolvimento</h2>
+            </div>
+            <div class="about-timeline">
+                <div class="about-timeline__item">
+                    <div class="about-timeline__marker">01</div>
+                    <div class="about-timeline__content">
+                        <h4>Definição do Problema e Escopo</h4>
+                        <p>Identificação e formalização do problema de gestão manual de pedidos. Delimitação do escopo para evitar <em>scope creep</em> e manter o foco nos objetivos centrais do projeto.</p>
+                    </div>
+                </div>
+                <div class="about-timeline__item">
+                    <div class="about-timeline__marker">02</div>
+                    <div class="about-timeline__content">
+                        <h4>Levantamento e Análise de Requisitos</h4>
+                        <p>Mapeamento dos perfis de usuário (Admin Master, Gerente e Representante) e coleta dos requisitos funcionais e não funcionais com base nas necessidades reais identificadas.</p>
+                    </div>
+                </div>
+                <div class="about-timeline__item">
+                    <div class="about-timeline__marker">03</div>
+                    <div class="about-timeline__content">
+                        <h4>Modelagem com Diagramas UML</h4>
+                        <p>Elaboração do Diagrama de Casos de Uso e do Diagrama de Classes para representar graficamente a estrutura e o comportamento do sistema antes da implementação.</p>
+                    </div>
+                </div>
+                <div class="about-timeline__item">
+                    <div class="about-timeline__marker">04</div>
+                    <div class="about-timeline__content">
+                        <h4>Implementação Backend e Frontend</h4>
+                        <p>Desenvolvimento do backend em Django (lógica de negócio, controle de permissões, integração com banco de dados) e do frontend responsivo com Bootstrap 5.</p>
+                    </div>
+                </div>
+                <div class="about-timeline__item">
+                    <div class="about-timeline__marker">05</div>
+                    <div class="about-timeline__content">
+                        <h4>Testes e Validação</h4>
+                        <p>Testes funcionais com verificação de aderência aos requisitos, testes de usabilidade e validação em quatro empresas com operação real de representantes comerciais.</p>
+                    </div>
+                </div>
+                <div class="about-timeline__item">
+                    <div class="about-timeline__marker">06</div>
+                    <div class="about-timeline__content">
+                        <h4>Implantação na Google Cloud</h4>
+                        <p>Deploy da aplicação em infraestrutura de nuvem com alta disponibilidade, garantindo acesso remoto ao sistema para representantes e gestores em qualquer localização.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── DIAGRAMAS ───────────────────────────────────────────────────── -->
+        <section class="about-section about-section--alt">
+            <div class="about-section__header">
+                <span class="about-section__label">Modelagem</span>
+                <h2 class="about-section__title">Diagramas UML</h2>
+                <p class="about-section__desc">Representações gráficas da estrutura e do comportamento do sistema, elaboradas na etapa de modelagem do projeto.</p>
+            </div>
+            <div class="about-diagrams-grid">
+                <div class="about-diagram-card">
+                    <div class="about-diagram-card__header">
+                        <i class="fas fa-diagram-project me-2"></i>
+                        Diagrama de Casos de Uso
+                    </div>
+                    <div class="about-diagram-card__body">
+                        <img
+                            src="{% static 'assets/img/diagrama-de-casos-de-uso.png' %}"
+                            class="about-diagram-img"
+                            alt="Diagrama de casos de uso do SIGEP — identifica as interações entre os perfis Admin, Gerente e Representante com as funcionalidades do sistema"
+                        />
+                    </div>
+                    <div class="about-diagram-card__caption">
+                        Identifica as interações entre os perfis de usuário (Admin, Gerente e Representante) e as funcionalidades do sistema.
+                    </div>
+                </div>
+                <div class="about-diagram-card">
+                    <div class="about-diagram-card__header">
+                        <i class="fas fa-sitemap me-2"></i>
+                        Diagrama de Classes
+                    </div>
+                    <div class="about-diagram-card__body">
+                        <img
+                            src="{% static 'assets/img/diagrama-de-classes.png' %}"
+                            class="about-diagram-img"
+                            alt="Diagrama de classes do SIGEP — representa as entidades Importadora, Produto, Pedido, Cliente, Parcela e seus relacionamentos"
+                        />
+                    </div>
+                    <div class="about-diagram-card__caption">
+                        Representa as entidades do domínio (Importadora, Produto, Pedido, Cliente, Parcela) e seus relacionamentos no banco de dados.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── SOBRE O AUTOR ───────────────────────────────────────────────── -->
+        <section class="about-section about-section--alt">
+            <div class="about-author-block">
+                <div class="about-author-avatar">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="about-author-info">
+                    <div class="about-author-label">Desenvolvido por</div>
+                    <div class="about-author-name">Rômulo Jordão Bogoni</div>
+                    <div class="about-author-course">Bacharelado em Engenharia de Software · IFPR Campus Paranavaí · 2026</div>
+                    <div class="about-author-advisors">
+                        <span><strong>Orientador:</strong> Prof. Dr. Rafael Zottesso</span>
+                        <span class="about-author-sep">·</span>
+                        <span><strong>Co-orientador:</strong> Prof. Dr. Evanise Caldas</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div><!-- /about-content -->
+</div><!-- /about-page -->
 {% endblock %}

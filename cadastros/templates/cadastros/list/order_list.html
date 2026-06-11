@@ -39,7 +39,6 @@
                     {% for order in order_list %}
                     <tr>
                         <td>{{ order.pk }}</td>
-                        <td>{{ order.company }}</td>
                         <td>{{ order.client }}</td>
                         <td>{{ order.get_payment_method_display }}</td>
                         <td>{{ order.total_value|floatformat:2 }}</td>
