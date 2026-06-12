@@ -18,6 +18,13 @@ from braces.views import GroupRequiredMixin
 class IndexView(TemplateView):
     template_name = "cadastros/index.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_clients"] = Client.objects.count()
+        context["total_products"] = Product.objects.count()
+        context["total_orders"] = Order.objects.count()
+        return context
+
 #BaseLogin
 class BaseLoginMixin(LoginRequiredMixin):
     login_url = reverse_lazy('login')
@@ -88,6 +95,22 @@ class ClientCreate(BaseLoginMixin, CreateView):
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
 
+    def get_success_url(self):
+        # Redirecionar para a página de detalhes do cliente criado passando o pk
+        return reverse_lazy("client-detail", kwargs={"pk": self.object.pk}) # kwargs significa "keyword arguments" ou "argumentos de palavra-chave", e é usado para passar argumentos nomeados para a função reverse_lazy. Nesse caso, estamos passando o pk do objeto criado para a URL de detalhes do cliente.
+
+    def form_valid(self, form):
+        # atribuir o usuário logado ao campo created_by do modelo Client
+        form.instance.created_by = self.request.user
+        # executa a criacao do objeto e faz o insert no banco
+        url_success = super().form_valid(form)
+        # a partir daqui consigo acessar o objeto criado atraves do self.object
+        # print(self.object)
+        # self.object.name = "Ok - " + self.object.name
+        # self.object.save()
+
+        return url_success
+
 class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     group_required = ['Manager']
     model = Client
@@ -96,6 +119,10 @@ class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
 
+    def get_queryset(self):
+        # queryset são consultas no banco de dados
+        return super().get_queryset().filter(created_by=self.request.user)
+    
 class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     group_required = ['Manager']
     model = Client
@@ -103,13 +130,32 @@ class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Excluir Cliente"}
 
+    def get_queryset(self):
+        # queryset são consultas no banco de dados
+        return super().get_queryset().filter(created_by=self.request.user)
+
 class ClientList(BaseLoginMixin, PaginatedListView):
     model = Client
     template_name = "cadastros/list/client_list.html"
 
+    def get_queryset(self):
+        # queryset são consultas no banco de dados
+        return super().get_queryset().filter(created_by=self.request.user)
+    
+    # Sobrescreve o método get_context_data para adicionar um novo contexto ao template, no caso, o total de clientes
+    # agora podemos mostrar o total de clientes na página de listagem de clientes, usando {{ total_clients }} no template
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_clients"] = self.get_queryset().count()
+        return context
+
 class ClientDetail(BaseLoginMixin, DetailView):
     model = Client
     template_name = "cadastros/detail/client_detail.html"
+
+    def get_queryset(self):
+        # queryset são consultas no banco de dados
+        return super().get_queryset().filter(created_by=self.request.user)
 
 
 # User Profile
@@ -167,6 +213,14 @@ class ProductList(BaseLoginMixin, PaginatedListView):
     model = Product
     template_name = "cadastros/list/product_list.html"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(company__manager=self.request.user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_products"] = self.get_queryset().count()
+        return context
+
 class ProductDetail(BaseLoginMixin, DetailView):
     model = Product
     template_name = "cadastros/detail/product_detail.html"
@@ -196,6 +250,14 @@ class OrderDelete(BaseLoginMixin, DeleteView):
 class OrderList(BaseLoginMixin, PaginatedListView):
     model = Order
     template_name = "cadastros/list/order_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(company__manager=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_orders"] = self.get_queryset().count()
+        return context
 
 class OrderDetail(BaseLoginMixin, DetailView):
     model = Order
