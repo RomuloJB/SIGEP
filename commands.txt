@@ -17,3 +17,5 @@ python manage.py createsuperuser
 pip install django-crispy-forms
 
 # Comando para fazer o deploy no Google Cloud
+gcloud app deploy
+Y
