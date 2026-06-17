@@ -20,12 +20,9 @@
             <!-- Sidebar Toggle-->
             <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
             <!-- Navbar Search-->
-            <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <div class="input-group">
-                    <input class="form-control" type="text" placeholder="Buscar..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-                    <button class="btn btn-success" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
-                </div>
-            </form>
+            <div class="input-group">
+                <p class="card-company-topnav ms-auto me-0 me-md-3 my-2 my-md-0">Empresa atual {{ request.session.company_name }}</p>
+            </div>
             <!-- Navbar-->
             {% block sidenav %}
             <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
@@ -33,7 +30,7 @@
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         {% if request.user.is_authenticated %}
-                            <li><span class="dropdown-item-text">Ola, {{ request.user.get_username }}</span></li>
+                            <li><span class="dropdown-item-text">Olá, {{ request.user.get_username }}</span></li>
                             <li><hr class="dropdown-divider" /></li>
                             <li class="dropdown-item">Alterar senha</li>
                             <li>
@@ -55,12 +52,12 @@
                     <div class="sb-sidenav-menu">
                         <div class="nav">
                             {% if request.user.is_authenticated %}
-                                <div class="sb-sidenav-menu-heading">Core</div>
+                                <div class="sb-sidenav-menu-heading">Início</div>
                                 <a class="nav-link" href="/">
                                     <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                                     Dashboard
                                 </a>
-                                <div class="sb-sidenav-menu-heading">Interface</div>
+                                <div class="sb-sidenav-menu-heading">Páginas</div>
                                 <a class="nav-link" href="{% url 'client-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                                     Clientes
@@ -74,7 +71,7 @@
                                     Pedidos
                                 </a>
 
-                                <div class="sb-sidenav-menu-heading">Addons</div>
+                                <div class="sb-sidenav-menu-heading">Adicionais</div>
                                 <a class="nav-link" href="{% url 'company-chart' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                                     Relatórios
