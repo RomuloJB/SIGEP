@@ -1,3 +1,5 @@
+from braces.views import LoginRequiredMixin
+from django.urls import reverse_lazy
 from django.views.generic import TemplateView
 from django.db.models import Sum
 from django.utils import timezone
@@ -37,10 +39,13 @@ class IndexView(TemplateView):
         
         return context
 
-class ContactView(TemplateView):
+class BaseLoginMixin(LoginRequiredMixin):
+    login_url = reverse_lazy('login')
+
+class ContactView(TemplateView, BaseLoginMixin):
     template_name = "website/contact.html"
 
-class AboutView(TemplateView):
+class AboutView(TemplateView, BaseLoginMixin):
     template_name = "website/startbootstrap-sigep/about.html"
 
 # erros
