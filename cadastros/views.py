@@ -234,12 +234,22 @@ class OrderCreate(BaseLoginMixin, CreateView):
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
 
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['client'].queryset = Client.objects.filter(created_by=self.request.user)
+        return form
+
 class OrderUpdate(BaseLoginMixin, UpdateView):
     model = Order
     fields = ["type", "company", "client", "payment_method", "total_value", "address"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['client'].queryset = Client.objects.filter(created_by=self.request.user)
+        return form
 
 class OrderDelete(BaseLoginMixin, DeleteView):
     model = Order

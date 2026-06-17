@@ -186,8 +186,6 @@
                                         <tr>
                                             <th>ID Pedido</th>
                                             <th>Cliente</th>
-                                            <th>Tipo</th>
-                                            <th>Pagamento</th>
                                             <th>Data</th>
                                             <th>Valor</th>
                                         </tr>
@@ -196,8 +194,6 @@
                                         <tr>
                                             <th>ID Pedido</th>
                                             <th>Cliente</th>
-                                            <th>Tipo</th>
-                                            <th>Pagamento</th>
                                             <th>Data</th>
                                             <th>Valor</th>
                                         </tr>
@@ -207,8 +203,6 @@
                                         <tr>
                                             <td>#{{ pedido.id }}</td>
                                             <td>{{ pedido.client.name|default:"Excluído/Não associado" }}</td>
-                                            <td>{{ pedido.get_type_display }}</td>
-                                            <td>{{ pedido.get_payment_method_display }}</td>
                                             <td>{{ pedido.created_at|date:"d/m/Y" }}</td>
                                             <td>R$ {{ pedido.total_value|floatformat:2 }}</td>
                                         </tr>
