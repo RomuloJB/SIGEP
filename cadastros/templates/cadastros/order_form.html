@@ -1,0 +1,158 @@
+{% extends "website/model.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'order-list' %}">Pedidos</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+{% endblock breadcrumb %}
+
+{% block content %}
+<div class="cadastros-shell">
+    <div class="cadastros-container">
+        <div class="cadastros-header">
+            <div>
+                <h1 class="cadastros-title">{{ title }}</h1>
+                <p class="cadastros-subtitle">Preencha os dados do pedido e adicione os produtos.</p>
+            </div>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form action="" method="POST" id="order-form">
+            {% csrf_token %}
+
+            {# ── Dados gerais do pedido ── #}
+            <div class="card cadastros-card mb-4">
+                <div class="card-header fw-semibold">Dados do pedido</div>
+                <div class="card-body">
+                    {{ form|crispy }}
+                </div>
+            </div>
+
+            {# ── Itens do pedido ── #}
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <span class="fw-semibold">Itens do pedido</span>
+                    <button type="button" class="btn btn-success btn-sm" id="btn-add-product">
+                        <i class="fas fa-plus me-1"></i> Adicionar produto
+                    </button>
+                </div>
+
+                <div class="card-body p-0">
+                    <table class="table table-striped align-middle mb-0" id="items-table">
+                        <thead class="table-light text-uppercase small">
+                            <tr>
+                                <th style="min-width:260px">Produto</th>
+                                <th style="min-width:90px">Estoque</th>
+                                <th style="min-width:110px">Qtd</th>
+                                <th style="min-width:120px" class="text-end">Vlr. unit.</th>
+                                <th style="min-width:130px" class="text-end">Total</th>
+                                <th style="width:48px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body">
+                            {# linhas inseridas via JS #}
+                        </tbody>
+                        <tfoot>
+                            <tr id="empty-row">
+                                <td colspan="6" class="text-center text-muted py-3 fst-italic">
+                                    Nenhum produto adicionado. Clique em "Adicionar produto".
+                                </td>
+                            </tr>
+                            <tr id="total-row" class="d-none table-light fw-bold">
+                                <td colspan="4" class="text-end">Total do pedido:</td>
+                                <td class="text-end" id="grand-total">R$ 0,00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            {# ── Ações ── #}
+            <div class="cadastros-actions">
+                <a href="{% url 'order-list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
+                <button type="submit" class="btn btn-success btnLoading" id="btn-save">
+                    Salvar Pedido
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Modal: selecionar produto ─────────────────────────────────────────── #}
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Selecionar produto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <input type="text" id="product-search" class="form-control"
+                           placeholder="Buscar por nome ou SKU…" autocomplete="off">
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="product-picker-table">
+                        <thead class="table-light small text-uppercase">
+                            <tr>
+                                <th>SKU</th>
+                                <th>Nome</th>
+                                <th>Unid.</th>
+                                <th class="text-end">Vlr. unit.</th>
+                                <th class="text-end">Estoque</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                            <tr class="product-row"
+                                data-id="{{ product.pk }}"
+                                data-name="{{ product.name }}"
+                                data-sku="{{ product.sku|default:'' }}"
+                                data-unit="{{ product.get_measure_unit_display }}"
+                                data-price="{{ product.unit_value|default:0 }}"
+                                data-stock="{{ product.stock|default:0 }}">
+                                <td class="small text-muted">{{ product.sku|default:"—" }}</td>
+                                <td>{{ product.name }}</td>
+                                <td class="small">{{ product.get_measure_unit_display }}</td>
+                                <td class="text-end">R$ {{ product.unit_value|default:0|floatformat:2 }}</td>
+                                <td class="text-end
+                                    {% if product.stock == 0 %}text-danger fw-bold
+                                    {% elif product.stock <= 5 %}text-warning fw-bold
+                                    {% endif %}">
+                                    {{ product.stock|default:0 }}
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-pick"
+                                            {% if product.stock == 0 %}disabled title="Sem estoque"{% endif %}>
+                                        Selecionar
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">Nenhum produto cadastrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="{% static 'js/order_form.js' %}"></script>
+{% endblock extra_js %}
+{% endblock %}

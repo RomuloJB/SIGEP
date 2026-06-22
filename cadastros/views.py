@@ -3,13 +3,14 @@ from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.urls import reverse_lazy
 from django.db.models import Sum
+from django.db import transaction
+from django.http import JsonResponse
+from django.views import View
 
-from .models import Company, Client, User_Profile, Order, Product
+from .models import Company, Client, User_Profile, Order, Product, ProductOrder
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
-
-# Adicionar um Mixin para verificar se tem alguma empresa na sessão, caso não tiver, enviar o usuario para a pagina de seleção de empresa
 
 # Define a permissão de um certo grupo para certas ações
 from braces.views import GroupRequiredMixin
@@ -96,19 +97,11 @@ class ClientCreate(BaseLoginMixin, CreateView):
     extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
 
     def get_success_url(self):
-        # Redirecionar para a página de detalhes do cliente criado passando o pk
-        return reverse_lazy("client-detail", kwargs={"pk": self.object.pk}) # kwargs significa "keyword arguments" ou "argumentos de palavra-chave", e é usado para passar argumentos nomeados para a função reverse_lazy. Nesse caso, estamos passando o pk do objeto criado para a URL de detalhes do cliente.
+        return reverse_lazy("client-detail", kwargs={"pk": self.object.pk})
 
     def form_valid(self, form):
-        # atribuir o usuário logado ao campo created_by do modelo Client
         form.instance.created_by = self.request.user
-        # executa a criacao do objeto e faz o insert no banco
         url_success = super().form_valid(form)
-        # a partir daqui consigo acessar o objeto criado atraves do self.object
-        # print(self.object)
-        # self.object.name = "Ok - " + self.object.name
-        # self.object.save()
-
         return url_success
 
 class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
@@ -120,7 +113,6 @@ class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
 
     def get_queryset(self):
-        # queryset são consultas no banco de dados
         return super().get_queryset().filter(created_by=self.request.user)
     
 class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
@@ -131,7 +123,6 @@ class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     extra_context = {"title": "Excluir Cliente"}
 
     def get_queryset(self):
-        # queryset são consultas no banco de dados
         return super().get_queryset().filter(created_by=self.request.user)
 
 class ClientList(BaseLoginMixin, PaginatedListView):
@@ -139,11 +130,8 @@ class ClientList(BaseLoginMixin, PaginatedListView):
     template_name = "cadastros/list/client_list.html"
 
     def get_queryset(self):
-        # queryset são consultas no banco de dados
         return super().get_queryset().filter(created_by=self.request.user)
     
-    # Sobrescreve o método get_context_data para adicionar um novo contexto ao template, no caso, o total de clientes
-    # agora podemos mostrar o total de clientes na página de listagem de clientes, usando {{ total_clients }} no template
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["total_clients"] = self.get_queryset().count()
@@ -154,7 +142,6 @@ class ClientDetail(BaseLoginMixin, DetailView):
     template_name = "cadastros/detail/client_detail.html"
 
     def get_queryset(self):
-        # queryset são consultas no banco de dados
         return super().get_queryset().filter(created_by=self.request.user)
 
 
@@ -226,11 +213,32 @@ class ProductDetail(BaseLoginMixin, DetailView):
     template_name = "cadastros/detail/product_detail.html"
 
 
-# Order
+# ─── API: retorna dados de um produto por pk ───────────────────────────────────
+class ProductDataView(BaseLoginMixin, View):
+    """Retorna JSON com dados de um produto para uso no formulário de pedido."""
+
+    def get(self, request, pk):
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return JsonResponse({"error": "Produto não encontrado."}, status=404)
+
+        return JsonResponse({
+            "id": product.pk,
+            "name": product.name,
+            "sku": product.sku,
+            "unit_value": product.unit_value or 0,
+            "stock": product.stock or 0,
+            "measure_unit": product.get_measure_unit_display(),
+        })
+
+
+# ─── Order ─────────────────────────────────────────────────────────────────────
+
 class OrderCreate(BaseLoginMixin, CreateView):
     model = Order
-    fields = ["type", "company", "client", "payment_method", "total_value", "address"]
-    template_name = "cadastros/form.html"
+    fields = ["type", "company", "client", "payment_method", "address"]
+    template_name = "cadastros/order_form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
 
@@ -238,6 +246,77 @@ class OrderCreate(BaseLoginMixin, CreateView):
         form = super().get_form(form_class)
         form.fields['client'].queryset = Client.objects.filter(created_by=self.request.user)
         return form
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Envia a lista de produtos disponíveis para o template popular o <select>
+        context["products"] = Product.objects.select_related("company").order_by("name")
+        return context
+
+    @transaction.atomic
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+
+        # Coleta os itens enviados pelo formulário dinâmico
+        product_ids = self.request.POST.getlist("product_id[]")
+        quantities = self.request.POST.getlist("quantity[]")
+
+        items = []
+        errors = []
+
+        for pid, qty_str in zip(product_ids, quantities):
+            try:
+                product = Product.objects.select_for_update().get(pk=int(pid))
+            except (Product.DoesNotExist, ValueError):
+                errors.append(f"Produto inválido (id={pid}).")
+                continue
+
+            try:
+                qty = int(qty_str)
+                if qty <= 0:
+                    raise ValueError
+            except ValueError:
+                errors.append(f"Quantidade inválida para o produto '{product.name}'.")
+                continue
+
+            if (product.stock or 0) < qty:
+                errors.append(
+                    f"Estoque insuficiente para '{product.name}': "
+                    f"disponível {product.stock}, solicitado {qty}."
+                )
+                continue
+
+            items.append((product, qty))
+
+        if errors:
+            # Devolve o formulário com as mensagens de erro
+            form.add_error(None, " | ".join(errors))
+            return self.form_invalid(form)
+
+        if not items:
+            form.add_error(None, "Adicione pelo menos um produto ao pedido.")
+            return self.form_invalid(form)
+
+        # Calcula o total e salva o Order
+        total = sum(p.unit_value * q for p, q in items)
+        form.instance.total_value = total
+        response = super().form_valid(form)  # salva self.object
+
+        # Cria os ProductOrder e baixa o estoque
+        for product, qty in items:
+            unit_val = product.unit_value or 0
+            ProductOrder.objects.create(
+                order=self.object,
+                product=product,
+                quantity=qty,
+                unit_value=unit_val,
+                total_value=unit_val * qty,
+            )
+            product.stock = (product.stock or 0) - qty
+            product.save(update_fields=["stock"])
+
+        return response
+
 
 class OrderUpdate(BaseLoginMixin, UpdateView):
     model = Order

@@ -6,6 +6,7 @@ from .views import (
     CompanyCreate, CompanyUpdate, CompanyDelete, CompanyList, CompanyDetail,
     # Client
     ClientCreate, ClientUpdate, ClientDelete, ClientList, ClientDetail,
+    ProductDataView,
     # User Profile
     UserProfileCreate, UserProfileUpdate, UserProfileDelete, UserProfileList, UserProfileDetail,
     # Order
@@ -51,4 +52,7 @@ urlpatterns = [
     path("product/<int:pk>/delete/", ProductDelete.as_view(), name="product-delete"),
     path("product/", ProductList.as_view(), name="product-list"),
     path("product/<int:pk>/", ProductDetail.as_view(), name="product-detail"),
+
+    # API auxiliar – dados de produto (usada pelo JS do formulário de pedido)
+    path("api/product/<int:pk>/", ProductDataView.as_view(), name="product-data"),
 ]
