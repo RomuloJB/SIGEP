@@ -1,3 +1,6 @@
+from urllib import request
+
+from django.db import models
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
@@ -16,19 +19,33 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from braces.views import GroupRequiredMixin
 
 
-class IndexView(TemplateView):
+#BaseLogin
+class BaseLoginMixin(LoginRequiredMixin):
+    login_url = reverse_lazy('login')
+
+
+# View que lista as ccompanhias para o usuário que pertence ao sales_rep veja e ative ela na sessão
+# Essa View adiciona na sessão o ID da company e um objeto self.company_active na view, sendo usado
+# como herança para outras views que precisam da company ativa do usuário. A company ativa é a primeira company que o usuário tem acesso, seja como gerente ou como representante de vendas.
+
+
+class IndexView(BaseLoginMixin, TemplateView):
     template_name = "cadastros/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["total_clients"] = Client.objects.count()
-        context["total_products"] = Product.objects.count()
-        context["total_orders"] = Order.objects.count()
+        # Se o usuário pertence ao grupo 'Manager', exibe o total de clientes, produtos e pedidos
+        if self.request.user.groups.filter(name='Manager').exists():
+            context["total_clients"] = Client.objects.all().count()
+            context["total_products"] = Product.objects.all().count()
+            context["total_orders"] = Order.objects.all().count()
+        else:
+            # Para outros usuários, exibe apenas os dados relacionados a eles
+            context["total_clients"] = Client.objects.filter(created_by=self.request.user).count()
+            context["total_products"] = Product.objects.filter(company__manager=self.request.user).count()
+            context["total_orders"] = Order.objects.filter(created_by=self.request.user).count()
         return context
-
-#BaseLogin
-class BaseLoginMixin(LoginRequiredMixin):
-    login_url = reverse_lazy('login')
+    
 
 # Listas Paginadas
 class PaginatedListView(ListView):
@@ -57,18 +74,34 @@ class PaginatedListView(ListView):
 class CompanyCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
     group_required = ['Manager']
     model = Company
-    fields = ["name", "description", "cnpj", "manager", "sales_rep"]
+    fields = ["name", "description", "cnpj", "sales_rep"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Cadastro de Empresa", "botao": "Criar Empresa"}
 
+    # Override do método form_valid para definir o usuário logado como o gerente da empresa criada
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        form.instance.manager.add(self.request.user)  # Adiciona o usuário logado como gerente
+        url_success = super().form_valid(form)
+        return url_success
+
 class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     group_required = ['Manager']
     model = Company
+    # manager fica aqui pois pode ter mais de um gerente. 
     fields = ["name", "description", "cnpj", "manager", "sales_rep"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
+
+    # No form_valid, não remova o created_by do manager, mas outras pessoas podem ser removidas
+    def form_valid(self, form):
+        # Garante que o usuário logado permaneça como gerente
+        if self.request.user not in form.instance.manager.all():
+            form.instance.manager.add(self.request.user)
+        return super().form_valid(form)
+    
 
 class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     group_required = ['Manager']
