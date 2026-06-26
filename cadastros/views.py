@@ -104,8 +104,7 @@ class ClientCreate(BaseLoginMixin, CreateView):
         url_success = super().form_valid(form)
         return url_success
 
-class ClientUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
-    group_required = ['Manager']
+class ClientUpdate(BaseLoginMixin, UpdateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
@@ -176,21 +175,24 @@ class UserProfileDetail(BaseLoginMixin, DetailView):
 
 
 # Product
-class ProductCreate(BaseLoginMixin, CreateView):
+class ProductCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
+    group_required = ['Manager']
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Cadastro de Produto", "botao": "Criar Produto"}
 
-class ProductUpdate(BaseLoginMixin, UpdateView):
+class ProductUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
+    group_required = ['Manager']
     model = Product
     fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Editar dados do Produto", "botao": "Atualizar Produto"}
 
-class ProductDelete(BaseLoginMixin, DeleteView):
+class ProductDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
+    group_required = ['Manager']
     model = Product
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("product-list")

@@ -16,6 +16,9 @@ python manage.py createsuperuser
 # Instalar a biblioteca Django Crispy Forms
 pip install django-crispy-forms
 
+# Antes do deploy gerar os arquivos estáticos com o comando abaixo
+python manage.py collectstatic
+
 # Comando para fazer o deploy no Google Cloud
 gcloud app deploy
 Y
