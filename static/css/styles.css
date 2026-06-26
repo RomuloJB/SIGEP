@@ -12217,3 +12217,470 @@ body {
         padding-left: 2.5rem;
     }
 }
+
+
+/* NOVO CSS */
+.cadastros-shell {
+    width: 100%;
+    padding: 1.5rem 0 2rem;
+}
+ 
+.cadastros-container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+ 
+/* Cabeçalho da página de cadastro */
+.cadastros-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+ 
+.cadastros-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--primary-color);
+    margin-bottom: .25rem;
+}
+ 
+.cadastros-subtitle {
+    color: #5f6f65;
+    font-size: .93rem;
+    margin-bottom: 0;
+}
+ 
+/* Card principal do formulário */
+.cadastros-card {
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+ 
+.cadastros-card .card-header {
+    background: rgba(1, 0, 39, 0.04);
+    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
+    font-weight: 700;
+    font-size: .92rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    padding: .85rem 1.25rem;
+}
+ 
+.cadastros-card .card-body {
+    padding: 1.5rem 1.5rem 1rem;
+}
+ 
+/* Inputs / selects / textareas dentro dos formulários de cadastro */
+.cadastros-form .form-label,
+.cadastros-card .form-label {
+    color: #274130;
+    font-weight: 600;
+    font-size: .92rem;
+    margin-bottom: .35rem;
+}
+ 
+.cadastros-form .form-control,
+.cadastros-form .form-select,
+.cadastros-card .form-control,
+.cadastros-card .form-select,
+.cadastros-card input,
+.cadastros-card select,
+.cadastros-card textarea {
+    border-radius: .85rem !important;
+    padding: .72rem .95rem !important;
+    border-color: rgba(25, 52, 33, 0.18);
+    font-size: .93rem;
+    transition: border-color .18s, box-shadow .18s;
+}
+ 
+.cadastros-form .form-control:focus,
+.cadastros-form .form-select:focus,
+.cadastros-card .form-control:focus,
+.cadastros-card .form-select:focus,
+.cadastros-card input:focus,
+.cadastros-card select:focus,
+.cadastros-card textarea:focus {
+    border-color: #2f7d37;
+    box-shadow: 0 0 0 .2rem rgba(47, 125, 55, .14);
+    outline: none;
+}
+ 
+/* Alertas dentro do shell de cadastro */
+.cadastros-shell .alert {
+    border-radius: 1rem;
+    font-size: .93rem;
+    margin-bottom: 1.25rem;
+}
+ 
+/* Área de botões de ação */
+.cadastros-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: .75rem;
+    padding-top: 1.25rem;
+    margin-top: .5rem;
+    border-top: 1px solid rgba(25, 52, 33, 0.08);
+}
+ 
+/* Botões dentro das actions e dentro dos cards */
+.cadastros-actions .btn,
+.cadastros-card .btn {
+    border-radius: .85rem;
+    padding: .65rem 1.4rem;
+    font-weight: 700;
+    font-size: .92rem;
+}
+ 
+/* Botão Salvar primário (verde, alinhado ao login) */
+.cadastros-actions .btn-success {
+    background-color: #2f7d37;
+    border-color: #2f7d37;
+}
+ 
+.cadastros-actions .btn-success:hover {
+    background-color: #256b2d;
+    border-color: #256b2d;
+}
+ 
+/* ------------------------------------------------------------------
+   FORMULÁRIO DE PEDIDO — card de itens e tabela interna
+   Usado em: order_form.html
+   ------------------------------------------------------------------ */
+ 
+/* Card dos itens (não usa .cadastros-card, mas deve ter visual similar) */
+#order-form .card {
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+ 
+#order-form .card-header {
+    background: rgba(1, 0, 39, 0.04);
+    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
+    font-size: .92rem;
+    letter-spacing: .03em;
+    color: var(--primary-color);
+    padding: .85rem 1.25rem;
+}
+ 
+/* Inputs de quantidade que ficam dentro das linhas da tabela */
+#items-body input[type="number"] {
+    border-radius: .65rem !important;
+    padding: .45rem .65rem !important;
+    border-color: rgba(25, 52, 33, 0.18);
+    font-size: .9rem;
+}
+ 
+#items-body input[type="number"]:focus {
+    border-color: #2f7d37;
+    box-shadow: 0 0 0 .18rem rgba(47, 125, 55, .14);
+}
+ 
+/* ------------------------------------------------------------------
+   MODAL DE SELEÇÃO DE PRODUTO
+   Usado em: order_form.html
+   ------------------------------------------------------------------ */
+ 
+#productModal .modal-content {
+    border-radius: 1.25rem;
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+ 
+#productModal .modal-header {
+    background: rgba(1, 0, 39, 0.04);
+    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
+    padding: 1rem 1.5rem;
+}
+ 
+#productModal .modal-title {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--primary-color);
+    letter-spacing: -.01em;
+}
+ 
+#productModal #product-search {
+    border-radius: .85rem !important;
+    padding: .72rem .95rem !important;
+    border-color: rgba(25, 52, 33, 0.18);
+    font-size: .93rem;
+}
+ 
+#productModal #product-search:focus {
+    border-color: #2f7d37;
+    box-shadow: 0 0 0 .2rem rgba(47, 125, 55, .14);
+}
+ 
+#productModal .btn-outline-primary {
+    border-radius: .65rem;
+    font-weight: 700;
+    font-size: .82rem;
+    padding: .32rem .85rem;
+}
+ 
+ 
+/* ==================================================================
+   LISTAGENS — shell, header, card com tabela, paginação, filtros
+   Usado em: client_list.html | company_list.html | order_list.html
+             product_list.html | userprofile_list.html
+   ================================================================== */
+ 
+.list-shell {
+    width: 100%;
+    padding: 1.5rem 0 2rem;
+}
+ 
+.list-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+ 
+/* Cabeçalho da listagem (título + botão Novo) */
+.list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+ 
+.list-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--primary-color);
+    margin-bottom: 0;
+}
+ 
+.list-subtitle {
+    color: #5f6f65;
+    font-size: .93rem;
+    margin-bottom: 0;
+}
+ 
+.list-header .btn-novo {
+    border-radius: .85rem;
+    padding: .6rem 1.3rem;
+    font-weight: 700;
+    font-size: .9rem;
+    white-space: nowrap;
+}
+ 
+/* Barra de pesquisa / filtros */
+.list-filters {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.1rem;
+}
+ 
+.list-filters .form-control,
+.list-filters .form-select {
+    border-radius: .85rem !important;
+    padding: .62rem .95rem !important;
+    border-color: rgba(25, 52, 33, 0.18);
+    font-size: .9rem;
+}
+ 
+.list-filters .form-control:focus,
+.list-filters .form-select:focus {
+    border-color: #2f7d37;
+    box-shadow: 0 0 0 .2rem rgba(47, 125, 55, .14);
+}
+ 
+.list-filters .btn {
+    border-radius: .85rem;
+    padding: .6rem 1.1rem;
+    font-weight: 700;
+    font-size: .9rem;
+}
+ 
+/* Badge "filtro ativo" */
+.list-filter-active {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .25rem .75rem;
+    border-radius: 2rem;
+    background: rgba(47, 125, 55, .1);
+    color: #2f7d37;
+    font-size: .82rem;
+    font-weight: 700;
+}
+ 
+.list-filter-active a {
+    color: #2f7d37;
+    text-decoration: none;
+    line-height: 1;
+}
+ 
+/* Card que envolve a tabela */
+.list-card {
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+ 
+.list-card .card-header {
+    background: rgba(1, 0, 39, 0.04);
+    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
+    font-weight: 700;
+    font-size: .9rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: var(--primary-color);
+    padding: .85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+ 
+/* Tabela dentro do card */
+.list-card .table {
+    margin-bottom: 0;
+    font-size: .9rem;
+}
+ 
+.list-card .table thead th {
+    background: transparent;
+    color: #5f6f65;
+    font-weight: 700;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .055em;
+    padding: .8rem 1rem;
+    border-bottom: 2px solid rgba(25, 52, 33, 0.10);
+    white-space: nowrap;
+}
+ 
+.list-card .table tbody tr {
+    transition: background .12s;
+}
+ 
+.list-card .table tbody tr:hover {
+    background: rgba(47, 125, 55, .04);
+}
+ 
+.list-card .table tbody td {
+    padding: .75rem 1rem;
+    vertical-align: middle;
+    border-color: rgba(25, 52, 33, 0.07);
+    color: #1a2820;
+}
+ 
+/* Estado vazio */
+.list-card .list-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: #8a9e91;
+    font-size: .95rem;
+}
+ 
+/* Botões de ação por linha (View / Edit / Delete) */
+.list-card .btn-row {
+    border-radius: .65rem;
+    padding: .28rem .75rem;
+    font-size: .8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+ 
+/* Paginação */
+.list-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 1.25rem 0 .5rem;
+}
+ 
+.list-pagination .page-link {
+    border-radius: .65rem !important;
+    margin: 0 .15rem;
+    border-color: rgba(25, 52, 33, 0.15);
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: .88rem;
+    padding: .38rem .75rem;
+}
+ 
+.list-pagination .page-link:hover {
+    background: rgba(47, 125, 55, .08);
+    border-color: #2f7d37;
+    color: #2f7d37;
+}
+ 
+.list-pagination .page-item.active .page-link {
+    background-color: #2f7d37;
+    border-color: #2f7d37;
+    color: #fff;
+}
+ 
+.list-pagination .page-item.disabled .page-link {
+    color: #adb5bd;
+    border-color: rgba(25, 52, 33, 0.08);
+}
+ 
+ 
+/* ==================================================================
+   RESPONSIVIDADE GERAL
+   ================================================================== */
+ 
+@media (max-width: 767.98px) {
+    .cadastros-container,
+    .list-container {
+        padding: 0 .85rem;
+    }
+ 
+    .cadastros-card .card-body {
+        padding: 1.1rem 1rem .85rem;
+    }
+ 
+    .cadastros-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+ 
+    .cadastros-actions .btn {
+        text-align: center;
+    }
+ 
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+ 
+    .list-header .btn-novo {
+        width: 100%;
+        text-align: center;
+    }
+ 
+    .list-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+ 
+    .list-filters .btn {
+        width: 100%;
+        text-align: center;
+    }
+ 
+    .list-card .table thead th,
+    .list-card .table tbody td {
+        padding: .6rem .65rem;
+        font-size: .82rem;
+    }
+}

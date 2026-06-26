@@ -2,116 +2,135 @@
 {% load static %}
 
 {% block breadcrumb %}
-	<li class="breadcrumb-item"><a href="{% url 'order-list' %}">Pedidos</a></li>
-	<li class="breadcrumb-item active" aria-current="page">Pedido #{{ object.pk }}</li>
+    <li class="breadcrumb-item"><a href="{% url 'order-list' %}">Pedidos</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Pedido #{{ object.pk }}</li>
 {% endblock breadcrumb %}
 
 {% block cadastros_content %}
-<div class="d-flex align-items-center justify-content-between mb-3">
-	<h2 class="mb-0">Pedido #{{ object.pk }}</h2>
-	<div class="d-flex gap-2">
-		<a class="btn btn-outline-secondary" href="{% url 'order-list' %}">Voltar</a>
-		<a class="btn btn-outline-primary" href="{% url 'order-update' object.pk %}">Editar</a>
-		<a class="btn btn-outline-danger" href="{% url 'order-delete' object.pk %}">Excluir</a>
-	</div>
+<div class="list-header mb-4">
+    <div>
+        <h1 class="list-title">Pedido #{{ object.pk }}</h1>
+        <div class="list-subtitle">{{ object.client.name }} — {{ object.get_type_display }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-novo" href="{% url 'order-list' %}">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+        <a class="btn btn-outline-primary btn-novo" href="{% url 'order-update' object.pk %}">
+            <i class="fas fa-pen-to-square me-1"></i> Editar
+        </a>
+        <a class="btn btn-outline-danger btn-novo" href="{% url 'order-delete' object.pk %}">
+            <i class="fas fa-trash me-1"></i> Excluir
+        </a>
+    </div>
 </div>
 
-<div class="row">
-	<div class="col-lg-6">
-		<div class="card mb-4">
-			<div class="card-header">Dados do pedido</div>
-			<div class="card-body p-0">
-				<table class="table mb-0">
-					<tbody>
-						<tr>
-							<th class="w-50">Tipo</th>
-							<td>{{ object.get_type_display }}</td>
-						</tr>
-						<tr>
-							<th>Empresa</th>
-							<td>{{ object.company.name }}</td>
-						</tr>
-						<tr>
-							<th>Cliente</th>
-							<td>{{ object.client.name }}</td>
-						</tr>
-						<tr>
-							<th>Método de pagamento</th>
-							<td>{{ object.get_payment_method_display }}</td>
-						</tr>
-						<tr>
-							<th>Valor total (pedido)</th>
-							<td>R$ {{ object.total_value|floatformat:2 }}</td>
-						</tr>
-						<tr>
-							<th>Endereço</th>
-							<td>{{ object.address }}</td>
-						</tr>
-						<tr>
-							<th>Criado por</th>
-							<td>{{ object.created_by }}</td>
-						</tr>
-						<tr>
-							<th>Criado em</th>
-							<td>{{ object.created_at }}</td>
-						</tr>
-						<tr>
-							<th>Atualizado em</th>
-							<td>{{ object.updated_at }}</td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card list-card h-100">
+            <div class="card-header">
+                <i class="fas fa-file-invoice me-1"></i> Dados do pedido
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="w-50">Tipo</th>
+                            <td>{{ object.get_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Empresa</th>
+                            <td>{{ object.company.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cliente</th>
+                            <td>
+                                <a href="{% url 'client-detail' object.client.pk %}" class="text-decoration-none">
+                                    {{ object.client.name }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Método de pagamento</th>
+                            <td>{{ object.get_payment_method_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>Valor total (pedido)</th>
+                            <td class="fw-semibold">R$ {{ object.total_value|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Endereço</th>
+                            <td>{{ object.address }}</td>
+                        </tr>
+                        <tr>
+                            <th>Criado por</th>
+                            <td>{{ object.created_by }}</td>
+                        </tr>
+                        <tr>
+                            <th>Criado em</th>
+                            <td>{{ object.created_at }}</td>
+                        </tr>
+                        <tr>
+                            <th>Atualizado em</th>
+                            <td>{{ object.updated_at }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-	<div class="col-lg-6">
-		<div class="card mb-4">
-			<div class="card-header">Resumo de itens</div>
-			<div class="card-body">
-				<div class="d-flex align-items-center justify-content-between">
-					<span>Total (itens)</span>
-					<strong>R$ {{ product_orders_total|floatformat:2 }}</strong>
-				</div>
-				<div class="text-muted small mt-2">
-					Observação: este total é a soma dos itens cadastrados em ProductOrder.
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="col-lg-6">
+        <div class="card list-card h-100">
+            <div class="card-header">
+                <i class="fas fa-calculator me-1"></i> Resumo de itens
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Total (itens)</span>
+                    <strong class="fs-5">R$ {{ product_orders_total|floatformat:2 }}</strong>
+                </div>
+                <div class="list-subtitle mt-2">
+                    Soma dos itens cadastrados em ProductOrder para este pedido.
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card mb-4">
-	<div class="card-header">Itens do pedido</div>
-	<div class="card-body p-0">
-		<table class="table table-striped mb-0">
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>SKU</th>
-					<th>Produto</th>
-					<th class="text-end">Qtd</th>
-					<th class="text-end">Vlr. unit.</th>
-					<th class="text-end">Total</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for item in product_orders %}
-				<tr>
-					<td>{{ item.pk }}</td>
-					<td>{{ item.product.sku }}</td>
-					<td>{{ item.product.name }}</td>
-					<td class="text-end">{{ item.quantity }}</td>
-					<td class="text-end">{{ item.unit_value|floatformat:2 }}</td>
-					<td class="text-end">{{ item.total_value|floatformat:2 }}</td>
-				</tr>
-				{% empty %}
-				<tr>
-					<td colspan="6" class="text-center text-muted py-4">Nenhum item cadastrado para este pedido.</td>
-				</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	</div>
+<div class="card list-card mb-4">
+    <div class="card-header">
+        <i class="fas fa-boxes-stacked me-1"></i> Itens do pedido
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>SKU</th>
+                    <th>Produto</th>
+                    <th class="text-end">Qtd</th>
+                    <th class="text-end">Vlr. unit.</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in product_orders %}
+                <tr>
+                    <td>{{ item.pk }}</td>
+                    <td class="text-muted small">{{ item.product.sku }}</td>
+                    <td>{{ item.product.name }}</td>
+                    <td class="text-end">{{ item.quantity }}</td>
+                    <td class="text-end">R$ {{ item.unit_value|floatformat:2 }}</td>
+                    <td class="text-end fw-semibold">R$ {{ item.total_value|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="list-empty">Nenhum item cadastrado para este pedido.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock cadastros_content %}
