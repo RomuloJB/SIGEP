@@ -14,6 +14,7 @@ from .models import Company, Client, User_Profile, Order, Product, ProductOrder
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
+from usuarios.views import ActiveCompanyRequiredMixin
 
 # Define a permissão de um certo grupo para certas ações
 from braces.views import GroupRequiredMixin
@@ -29,21 +30,15 @@ class BaseLoginMixin(LoginRequiredMixin):
 # como herança para outras views que precisam da company ativa do usuário. A company ativa é a primeira company que o usuário tem acesso, seja como gerente ou como representante de vendas.
 
 
-class IndexView(BaseLoginMixin, TemplateView):
+class IndexView(ActiveCompanyRequiredMixin, TemplateView):
     template_name = "cadastros/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Se o usuário pertence ao grupo 'Manager', exibe o total de clientes, produtos e pedidos
-        if self.request.user.groups.filter(name='Manager').exists():
-            context["total_clients"] = Client.objects.all().count()
-            context["total_products"] = Product.objects.all().count()
-            context["total_orders"] = Order.objects.all().count()
-        else:
-            # Para outros usuários, exibe apenas os dados relacionados a eles
-            context["total_clients"] = Client.objects.filter(created_by=self.request.user).count()
-            context["total_products"] = Product.objects.filter(company__manager=self.request.user).count()
-            context["total_orders"] = Order.objects.filter(created_by=self.request.user).count()
+        # Exibe os totais relacionados à empresa ativa selecionada
+        context["total_clients"] = Client.objects.filter(company=self.active_company).count()
+        context["total_products"] = Product.objects.filter(company=self.active_company).count()
+        context["total_orders"] = Order.objects.filter(company=self.active_company).count()
         return context
     
 
@@ -82,9 +77,9 @@ class CompanyCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
     # Override do método form_valid para definir o usuário logado como o gerente da empresa criada
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        form.instance.manager.add(self.request.user)  # Adiciona o usuário logado como gerente
-        url_success = super().form_valid(form)
-        return url_success
+        response = super().form_valid(form)
+        self.object.manager.add(self.request.user)  # Adiciona o usuário logado como gerente após salvar o ID
+        return response
 
 class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     group_required = ['Manager']
@@ -94,6 +89,9 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
+
+    def get_queryset(self):
+        return super().get_queryset().filter(manager=self.request.user).distinct()
 
     # No form_valid, não remova o created_by do manager, mas outras pessoas podem ser removidas
     def form_valid(self, form):
@@ -110,19 +108,28 @@ class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Excluir Empresa"}
 
+    def get_queryset(self):
+        return super().get_queryset().filter(manager=self.request.user).distinct()
+
 class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
     group_required = ['Manager']
     model = Company
     template_name = "cadastros/list/company_list.html"
+
+    def get_queryset(self):
+        return super().get_queryset().filter(manager=self.request.user).distinct()
 
 class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
     group_required = ['Manager']
     model = Company
     template_name = "cadastros/detail/company_detail.html"
 
+    def get_queryset(self):
+        return super().get_queryset().filter(manager=self.request.user).distinct()
+
 
 # Client
-class ClientCreate(BaseLoginMixin, CreateView):
+class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
@@ -134,47 +141,34 @@ class ClientCreate(BaseLoginMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        url_success = super().form_valid(form)
-        return url_success
+        return super().form_valid(form)
 
-class ClientUpdate(BaseLoginMixin, UpdateView):
+class ClientUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Client
     fields = ["name", "cnpj_cpf", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
-
-    def get_queryset(self):
-        return super().get_queryset().filter(created_by=self.request.user)
     
-class ClientDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
+class ClientDelete(GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
     group_required = ['Manager']
     model = Client
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Excluir Cliente"}
 
-    def get_queryset(self):
-        return super().get_queryset().filter(created_by=self.request.user)
-
-class ClientList(BaseLoginMixin, PaginatedListView):
+class ClientList(ActiveCompanyRequiredMixin, PaginatedListView):
     model = Client
     template_name = "cadastros/list/client_list.html"
-
-    def get_queryset(self):
-        return super().get_queryset().filter(created_by=self.request.user)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["total_clients"] = self.get_queryset().count()
         return context
 
-class ClientDetail(BaseLoginMixin, DetailView):
+class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Client
     template_name = "cadastros/detail/client_detail.html"
-
-    def get_queryset(self):
-        return super().get_queryset().filter(created_by=self.request.user)
 
 
 # User Profile
@@ -208,53 +202,50 @@ class UserProfileDetail(BaseLoginMixin, DetailView):
 
 
 # Product
-class ProductCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
+class ProductCreate(GroupRequiredMixin, ActiveCompanyRequiredMixin, CreateView):
     group_required = ['Manager']
     model = Product
-    fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
+    fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Cadastro de Produto", "botao": "Criar Produto"}
 
-class ProductUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
+class ProductUpdate(GroupRequiredMixin, ActiveCompanyRequiredMixin, UpdateView):
     group_required = ['Manager']
     model = Product
-    fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit", "company"]
+    fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Editar dados do Produto", "botao": "Atualizar Produto"}
 
-class ProductDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
+class ProductDelete(GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
     group_required = ['Manager']
     model = Product
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Excluir Produto"}
 
-class ProductList(BaseLoginMixin, PaginatedListView):
+class ProductList(ActiveCompanyRequiredMixin, PaginatedListView):
     model = Product
     template_name = "cadastros/list/product_list.html"
-
-    def get_queryset(self):
-        return super().get_queryset().filter(company__manager=self.request.user)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["total_products"] = self.get_queryset().count()
         return context
 
-class ProductDetail(BaseLoginMixin, DetailView):
+class ProductDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Product
     template_name = "cadastros/detail/product_detail.html"
 
 
 # ─── API: retorna dados de um produto por pk ───────────────────────────────────
-class ProductDataView(BaseLoginMixin, View):
+class ProductDataView(ActiveCompanyRequiredMixin, View):
     """Retorna JSON com dados de um produto para uso no formulário de pedido."""
 
     def get(self, request, pk):
         try:
-            product = Product.objects.get(pk=pk)
+            product = Product.objects.get(pk=pk, company=self.active_company)
         except Product.DoesNotExist:
             return JsonResponse({"error": "Produto não encontrado."}, status=404)
 
@@ -270,22 +261,17 @@ class ProductDataView(BaseLoginMixin, View):
 
 # ─── Order ─────────────────────────────────────────────────────────────────────
 
-class OrderCreate(BaseLoginMixin, CreateView):
+class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
     model = Order
-    fields = ["type", "company", "client", "payment_method", "address"]
+    fields = ["type", "client", "payment_method", "address"]
     template_name = "cadastros/order_form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields['client'].queryset = Client.objects.filter(created_by=self.request.user)
-        return form
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Envia a lista de produtos disponíveis para o template popular o <select>
-        context["products"] = Product.objects.select_related("company").order_by("name")
+        # Envia a lista de produtos disponíveis da empresa ativa para o template popular o <select>
+        context["products"] = Product.objects.filter(company=self.active_company).order_by("name")
         return context
 
     @transaction.atomic
@@ -301,7 +287,8 @@ class OrderCreate(BaseLoginMixin, CreateView):
 
         for pid, qty_str in zip(product_ids, quantities):
             try:
-                product = Product.objects.select_for_update().get(pk=int(pid))
+                # Restringir produtos à empresa ativa por segurança
+                product = Product.objects.select_for_update().get(pk=int(pid), company=self.active_company)
             except (Product.DoesNotExist, ValueError):
                 errors.append(f"Produto inválido (id={pid}).")
                 continue
@@ -353,37 +340,29 @@ class OrderCreate(BaseLoginMixin, CreateView):
         return response
 
 
-class OrderUpdate(BaseLoginMixin, UpdateView):
+class OrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Order
-    fields = ["type", "company", "client", "payment_method", "total_value", "address"]
+    fields = ["type", "client", "payment_method", "total_value", "address"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        form.fields['client'].queryset = Client.objects.filter(created_by=self.request.user)
-        return form
-
-class OrderDelete(BaseLoginMixin, DeleteView):
+class OrderDelete(ActiveCompanyRequiredMixin, DeleteView):
     model = Order
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Excluir Pedido"}
 
-class OrderList(BaseLoginMixin, PaginatedListView):
+class OrderList(ActiveCompanyRequiredMixin, PaginatedListView):
     model = Order
     template_name = "cadastros/list/order_list.html"
-
-    def get_queryset(self):
-        return super().get_queryset().filter(company__manager=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["total_orders"] = self.get_queryset().count()
         return context
 
-class OrderDetail(BaseLoginMixin, DetailView):
+class OrderDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Order
     template_name = "cadastros/detail/order_detail.html"
 

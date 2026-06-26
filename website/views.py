@@ -5,31 +5,33 @@ from django.db.models import Sum
 from django.utils import timezone
 from cadastros.models import Order, Client
 
-class IndexView(TemplateView):
+from usuarios.views import ActiveCompanyRequiredMixin
+
+class IndexView(ActiveCompanyRequiredMixin, TemplateView):
     template_name = "website/model.html"
 
- 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
-        # 1. Total em vendas
-        total_vendas = Order.objects.aggregate(total=Sum('total_value'))['total'] or 0
+        # 1. Total em vendas (da empresa ativa)
+        total_vendas = Order.objects.filter(company=self.active_company).aggregate(total=Sum('total_value'))['total'] or 0
         
-        # 2. Vendas neste mês
+        # 2. Vendas neste mês (da empresa ativa)
         hoje = timezone.now()
         vendas_mes = Order.objects.filter(
+            company=self.active_company,
             created_at__year=hoje.year,
             created_at__month=hoje.month
         ).aggregate(total=Sum('total_value'))['total'] or 0
         
-        # 3. Quantidade de vendas (total de pedidos)
-        qtd_vendas = Order.objects.count()
+        # 3. Quantidade de vendas (total de pedidos da empresa ativa)
+        qtd_vendas = Order.objects.filter(company=self.active_company).count()
         
-        # 4. Quantidade de clientes
-        qtd_clientes = Client.objects.count()
+        # 4. Quantidade de clientes (da empresa ativa)
+        qtd_clientes = Client.objects.filter(company=self.active_company).count()
 
-        # Extra: Pega os últimos 10 pedidos para preencher aquela tabela do final
-        ultimos_pedidos = Order.objects.select_related('client').order_by('-created_at')[:10]
+        # Extra: Pega os últimos 10 pedidos da empresa ativa
+        ultimos_pedidos = Order.objects.filter(company=self.active_company).select_related('client').order_by('-created_at')[:10]
         
         context['total_vendas'] = total_vendas
         context['vendas_mes'] = vendas_mes

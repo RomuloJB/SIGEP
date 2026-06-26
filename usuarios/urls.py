@@ -1,5 +1,6 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
+from .views import SelectCompanyView, ActivateCompanyView
 
 urlpatterns = [
     path("login/", auth_views.LoginView.as_view(
@@ -10,4 +11,6 @@ urlpatterns = [
     path("password-change/", auth_views.PasswordChangeView.as_view(
         template_name = 'usuarios/password_change.html'
     ), name="password-change"),
+    path("select-company/", SelectCompanyView.as_view(), name="select-company"),
+    path("activate-company/<int:pk>/", ActivateCompanyView.as_view(), name="activate-company"),
 ]
