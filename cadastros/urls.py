@@ -13,6 +13,8 @@ from .views import (
     OrderCreate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
     # Product
     ProductCreate, ProductUpdate, ProductDelete, ProductList, ProductDetail,
+    # ProductOrder
+    ProductOrderCreate, ProductOrderUpdate, ProductOrderDelete, ProductOrderList, ProductOrderDetail,
 )
 
 urlpatterns = [
@@ -55,4 +57,11 @@ urlpatterns = [
 
     # API auxiliar – dados de produto (usada pelo JS do formulário de pedido)
     path("api/product/<int:pk>/", ProductDataView.as_view(), name="product-data"),
+
+    # ProductOrder (Item de Pedido)
+    path("productorder/create/", ProductOrderCreate.as_view(), name="productorder-create"),
+    path("productorder/<int:pk>/update/", ProductOrderUpdate.as_view(), name="productorder-update"),
+    path("productorder/<int:pk>/delete/", ProductOrderDelete.as_view(), name="productorder-delete"),
+    path("productorder/", ProductOrderList.as_view(), name="productorder-list"),
+    path("productorder/<int:pk>/", ProductOrderDetail.as_view(), name="productorder-detail"),
 ]

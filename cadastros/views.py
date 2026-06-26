@@ -131,7 +131,7 @@ class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
 # Client
 class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
     model = Client
-    fields = ["name", "cnpj_cpf", "uf"]
+    fields = ["name", "cnpj_cpf", "address", "city", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
@@ -145,7 +145,7 @@ class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
 
 class ClientUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Client
-    fields = ["name", "cnpj_cpf", "uf"]
+    fields = ["name", "cnpj_cpf", "address", "city", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
@@ -179,12 +179,44 @@ class UserProfileCreate(BaseLoginMixin, CreateView):
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
 
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
 class UserProfileUpdate(BaseLoginMixin, UpdateView):
     model = User_Profile
     fields = ["name", "phone", "cpf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get('pk')
+        if pk:
+            try:
+                profile = User_Profile.objects.get(pk=pk)
+                if profile.user == self.request.user:
+                    profile, created = User_Profile.objects.get_or_create(
+                        user=self.request.user,
+                        defaults={
+                            "name": self.request.user.get_full_name() or self.request.user.username,
+                            "phone": "",
+                            "cpf": ""
+                        }
+                    )
+                return profile
+            except User_Profile.DoesNotExist:
+                pass
+        
+        profile, created = User_Profile.objects.get_or_create(
+            user=self.request.user,
+            defaults={
+                "name": self.request.user.get_full_name() or self.request.user.username,
+                "phone": "",
+                "cpf": ""
+            }
+        )
+        return profile
 
 class UserProfileDelete(BaseLoginMixin, DeleteView):
     model = User_Profile
@@ -199,6 +231,34 @@ class UserProfileList(BaseLoginMixin, PaginatedListView):
 class UserProfileDetail(BaseLoginMixin, DetailView):
     model = User_Profile
     template_name = "cadastros/detail/userprofile_detail.html"
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get('pk')
+        if pk:
+            try:
+                profile = User_Profile.objects.get(pk=pk)
+                if profile.user == self.request.user:
+                    profile, created = User_Profile.objects.get_or_create(
+                        user=self.request.user,
+                        defaults={
+                            "name": self.request.user.get_full_name() or self.request.user.username,
+                            "phone": "",
+                            "cpf": ""
+                        }
+                    )
+                return profile
+            except User_Profile.DoesNotExist:
+                pass
+
+        profile, created = User_Profile.objects.get_or_create(
+            user=self.request.user,
+            defaults={
+                "name": self.request.user.get_full_name() or self.request.user.username,
+                "phone": "",
+                "cpf": ""
+            }
+        )
+        return profile
 
 
 # Product
@@ -263,7 +323,7 @@ class ProductDataView(ActiveCompanyRequiredMixin, View):
 
 class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
     model = Order
-    fields = ["type", "client", "payment_method", "address"]
+    fields = ["type", "client", "payment_method", "address", "city", "uf"]
     template_name = "cadastros/order_form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
@@ -342,7 +402,7 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
 
 class OrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Order
-    fields = ["type", "client", "payment_method", "total_value", "address"]
+    fields = ["type", "client", "payment_method", "address", "city", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
@@ -386,3 +446,55 @@ class OrderDetail(ActiveCompanyRequiredMixin, DetailView):
             product_orders.aggregate(total=Sum("total_value")).get("total") or 0
         )
         return context
+
+
+# ─── ProductOrder ──────────────────────────────────────────────────────────────
+
+class ProductOrderCreate(ActiveCompanyRequiredMixin, CreateView):
+    model = ProductOrder
+    fields = ["order", "product", "quantity", "unit_value"]
+    template_name = "cadastros/form.html"
+    success_url = reverse_lazy("productorder-list")
+    extra_context = {"title": "Cadastro de Item de Pedido", "botao": "Criar Item"}
+
+    def form_valid(self, form):
+        quantity = form.cleaned_data.get('quantity', 0)
+        unit_value = form.cleaned_data.get('unit_value', 0)
+        form.instance.total_value = quantity * unit_value
+        return super().form_valid(form)
+
+
+class ProductOrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
+    model = ProductOrder
+    fields = ["order", "product", "quantity", "unit_value"]
+    template_name = "cadastros/form.html"
+    success_url = reverse_lazy("productorder-list")
+    extra_context = {"title": "Editar dados do Item de Pedido", "botao": "Atualizar Item"}
+
+    def form_valid(self, form):
+        quantity = form.cleaned_data.get('quantity', 0)
+        unit_value = form.cleaned_data.get('unit_value', 0)
+        form.instance.total_value = quantity * unit_value
+        return super().form_valid(form)
+
+
+class ProductOrderDelete(ActiveCompanyRequiredMixin, DeleteView):
+    model = ProductOrder
+    template_name = "cadastros/form_delete.html"
+    success_url = reverse_lazy("productorder-list")
+    extra_context = {"title": "Excluir Item de Pedido"}
+
+
+class ProductOrderList(ActiveCompanyRequiredMixin, PaginatedListView):
+    model = ProductOrder
+    template_name = "cadastros/list/productorder_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_items"] = self.get_queryset().count()
+        return context
+
+
+class ProductOrderDetail(ActiveCompanyRequiredMixin, DetailView):
+    model = ProductOrder
+    template_name = "cadastros/detail/productorder_detail.html"

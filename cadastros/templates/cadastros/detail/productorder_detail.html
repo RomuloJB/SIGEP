@@ -1,0 +1,84 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'productorder-list' %}">Itens de Pedidos</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Item #{{ object.pk }}</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="list-header mb-4">
+    <div>
+        <h1 class="list-title">Item de Pedido #{{ object.pk }}</h1>
+        <div class="list-subtitle">Pedido #{{ object.order.pk }} — {{ object.product.name }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-novo" href="{% url 'productorder-list' %}">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+        <a class="btn btn-outline-primary btn-novo" href="{% url 'productorder-update' object.pk %}">
+            <i class="fas fa-pen-to-square me-1"></i> Editar
+        </a>
+        <a class="btn btn-outline-danger btn-novo" href="{% url 'productorder-delete' object.pk %}">
+            <i class="fas fa-trash me-1"></i> Excluir
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-12">
+        <div class="card list-card">
+            <div class="card-header">
+                <i class="fas fa-circle-info me-1"></i> Detalhes do Item
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="w-25">ID do Item</th>
+                            <td>{{ object.pk }}</td>
+                        </tr>
+                        <tr>
+                            <th>Pedido Relacionado</th>
+                            <td>
+                                {% if object.order %}
+                                <a href="{% url 'order-detail' object.order.pk %}" class="fw-semibold text-decoration-none">
+                                    Pedido #{{ object.order.pk }} — Cliente: {{ object.order.client.name }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Produto</th>
+                            <td>
+                                {% if object.product %}
+                                <a href="{% url 'product-detail' object.product.pk %}" class="fw-semibold text-decoration-none">
+                                    {{ object.product.name }}
+                                </a>
+                                <span class="text-muted small">(SKU: {{ object.product.sku }})</span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Quantidade</th>
+                            <td>{{ object.quantity }}</td>
+                        </tr>
+                        <tr>
+                            <th>Valor Unitário</th>
+                            <td>R$ {{ object.unit_value|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Valor Total</th>
+                            <td class="fw-bold text-success">R$ {{ object.total_value|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock cadastros_content %}

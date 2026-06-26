@@ -76,10 +76,13 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
     def get_queryset(self):
         queryset = super().get_queryset()
         # Filtra registros pelo Tenant (Empresa Ativa)
+        from cadastros.models import ProductOrder
         if hasattr(self.model, 'company'):
             queryset = queryset.filter(company=self.active_company)
         elif self.model == Company:
             queryset = queryset.filter(id=self.active_company.id)
+        elif self.model == ProductOrder:
+            queryset = queryset.filter(order__company=self.active_company)
         return queryset
 
     def form_valid(self, form):
