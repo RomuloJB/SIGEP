@@ -71,6 +71,18 @@
                             <th>Descrição</th>
                             <td>{{ object.description|default:"-" }}</td>
                         </tr>
+                        <tr>
+                            <th>Criado por</th>
+                            <td>{{ object.created_by|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Criado em</th>
+                            <td>{{ object.created_at|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Atualizado em</th>
+                            <td>{{ object.updated_at|default:"-" }}</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

@@ -270,6 +270,10 @@ class ProductCreate(GroupRequiredMixin, ActiveCompanyRequiredMixin, CreateView):
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Cadastro de Produto", "botao": "Criar Produto"}
 
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
+
 class ProductUpdate(GroupRequiredMixin, ActiveCompanyRequiredMixin, UpdateView):
     group_required = ['Manager']
     model = Product

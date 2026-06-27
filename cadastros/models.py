@@ -78,7 +78,7 @@ class PaymentMethod(models.TextChoices):
     CREDIARIO =  "crediario", "8 - Crediário"
 
 
-class Product(models.Model):
+class Product(BaseClass):
     name = models.CharField(max_length=255, verbose_name="nome")
     description = models.CharField(max_length=255, null=True, blank=True, verbose_name="descrição")
     sku = models.CharField(max_length=20, verbose_name="SKU", help_text="Código único do produto (Stock Keeping Unit)")
@@ -126,6 +126,8 @@ class ProductOrder(models.Model):
     quantity = models.PositiveIntegerField(verbose_name="quantidade")
     unit_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="valor unitário")
     total_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="valor total")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="criado em")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
 
     def __str__(self):
         return "{} | {} -> {} = {}".format(self.order.id, self.product.name, self.quantity, self.total_value)
