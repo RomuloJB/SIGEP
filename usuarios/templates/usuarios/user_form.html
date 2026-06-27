@@ -1,0 +1,36 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'user-list' %}">Usuários</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Editar Usuário</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="cadastros-header d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="cadastros-title">{{ title }}</h1>
+        <p class="cadastros-subtitle">Altere os dados cadastrais e as permissões de grupos do usuário.</p>
+    </div>
+    <a class="btn btn-outline-secondary" href="{% url 'user-list' %}">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+</div>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form" action="" method="POST">
+            {% csrf_token %}
+            
+            {{ form|crispy }}
+
+            <div class="cadastros-actions mt-4">
+                <button type="submit" class="btn btn-success btnLoading">
+                    {{ botao|default:"Salvar" }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock cadastros_content %}

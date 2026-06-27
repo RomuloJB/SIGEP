@@ -45,9 +45,9 @@
                         <td class="text-end">R$ {{ order.total_value|floatformat:2 }}</td>
                         <td>{{ order.address }}</td>
                         <td class="text-nowrap text-end">
-                            <div class="dropdown d-inline-block">
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Ações
+                            <div class="dropdown">
+                                <button class="btn btn-link link-primary p-0" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li>
@@ -60,6 +60,7 @@
                                             <i class="fas fa-pen-to-square me-1"></i> Editar
                                         </a>
                                     </li>
+                                    <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <a class="dropdown-item text-danger" href="{% url 'order-delete' order.pk %}">
                                             <i class="fas fa-trash me-1"></i> Excluir
