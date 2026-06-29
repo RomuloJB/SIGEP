@@ -21,7 +21,7 @@
             <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
             <!-- Navbar Search-->
             <div class="input-group">
-                <p class="card-company-topnav ms-auto me-0 me-md-3 my-2 my-md-0">Empresa atual {{ request.session.company_name }}</p>
+                <p class="card-company-topnav ms-auto me-0 me-md-3 my-2 my-md-0">{{ request.session.company_name }}</p>
             </div>
             <!-- Navbar-->
             {% block sidenav %}

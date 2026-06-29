@@ -11534,6 +11534,8 @@ body {
     padding: 2rem 2rem 0rem;
     position: relative;
     overflow: hidden;
+    max-width: 1200px;
+    margin: 0 auto;
 }
  
 .about-hero::before {
@@ -11578,7 +11580,6 @@ body {
 .about-hero__sub {
     color: #374151;
     font-size: 1.05rem;
-    max-width: 800px;
     line-height: 1.65;
     margin-bottom: 1.75rem;
 }
