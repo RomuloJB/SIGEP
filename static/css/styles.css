@@ -12538,13 +12538,13 @@ body {
 }
  
 .list-card .card-header {
-    background: rgba(1, 0, 39, 0.04);
+    background: var(--primary-color);
     border-bottom: 1px solid rgba(25, 52, 33, 0.10);
     font-weight: 700;
     font-size: .9rem;
     letter-spacing: .03em;
     text-transform: uppercase;
-    color: var(--primary-color);
+    color: white;
     padding: .85rem 1.25rem;
     display: flex;
     align-items: center;
@@ -12831,4 +12831,242 @@ body {
     width: 100%;
     text-align: center;
   }
+}
+
+/* ============================================================
+   SIGEP – Estilos do Dashboard
+   Colar ao final do arquivo styles.css (depois do styles_append.css)
+   ============================================================ */
+
+/* ==================================================================
+   DASHBOARD — shell, header
+   Usado em: model.html (block content)
+   ================================================================== */
+
+.dashboard-shell {
+    width: 100%;
+    padding: 1.5rem 0 2rem;
+}
+
+.dashboard-container {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+.dashboard-header {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--primary-color);
+    margin-bottom: .25rem;
+}
+
+.dashboard-subtitle {
+    color: #5f6f65;
+    font-size: .93rem;
+    margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------
+   STAT CARDS — os 4 cards de indicadores no topo
+   ------------------------------------------------------------------ */
+
+.stat-card {
+    border: none;
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    background: var(--primary-color);
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, rgba(175, 126, 51, 0.18), transparent 60%);
+    pointer-events: none;
+}
+
+.stat-card .card-body {
+    position: relative;
+    z-index: 1;
+    padding: 1.1rem 1.35rem .35rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+}
+
+.stat-card .stat-label {
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    margin-bottom: 0;
+}
+
+.stat-card .stat-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+}
+
+.stat-card .card-footer {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    border: none;
+    padding: 0 1.35rem 1.25rem;
+}
+
+.stat-card .stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 0;
+    line-height: 1.1;
+}
+
+/* Variante de destaque (acento dourado) para o primeiro card */
+.stat-card.stat-card-accent {
+    background: var(--primary-color);
+}
+
+.stat-card.stat-card-accent .stat-icon {
+    color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.stat-card.stat-card-accent .stat-label {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* ------------------------------------------------------------------
+   GRÁFICOS — cards que envolvem os canvas do Chart.js
+   ------------------------------------------------------------------ */
+
+.chart-card {
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+    height: 100%;
+}
+
+.chart-card .card-header {
+    background: var(--primary-color);
+    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
+    font-weight: 700;
+    font-size: .9rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: white;
+    padding: .85rem 1.25rem;
+}
+
+.chart-card .card-body {
+    padding: 1.25rem;
+}
+
+/* ------------------------------------------------------------------
+   TABELA "ÚLTIMOS PEDIDOS" — reaproveita o padrão .list-card
+   ------------------------------------------------------------------ */
+
+.dashboard-table-card {
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    border-radius: 1.25rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+    overflow: hidden;
+}
+
+.dashboard-table-card .card-header {
+    background: var(--primary-color);
+    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
+    font-weight: 700;
+    font-size: .9rem;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    color: white;
+    padding: .85rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dashboard-table-card .table {
+    margin-bottom: 0;
+    font-size: .9rem;
+}
+
+.dashboard-table-card .table thead th {
+    background: transparent;
+    color: #5f6f65;
+    font-weight: 700;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .055em;
+    padding: .8rem 1.25rem;
+    border-bottom: 2px solid rgba(25, 52, 33, 0.10);
+    white-space: nowrap;
+}
+
+.dashboard-table-card .table tbody tr {
+    transition: background .12s;
+}
+
+.dashboard-table-card .table tbody tr:hover {
+    background: rgba(47, 125, 55, .04);
+}
+
+.dashboard-table-card .table tbody td {
+    padding: .75rem 1.25rem;
+    vertical-align: middle;
+    border-color: rgba(25, 52, 33, 0.07);
+    color: #1a2820;
+}
+
+.dashboard-table-card .list-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: #8a9e91;
+    font-size: .95rem;
+}
+
+
+/* ==================================================================
+   RESPONSIVIDADE
+   ================================================================== */
+
+@media (max-width: 767.98px) {
+    .dashboard-container {
+        padding: 0 .85rem;
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.35rem;
+    }
+
+    .chart-card .card-body {
+        padding: 1rem;
+    }
+
+    .dashboard-table-card .table thead th,
+    .dashboard-table-card .table tbody td {
+        padding: .6rem .75rem;
+        font-size: .82rem;
+    }
 }

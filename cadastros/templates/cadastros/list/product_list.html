@@ -41,7 +41,7 @@
                     {% for product in product_list %}
                     <tr>
                         <td>{{ product.pk }}</td>
-                        <td class="text-muted small">{{ product.sku }}</td>
+                        <td>{{ product.sku }}</td>
                         <td>{{ product.name }}</td>
                         <td>{{ product.color }}</td>
                         <td class="text-end">R$ {{ product.unit_value|floatformat:2 }}</td>
