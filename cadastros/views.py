@@ -91,7 +91,12 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
 
     def get_queryset(self):
-        return super().get_queryset().filter(manager=self.request.user).distinct()
+        qs = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return qs
+
+        return qs.filter(manager=self.request.user).distinct()
 
     # No form_valid, não remova o created_by do manager, mas outras pessoas podem ser removidas
     def form_valid(self, form):
@@ -109,7 +114,12 @@ class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     extra_context = {"title": "Excluir Empresa"}
 
     def get_queryset(self):
-        return super().get_queryset().filter(manager=self.request.user).distinct()
+        qs = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return qs
+
+        return qs.filter(manager=self.request.user).distinct()
 
 class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
     group_required = ['Manager']
@@ -117,7 +127,12 @@ class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
     template_name = "cadastros/list/company_list.html"
 
     def get_queryset(self):
-        return super().get_queryset().filter(manager=self.request.user).distinct()
+        qs = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return qs
+
+        return qs.filter(manager=self.request.user).distinct()
 
 class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
     group_required = ['Manager']
@@ -125,7 +140,12 @@ class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
     template_name = "cadastros/detail/company_detail.html"
 
     def get_queryset(self):
-        return super().get_queryset().filter(manager=self.request.user).distinct()
+        qs = super().get_queryset()
+
+        if self.request.user.is_superuser:
+            return qs
+
+        return qs.filter(manager=self.request.user).distinct()
 
 
 # Client
