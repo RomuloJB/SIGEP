@@ -11445,7 +11445,7 @@ body {
   font-weight: 600;
 }
 .cadastros-shell .list-card{
-  overflow: hidden;
+  overflow: unset;
 }
 @media (max-width: 576px){
   .cadastros-shell{

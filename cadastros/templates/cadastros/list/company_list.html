@@ -43,7 +43,7 @@
                         <td>{{ company.manager }}</td>
                         <td class="text-nowrap text-end">
                             <div class="dropdown">
-                                <button class="btn btn-link link-primary p-0" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
+                                <button class="btn btn-link link-primary p-0" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-strategy="fixed" aria-expanded="false">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
@@ -117,4 +117,21 @@
             </div>
         </div>
     </div>
+    {% block extra__js %}
+    <script>
+        document.addEventListener('show.bs.dropdown', function (e) {
+            const scrollParent = e.target.closest('.table-responsive');
+            if (scrollParent) {
+                scrollParent.style.overflow = 'visible';
+            }
+        });
+
+        document.addEventListener('hide.bs.dropdown', function (e) {
+            const scrollParent = e.target.closest('.table-responsive');
+            if (scrollParent) {
+                scrollParent.style.overflow = '';
+            }
+        });
+    </script>
+    {% endblock extra__js %}
 {% endblock cadastros_content %}
