@@ -3214,7 +3214,7 @@ textarea.form-control-lg {
 .dropstart,
 .dropup-center,
 .dropdown-center {
-  position: relative;
+  /*position: relative;*/
 }
 
 .dropdown-toggle {
@@ -12534,7 +12534,7 @@ body {
     border: 1px solid rgba(25, 52, 33, 0.13);
     border-radius: 1.25rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
-    overflow: hidden;
+    overflow: visible;
 }
  
 .list-card .card-header {
