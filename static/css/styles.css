@@ -13070,3 +13070,14 @@ body {
         font-size: .82rem;
     }
 }
+
+
+/* SELECT MULTIPLO DE GERENTES E REPRESENTANTES NO COMPANYUPDATE */
+.gerentes-checkbox-group,
+.representantes-checkbox-group {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  padding: 0.75rem;
+}

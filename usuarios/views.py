@@ -21,6 +21,8 @@ class SelectCompanyView(BaseLoginMixin, ListView):
     context_object_name = "companies"
 
     def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Company.objects.all()
         return Company.objects.filter(
             Q(manager=self.request.user) | Q(sales_rep=self.request.user)
         ).distinct()
@@ -37,11 +39,15 @@ class ActivateCompanyView(BaseLoginMixin, View):
     Ativa a empresa selecionada pelo usuário salvando seu ID e nome na sessão.
     """
     def get(self, request, pk):
-        company = get_object_or_404(
-            Company,
-            Q(manager=request.user) | Q(sales_rep=request.user),
-            pk=pk
-        )
+        if request.user.is_superuser:
+            company = get_object_or_404(Company, pk=pk)
+        else:
+            company = get_object_or_404(
+                Company.objects.filter(
+                    Q(manager=request.user) | Q(sales_rep=request.user)
+                ).distinct(),
+                pk=pk
+            )
         request.session['active_company_id'] = company.id
         request.session['company_name'] = company.name
         return redirect('index')
@@ -64,20 +70,19 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
         active_company_id = request.session.get('active_company_id')
         if not active_company_id:
             return redirect('select-company')
-
         try:
-            self.active_company = Company.objects.get(
-                Q(manager=request.user) | Q(sales_rep=request.user),
-                pk=active_company_id
-            )
+            if request.user.is_superuser:
+                self.active_company = Company.objects.get(pk=active_company_id)
+            else:
+                self.active_company = Company.objects.filter(
+                    Q(manager=request.user) | Q(sales_rep=request.user)
+                ).distinct().get(pk=active_company_id)
         except Company.DoesNotExist:
-            # Limpa sessão se a empresa não existe ou o usuário perdeu acesso
             if 'active_company_id' in request.session:
                 del request.session['active_company_id']
             if 'company_name' in request.session:
                 del request.session['company_name']
             return redirect('select-company')
-
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
@@ -93,9 +98,12 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
         return queryset
 
     def form_valid(self, form):
-        # Associa automaticamente o objeto à empresa ativa na criação/atualização
-        if hasattr(form.instance.__class__, 'company') and not getattr(form.instance, 'company', None):
-            form.instance.company = self.active_company
+        # DeleteView usa um Form simples (sem .instance), então não há nada
+        # a associar à empresa ativa nesse caso — o objeto já existe.
+        if hasattr(form, 'instance'):
+            # Associa automaticamente o objeto à empresa ativa na criação/atualização
+            if hasattr(form.instance.__class__, 'company') and not getattr(form.instance, 'company', None):
+                form.instance.company = self.active_company
         return super().form_valid(form)
 
     def get_form(self, form_class=None):

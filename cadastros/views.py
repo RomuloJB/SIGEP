@@ -1,5 +1,6 @@
 from urllib import request
 
+from django import forms
 from django.db import models
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView
 from django.views.generic.detail import DetailView
@@ -9,6 +10,7 @@ from django.db.models import Sum
 from django.db import transaction
 from django.http import JsonResponse
 from django.views import View
+from django.contrib.auth.models import User
 
 from .models import Company, Client, User_Profile, Order, Product, ProductOrder
 
@@ -64,12 +66,28 @@ class PaginatedListView(ListView):
         context["per_page_options"] = self.paginate_by_options
         return context
 
+class CompanyForm(forms.ModelForm):
+    manager = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all().order_by('username'),
+        widget=forms.CheckboxSelectMultiple,
+        label="Gerentes",
+    )
+    sales_rep = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all().order_by('username'),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Representantes",
+    )
+
+    class Meta:
+        model = Company
+        fields = ["name", "description", "cnpj", "manager", "sales_rep"]
 
 # Company
 class CompanyCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
     group_required = ['Manager']
     model = Company
-    fields = ["name", "description", "cnpj", "sales_rep"]
+    form_class = CompanyForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Cadastro de Empresa", "botao": "Criar Empresa"}
@@ -79,32 +97,31 @@ class CompanyCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
         form.instance.created_by = self.request.user
         response = super().form_valid(form)
         self.object.manager.add(self.request.user)  # Adiciona o usuário logado como gerente após salvar o ID
+        self.object.manager.add(*User.objects.filter(is_superuser=True))
         return response
 
 class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     group_required = ['Manager']
     model = Company
-    # manager fica aqui pois pode ter mais de um gerente. 
-    fields = ["name", "description", "cnpj", "manager", "sales_rep"]
+    form_class = CompanyForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
 
     def get_queryset(self):
         qs = super().get_queryset()
-
         if self.request.user.is_superuser:
             return qs
-
         return qs.filter(manager=self.request.user).distinct()
 
-    # No form_valid, não remova o created_by do manager, mas outras pessoas podem ser removidas
     def form_valid(self, form):
-        # Garante que o usuário logado permaneça como gerente
         if self.request.user not in form.instance.manager.all():
             form.instance.manager.add(self.request.user)
-        return super().form_valid(form)
-    
+        response = super().form_valid(form)
+        # Superusuários nunca podem ser removidos como gerentes,
+        # mesmo que tenham sido desmarcados no checkbox por outro manager
+        self.object.manager.add(*User.objects.filter(is_superuser=True))
+        return response
 
 class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
     group_required = ['Manager']
@@ -115,10 +132,8 @@ class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-
         if self.request.user.is_superuser:
             return qs
-
         return qs.filter(manager=self.request.user).distinct()
 
 class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
@@ -128,10 +143,8 @@ class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-
         if self.request.user.is_superuser:
             return qs
-
         return qs.filter(manager=self.request.user).distinct()
 
 class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
@@ -141,10 +154,8 @@ class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-
         if self.request.user.is_superuser:
             return qs
-
         return qs.filter(manager=self.request.user).distinct()
 
 
