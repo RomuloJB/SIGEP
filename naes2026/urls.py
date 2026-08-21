@@ -24,5 +24,5 @@ urlpatterns = [
     path('sigep/', include('sigep.urls')),
     path('', include('cadastros.urls')),
     path('', include('usuarios.urls')),
-
+    path('__debug__/', include('debug_toolbar.urls')),
 ]
