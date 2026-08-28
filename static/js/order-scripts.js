@@ -21,99 +21,130 @@
             maximumFractionDigits: 2,
         });
     }
- 
     function recalcTotal() {
         let total = 0;
-        itemsBody.querySelectorAll("tr").forEach(function (row) {
+        itemsBody.querySelectorAll("tr[data-product-id]").forEach(function (row) {
             total += parseFloat(row.dataset.lineTotal || 0);
         });
         grandTotal.textContent = fmt(total);
     }
- 
+
     function updateVisibility() {
-        const hasRows = itemsBody.querySelectorAll("tr").length > 0;
+        const hasRows = itemsBody.querySelectorAll("tr[data-product-id]").length > 0;
         emptyRow.classList.toggle("d-none", hasRows);
         totalRow.classList.toggle("d-none", !hasRows);
     }
  
     /* ── adiciona linha de item na tabela ────────────────────────────────── */
     function addProductRow(product) {
-        // Impede duplicata
         if (itemsBody.querySelector('tr[data-product-id="' + product.id + '"]')) {
             alert('"' + product.name + '" já foi adicionado. Ajuste a quantidade na linha existente.');
             productModal.hide();
             return;
         }
+
+    const price     = parseFloat(product.price) || 0;
+    const stock     = parseInt(product.stock)   || 0;
+    const lineTotal = price * 1; // qty inicial = 1, desconto inicial = 0
+
+    const tr = document.createElement("tr");
+    tr.dataset.productId = product.id;
+    tr.dataset.lineTotal = lineTotal;
+    tr.dataset.valid = "true";
+
+    tr.innerHTML =
+        '<td>' +
+            '<div class="fw-semibold">' + product.name + '</div>' +
+            '<small class="text-muted">' + (product.sku || "") + (product.sku ? " · " : "") + product.unit + '</small>' +
+            '<input type="hidden" name="product_id[]" value="' + product.id + '">' +
+        '</td>' +
+        '<td>' +
+            '<span class="badge ' + (stock <= 5 ? 'bg-warning text-dark' : 'bg-secondary') + '" id="stock-badge-' + product.id + '">' +
+                stock +
+            '</span>' +
+        '</td>' +
+        '<td>' +
+            '<input type="number" name="quantity[]"' +
+                   ' class="form-control form-control-sm qty-input"' +
+                   ' min="1" value="1"' +
+                   ' style="width:80px"' +
+                   ' data-price="' + price + '"' +
+                   ' data-stock="' + stock + '"' +
+                   ' data-product-id="' + product.id + '">' +
+        '</td>' +
+        '<td class="text-end">' + fmt(price) + '</td>' +
+        '<td>' +
+            '<input type="number" name="discount[]"' +
+                   ' class="form-control form-control-sm discount-input"' +
+                   ' min="0" step="0.01" value="0.00"' +
+                   ' style="width:100px">' +
+        '</td>' +
+        '<td class="text-end fw-semibold line-total-cell">' + fmt(lineTotal) + '</td>' +
+        '<td class="text-center">' +
+            '<button type="button" class="btn btn-sm btn-outline-danger btn-remove" title="Remover">' +
+                '<i class="fas fa-trash"></i>' +
+            '</button>' +
+        '</td>';
+
+        /* linha de aviso (vermelho), fora da <table> não dá — usamos um <tr> auxiliar */
+        const warningRow = document.createElement("tr");
+        warningRow.className = "warning-row d-none";
+        warningRow.innerHTML = '<td colspan="7" class="text-danger small py-1 warning-text"></td>';
+
  
-        const price     = parseFloat(product.price) || 0;
-        const stock     = parseInt(product.stock)   || 0;
-        const lineTotal = price * 1;  // quantidade inicial = 1
- 
-        const tr = document.createElement("tr");
-        tr.dataset.productId = product.id;
+    function updateRow() {
+        const qtyInput  = tr.querySelector(".qty-input");
+        const discInput = tr.querySelector(".discount-input");
+
+        const qty      = parseInt(qtyInput.value, 10);
+        const discount = parseFloat(discInput.value) || 0;
+        const subtotal = (isNaN(qty) ? 0 : qty) * price;
+
+        let warning = "";
+        if (isNaN(qty) || qty <= 0) {
+            warning = "A quantidade deve ser maior que zero.";
+        } else if (qty > stock) {
+            warning = "Estoque insuficiente! Disponível: " + stock + ".";
+        } else if (discount < 0) {
+            warning = "O desconto não pode ser negativo.";
+        } else if (discount > subtotal) {
+            warning = "O desconto não pode ser maior que o valor do item.";
+        }
+
+        const lineTotal = warning ? 0 : Math.max(subtotal - discount, 0);
+        tr.querySelector(".line-total-cell").textContent = fmt(lineTotal);
         tr.dataset.lineTotal = lineTotal;
- 
-        tr.innerHTML =
-            '<td>' +
-                '<div class="fw-semibold">' + product.name + '</div>' +
-                '<small class="text-muted">' + (product.sku || "") + (product.sku ? " · " : "") + product.unit + '</small>' +
-                '<input type="hidden" name="product_id[]" value="' + product.id + '">' +
-            '</td>' +
-            '<td>' +
-                '<span class="badge ' + (stock <= 5 ? 'bg-warning text-dark' : 'bg-secondary') + '" id="stock-badge-' + product.id + '">' +
-                    stock +
-                '</span>' +
-            '</td>' +
-            '<td>' +
-                '<input type="number" name="quantity[]"' +
-                       ' class="form-control form-control-sm qty-input"' +
-                       ' min="1" max="' + stock + '" value="1"' +
-                       ' style="width:80px"' +
-                       ' data-price="' + price + '"' +
-                       ' data-stock="' + stock + '"' +
-                       ' data-product-id="' + product.id + '">' +
-            '</td>' +
-            '<td class="text-end">' + fmt(price) + '</td>' +
-            '<td class="text-end fw-semibold line-total-cell">' + fmt(lineTotal) + '</td>' +
-            '<td class="text-center">' +
-                '<button type="button" class="btn btn-sm btn-outline-danger btn-remove" title="Remover">' +
-                    '<i class="fas fa-trash"></i>' +
-                '</button>' +
-            '</td>';
- 
-        /* evento: atualiza total ao alterar quantidade */
-        tr.querySelector(".qty-input").addEventListener("input", function () {
-            var qty      = parseInt(this.value) || 0;
-            var maxStock = parseInt(this.dataset.stock);
-            var priceVal = parseFloat(this.dataset.price);
- 
-            if (qty < 1) { qty = 1; this.value = 1; }
-            if (qty > maxStock) {
-                qty = maxStock;
-                this.value = maxStock;
-                this.classList.add("is-invalid");
-            } else {
-                this.classList.remove("is-invalid");
-            }
- 
-            var lt = priceVal * qty;
-            tr.dataset.lineTotal = lt;
-            tr.querySelector(".line-total-cell").textContent = fmt(lt);
-            recalcTotal();
-        });
- 
-        /* evento: remover linha */
-        tr.querySelector(".btn-remove").addEventListener("click", function () {
-            tr.remove();
-            updateVisibility();
-            recalcTotal();
-        });
- 
-        itemsBody.appendChild(tr);
-        productModal.hide();
-        updateVisibility();
+
+        if (warning) {
+            qtyInput.classList.add("is-invalid");
+            warningRow.querySelector(".warning-text").textContent = warning;
+            warningRow.classList.remove("d-none");
+            tr.dataset.valid = "false";
+        } else {
+            qtyInput.classList.remove("is-invalid");
+            warningRow.classList.add("d-none");
+            tr.dataset.valid = "true";
+        }
+
         recalcTotal();
     }
+
+    tr.querySelector(".qty-input").addEventListener("input", updateRow);
+    tr.querySelector(".discount-input").addEventListener("input", updateRow);
+
+    tr.querySelector(".btn-remove").addEventListener("click", function () {
+        tr.remove();
+        warningRow.remove();
+        updateVisibility();
+        recalcTotal();
+    });
+
+    itemsBody.appendChild(tr);
+    itemsBody.appendChild(warningRow);
+    productModal.hide();
+    updateVisibility();
+    recalcTotal();
+}
  
     /* ── modal: abrir ────────────────────────────────────────────────────── */
     btnAdd.addEventListener("click", function () {
@@ -152,9 +183,22 @@
  
     /* ── validação antes de submeter ─────────────────────────────────────── */
     orderForm.addEventListener("submit", function (e) {
-        if (itemsBody.querySelectorAll("tr").length === 0) {
+        const rows = itemsBody.querySelectorAll("tr[data-product-id]");
+
+        if (rows.length === 0) {
             e.preventDefault();
             alert("Adicione pelo menos um produto ao pedido antes de salvar.");
+            return;
+        }
+
+        let hasInvalid = false;
+        rows.forEach(function (row) {
+            if (row.dataset.valid === "false") hasInvalid = true;
+        });
+
+        if (hasInvalid) {
+            e.preventDefault();
+            alert("Corrija os itens destacados em vermelho antes de salvar.");
         }
     });
  

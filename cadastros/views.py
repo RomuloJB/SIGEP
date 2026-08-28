@@ -12,6 +12,8 @@ from django.http import JsonResponse
 from django.views import View
 from django.contrib.auth.models import User
 
+from decimal import Decimal, InvalidOperation
+
 from .models import Company, Client, User_Profile, Order, Product, ProductOrder
 
 # Importar o LoginRequiredMixin para proteger as views
@@ -373,16 +375,15 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.created_by = self.request.user
 
-        # Coleta os itens enviados pelo formulário dinâmico
         product_ids = self.request.POST.getlist("product_id[]")
         quantities = self.request.POST.getlist("quantity[]")
+        discounts = self.request.POST.getlist("discount[]")
 
         items = []
         errors = []
 
-        for pid, qty_str in zip(product_ids, quantities):
+        for pid, qty_str, disc_str in zip(product_ids, quantities, discounts):
             try:
-                # Restringir produtos à empresa ativa por segurança
                 product = Product.objects.select_for_update().get(pk=int(pid), company=self.active_company)
             except (Product.DoesNotExist, ValueError):
                 errors.append(f"Produto inválido (id={pid}).")
@@ -392,8 +393,16 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
                 qty = int(qty_str)
                 if qty <= 0:
                     raise ValueError
-            except ValueError:
+            except (ValueError, TypeError):
                 errors.append(f"Quantidade inválida para o produto '{product.name}'.")
+                continue
+
+            try:
+                discount = Decimal(disc_str) if disc_str else Decimal("0")
+                if discount < 0:
+                    raise InvalidOperation
+            except (InvalidOperation, TypeError):
+                errors.append(f"Desconto inválido para o produto '{product.name}'.")
                 continue
 
             if (product.stock or 0) < qty:
@@ -403,10 +412,14 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
                 )
                 continue
 
-            items.append((product, qty))
+            subtotal = product.unit_value * qty
+            if discount > subtotal:
+                errors.append(f"Desconto maior que o valor do item '{product.name}'.")
+                continue
+
+            items.append((product, qty, discount, subtotal - discount))
 
         if errors:
-            # Devolve o formulário com as mensagens de erro
             form.add_error(None, " | ".join(errors))
             return self.form_invalid(form)
 
@@ -414,26 +427,23 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
             form.add_error(None, "Adicione pelo menos um produto ao pedido.")
             return self.form_invalid(form)
 
-        # Calcula o total e salva o Order
-        total = sum(p.unit_value * q for p, q in items)
+        total = sum(line_total for _, _, _, line_total in items)
         form.instance.total_value = total
-        response = super().form_valid(form)  # salva self.object
+        response = super().form_valid(form)
 
-        # Cria os ProductOrder e baixa o estoque
-        for product, qty in items:
-            unit_val = product.unit_value or 0
+        for product, qty, discount, line_total in items:
             ProductOrder.objects.create(
                 order=self.object,
                 product=product,
                 quantity=qty,
-                unit_value=unit_val,
-                total_value=unit_val * qty,
+                unit_value=product.unit_value or 0,
+                discount=discount,
+                total_value=line_total,
             )
             product.stock = (product.stock or 0) - qty
             product.save(update_fields=["stock"])
 
         return response
-
 
 class OrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Order
@@ -487,7 +497,7 @@ class OrderDetail(ActiveCompanyRequiredMixin, DetailView):
 
 class ProductOrderCreate(ActiveCompanyRequiredMixin, CreateView):
     model = ProductOrder
-    fields = ["order", "product", "quantity", "unit_value"]
+    fields = ["order", "product", "quantity", "unit_value", "discount"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("productorder-list")
     extra_context = {"title": "Cadastro de Item de Pedido", "botao": "Criar Item"}
@@ -495,13 +505,14 @@ class ProductOrderCreate(ActiveCompanyRequiredMixin, CreateView):
     def form_valid(self, form):
         quantity = form.cleaned_data.get('quantity', 0)
         unit_value = form.cleaned_data.get('unit_value', 0)
-        form.instance.total_value = quantity * unit_value
+        discount = form.cleaned_data.get('discount') or 0
+        form.instance.total_value = (quantity * unit_value) - discount
         return super().form_valid(form)
 
 
 class ProductOrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = ProductOrder
-    fields = ["order", "product", "quantity", "unit_value"]
+    fields = ["order", "product", "quantity", "unit_value", "discount"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("productorder-list")
     extra_context = {"title": "Editar dados do Item de Pedido", "botao": "Atualizar Item"}
@@ -509,9 +520,10 @@ class ProductOrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
     def form_valid(self, form):
         quantity = form.cleaned_data.get('quantity', 0)
         unit_value = form.cleaned_data.get('unit_value', 0)
-        form.instance.total_value = quantity * unit_value
+        discount = form.cleaned_data.get('discount') or 0
+        form.instance.total_value = (quantity * unit_value) - discount
         return super().form_valid(form)
-
+    
 
 class ProductOrderDelete(ActiveCompanyRequiredMixin, DeleteView):
     model = ProductOrder

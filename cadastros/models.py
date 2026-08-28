@@ -125,10 +125,11 @@ class ProductOrder(models.Model):
     product = models.ForeignKey(Product, on_delete=models.PROTECT, null=True, blank=True, related_name='product_orders', verbose_name="produto")
     quantity = models.PositiveIntegerField(verbose_name="quantidade")
     unit_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="valor unitário")
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="desconto")  # NOVO
     total_value = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="valor total")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="criado em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="atualizado em")
-
+    
     def __str__(self):
         return "{} | {} -> {} = {}".format(self.order.id, self.product.name, self.quantity, self.total_value)
 

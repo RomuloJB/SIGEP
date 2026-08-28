@@ -38,41 +38,65 @@
 
             {# ── Itens do pedido ── #}
             <div class="card mb-4">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <span class="fw-semibold">Itens do pedido</span>
-                    <button type="button" class="btn btn-success btn-sm" id="btn-add-product">
-                        <i class="fas fa-plus me-1"></i> Adicionar produto
-                    </button>
-                </div>
+                <div class="card-header fw-semibold">Itens do pedido</div>
+                <div class="card-body">
+                    <div class="row g-2 align-items-end mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label" for="product-select">Produto</label>
+                            <select class="form-select" id="product-select">
+                                <option value="" selected disabled>Selecione um produto...</option>
+                                {% for product in products %}
+                                <option value="{{ product.pk }}"
+                                        data-name="{{ product.name }}"
+                                        data-sku="{{ product.sku|default:'' }}"
+                                        data-unit="{{ product.get_measure_unit_display }}"
+                                        data-price="{{ product.unit_value|default:0 }}"
+                                        data-stock="{{ product.stock|default:0 }}"
+                                        {% if product.stock == 0 %}disabled{% endif %}>
+                                    {{ product.sku|default:"—" }} — {{ product.name }} (Estoque: {{ product.stock|default:0 }})
+                                </option>
+                                {% empty %}
+                                <option value="" disabled>Nenhum produto cadastrado</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="button" class="btn btn-success w-100" id="btn-add-product">
+                                <i class="fas fa-plus me-1"></i> Adicionar produto
+                            </button>
+                        </div>
+                    </div>
 
-                <div class="card-body p-0">
-                    <table class="table table-striped align-middle mb-0" id="items-table">
-                        <thead class="table-light text-uppercase small">
-                            <tr>
-                                <th style="min-width:260px">Produto</th>
-                                <th style="min-width:90px">Estoque</th>
-                                <th style="min-width:110px">Qtd</th>
-                                <th style="min-width:120px" class="text-end">Vlr. unit.</th>
-                                <th style="min-width:130px" class="text-end">Total</th>
-                                <th style="width:48px"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="items-body">
-                            {# linhas inseridas via JS #}
-                        </tbody>
-                        <tfoot>
-                            <tr id="empty-row">
-                                <td colspan="6" class="text-center text-muted py-3 fst-italic">
-                                    Nenhum produto adicionado. Clique em "Adicionar produto".
-                                </td>
-                            </tr>
-                            <tr id="total-row" class="d-none table-light fw-bold">
-                                <td colspan="4" class="text-end">Total do pedido:</td>
-                                <td class="text-end" id="grand-total">R$ 0,00</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle mb-0" id="items-table">
+                            <thead class="table-light text-uppercase small">
+                                <tr>
+                                    <th style="min-width:220px">Produto</th>
+                                    <th style="min-width:90px">Estoque</th>
+                                    <th style="min-width:120px">Qtd</th>
+                                    <th style="min-width:110px" class="text-end">Vlr. unit.</th>
+                                    <th style="min-width:120px">Desconto (R$)</th>
+                                    <th style="min-width:130px" class="text-end">Total</th>
+                                    <th style="width:48px"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="items-body">
+                                {# linhas inseridas via JS #}
+                            </tbody>
+                            <tfoot>
+                                <tr id="empty-row">
+                                    <td colspan="7" class="text-center text-muted py-3 fst-italic">
+                                        Nenhum produto adicionado. Selecione um produto e clique em "Adicionar".
+                                    </td>
+                                </tr>
+                                <tr id="total-row" class="d-none table-light fw-bold">
+                                    <td colspan="5" class="text-end">Total do pedido:</td>
+                                    <td class="text-end" id="grand-total">R$ 0,00</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -152,7 +176,7 @@
     </div>
 </div>
 
-    {% block extra_js %}
-<script src="{% static 'js/order_form.js' %}"></script>
+{% block extra_js %}
+<script src="{% static 'js/order_scripts.js' %}"></script>
 {% endblock extra_js %}
 {% endblock %}
