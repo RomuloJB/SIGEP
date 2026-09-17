@@ -7,6 +7,10 @@
     <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
 {% endblock breadcrumb %}
 
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
+{% endblock extra_css %}
+
 {% block content %}
 <div class="cadastros-shell">
     <div class="cadastros-container">
@@ -43,8 +47,10 @@
                     <div class="row g-2 align-items-end mb-3">
                         <div class="col-md-8">
                             <label class="form-label" for="product-select">Produto</label>
-                            <select class="form-select" id="product-select">
-                                <option value="" selected disabled>Selecione um produto...</option>
+                            {# Cada <option> carrega os dados do produto em data-* — o JS lê tudo daqui (sem requisições extras) #}
+                            <select class="form-select" id="product-select" autocomplete="off"
+                                    placeholder="Busque por ID, SKU, nome ou valor…">
+                                <option value=""></option>
                                 {% for product in products %}
                                 <option value="{{ product.pk }}"
                                         data-name="{{ product.name }}"
@@ -52,16 +58,16 @@
                                         data-unit="{{ product.get_measure_unit_display }}"
                                         data-price="{{ product.unit_value|default:0 }}"
                                         data-stock="{{ product.stock|default:0 }}"
-                                        {% if product.stock == 0 %}disabled{% endif %}>
-                                    {{ product.sku|default:"—" }} — {{ product.name }} (Estoque: {{ product.stock|default:0 }})
-                                </option>
-                                {% empty %}
-                                <option value="" disabled>Nenhum produto cadastrado</option>
+                                        {% if product.stock == 0 %}disabled{% endif %}>#{{ product.pk }} · {{ product.sku|default:"—" }} — {{ product.name }} — R$ {{ product.unit_value|default:0|floatformat:2 }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="text-danger small mt-1 d-none" id="product-picker-error"></div>
+                            {% if not products %}
+                            <div class="form-text text-muted">Nenhum produto cadastrado para esta empresa.</div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4">
-                            <button type="button" class="btn btn-success w-100" id="btn-add-product">
+                            <button type="button" class="btn btn-success w-100" id="btn-add-product" {% if not products %}disabled{% endif %}>
                                 <i class="fas fa-plus me-1"></i> Adicionar produto
                             </button>
                         </div>
@@ -86,7 +92,7 @@
                             <tfoot>
                                 <tr id="empty-row">
                                     <td colspan="7" class="text-center text-muted py-3 fst-italic">
-                                        Nenhum produto adicionado. Selecione um produto e clique em "Adicionar".
+                                        Nenhum produto adicionado. Busque um produto acima e clique em "Adicionar produto".
                                     </td>
                                 </tr>
                                 <tr id="total-row" class="d-none table-light fw-bold">
@@ -110,73 +116,10 @@
         </form>
     </div>
 </div>
+{% endblock content %}
 
-{# ── Modal: selecionar produto ─────────────────────────────────────────── #}
-<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalLabel">Selecionar produto</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <input type="text" id="product-search" class="form-control"
-                           placeholder="Buscar por nome ou SKU…" autocomplete="off">
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="product-picker-table">
-                        <thead class="table-light small text-uppercase">
-                            <tr>
-                                <th>SKU</th>
-                                <th>Nome</th>
-                                <th>Unid.</th>
-                                <th class="text-end">Vlr. unit.</th>
-                                <th class="text-end">Estoque</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
-                            <tr class="product-row"
-                                data-id="{{ product.pk }}"
-                                data-name="{{ product.name }}"
-                                data-sku="{{ product.sku|default:'' }}"
-                                data-unit="{{ product.get_measure_unit_display }}"
-                                data-price="{{ product.unit_value|default:0 }}"
-                                data-stock="{{ product.stock|default:0 }}">
-                                <td class="small text-muted">{{ product.sku|default:"—" }}</td>
-                                <td>{{ product.name }}</td>
-                                <td class="small">{{ product.get_measure_unit_display }}</td>
-                                <td class="text-end">R$ {{ product.unit_value|default:0|floatformat:2 }}</td>
-                                <td class="text-end
-                                    {% if product.stock == 0 %}text-danger fw-bold
-                                    {% elif product.stock <= 5 %}text-warning fw-bold
-                                    {% endif %}">
-                                    {{ product.stock|default:0 }}
-                                </td>
-                                <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-outline-primary btn-pick"
-                                            {% if product.stock == 0 %}disabled title="Sem estoque"{% endif %}>
-                                        Selecionar
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-3">Nenhum produto cadastrado.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% block extra_js %}
-<script src="{% static 'js/order_scripts.js' %}"></script>
-{% endblock extra_js %}
-{% endblock %}
+{# Fica fora do block content: aninhado, o Django renderiza o bloco duas vezes #}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/order-scripts.js' %}"></script>
+{% endblock scripts %}

@@ -12387,49 +12387,78 @@ body {
 }
  
 /* ------------------------------------------------------------------
-   MODAL DE SELEÇÃO DE PRODUTO
+   DROPDOWN DE BUSCA DE PRODUTO (Tom Select)
    Usado em: order_form.html
+   O Tom Select substitui o <select> por .ts-wrapper > .ts-control e
+   anexa a lista (.ts-dropdown) ao <body>, por isso ela não é escopada
+   em #order-form.
    ------------------------------------------------------------------ */
- 
-#productModal .modal-content {
-    border-radius: 1.25rem;
-    border: 1px solid rgba(25, 52, 33, 0.13);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-    overflow: hidden;
-}
- 
-#productModal .modal-header {
-    background: rgba(1, 0, 39, 0.04);
-    border-bottom: 1px solid rgba(25, 52, 33, 0.10);
-    padding: 1rem 1.5rem;
-}
- 
-#productModal .modal-title {
-    font-weight: 800;
-    font-size: 1rem;
-    color: var(--primary-color);
-    letter-spacing: -.01em;
-}
- 
-#productModal #product-search {
-    border-radius: .85rem !important;
-    padding: .72rem .95rem !important;
+
+#order-form .ts-wrapper .ts-control {
+    border-radius: .85rem;
     border-color: rgba(25, 52, 33, 0.18);
     font-size: .93rem;
 }
- 
-#productModal #product-search:focus {
+
+#order-form .ts-wrapper.focus .ts-control {
     border-color: #2f7d37;
     box-shadow: 0 0 0 .2rem rgba(47, 125, 55, .14);
 }
- 
-#productModal .btn-outline-primary {
-    border-radius: .65rem;
-    font-weight: 700;
-    font-size: .82rem;
-    padding: .32rem .85rem;
+
+.ts-dropdown {
+    z-index: 1060;
+    border-radius: .85rem;
+    border: 1px solid rgba(25, 52, 33, 0.13);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
 }
- 
+
+.ts-dropdown .no-results {
+    padding: .6rem .95rem;
+    color: #5f6f65;
+    font-size: .9rem;
+}
+
+.ts-dropdown .highlight {
+    background: rgba(47, 125, 55, .18);
+    border-radius: .2rem;
+}
+
+/* Layout de cada opção: nome + meta à esquerda, preço + estoque à direita */
+.ts-dropdown .product-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.ts-dropdown .product-option-name {
+    font-weight: 600;
+    font-size: .93rem;
+}
+
+.ts-dropdown .product-option-meta {
+    font-size: .78rem;
+    color: #5f6f65;
+}
+
+.ts-dropdown .product-option-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .2rem;
+    white-space: nowrap;
+}
+
+.ts-dropdown .product-option-price {
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+.ts-dropdown .option[aria-disabled="true"] .product-option {
+    opacity: .55;
+}
+
  
 /* ==================================================================
    LISTAGENS — shell, header, card com tabela, paginação, filtros
