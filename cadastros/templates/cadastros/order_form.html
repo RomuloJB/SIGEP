@@ -21,15 +21,8 @@
             </div>
         </div>
 
-        {% if form.non_field_errors %}
-        <div class="alert alert-danger">
-            {% for error in form.non_field_errors %}
-                <p class="mb-0">{{ error }}</p>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <form action="" method="POST" id="order-form">
+        {# Erros de formulário (non_field_errors) são renderizados pelo {{ form|crispy }} abaixo #}
+        <form action="" method="POST" id="order-form" class="needs-validation" novalidate>
             {% csrf_token %}
 
             {# ── Dados gerais do pedido ── #}
@@ -86,7 +79,8 @@
                                     <th style="width:48px"></th>
                                 </tr>
                             </thead>
-                            <tbody id="items-body">
+                            {# data-no-validate: qtd/desconto são validados pelo order-scripts.js, não pelo form-validation.js #}
+                            <tbody id="items-body" data-no-validate>
                                 {# linhas inseridas via JS #}
                             </tbody>
                             <tfoot>
@@ -103,6 +97,7 @@
                             </tfoot>
                         </table>
                     </div>
+                    <div class="text-danger small mt-2 d-none" id="items-error" role="alert"></div>
                 </div>
             </div>
 

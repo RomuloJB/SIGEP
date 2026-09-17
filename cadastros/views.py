@@ -18,14 +18,14 @@ from .models import Company, Client, User_Profile, Order, Product, ProductOrder
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
-from usuarios.views import ActiveCompanyRequiredMixin
+from usuarios.views import ActiveCompanyRequiredMixin, FormErrorMessagesMixin
 
 # Define a permissão de um certo grupo para certas ações
 from braces.views import GroupRequiredMixin
 
 
 #BaseLogin
-class BaseLoginMixin(LoginRequiredMixin):
+class BaseLoginMixin(FormErrorMessagesMixin, LoginRequiredMixin):
     login_url = reverse_lazy('login')
 
 

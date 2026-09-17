@@ -11331,6 +11331,23 @@ body {
   border-color: #2f7d37;
   box-shadow: 0 0 0 .2rem rgba(47, 125, 55, .14);
 }
+/* Campos com erro (cadastro de usuário): mantém a borda vermelha do .is-invalid */
+.auth-panel .form-control.is-invalid,
+.auth-panel input.is-invalid,
+.auth-panel select.is-invalid,
+.auth-panel textarea.is-invalid{
+  border-color: #dc3545;
+}
+.auth-panel .form-control.is-invalid:focus,
+.auth-panel input.is-invalid:focus,
+.auth-panel select.is-invalid:focus,
+.auth-panel textarea.is-invalid:focus{
+  border-color: #dc3545;
+  box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .2);
+}
+.auth-panel .form-control.is-invalid{
+  padding-right: calc(1.5em + 1rem) !important;
+}
 .auth-panel .btn{
   border-radius: .85rem;
   padding: .8rem 1rem;
@@ -12300,7 +12317,44 @@ body {
     font-size: .93rem;
     transition: border-color .18s, box-shadow .18s;
 }
- 
+
+/* Campos com erro (.is-invalid, vindo do crispy ou do form-validation.js).
+   As regras acima definem border-color depois do Bootstrap e "apagariam" o
+   vermelho; aqui a especificidade é maior e o estado de foco também é coberto
+   (o JS foca o primeiro campo inválido). O padding-right preserva o espaço do
+   ícone de validação do Bootstrap, que o padding com !important sobrescreveria. */
+.cadastros-form .form-control.is-invalid,
+.cadastros-form .form-select.is-invalid,
+.cadastros-form textarea.is-invalid,
+.cadastros-card .form-control.is-invalid,
+.cadastros-card .form-select.is-invalid,
+.cadastros-card input.is-invalid,
+.cadastros-card select.is-invalid,
+.cadastros-card textarea.is-invalid {
+    border-color: #dc3545;
+}
+
+.cadastros-form .form-control.is-invalid:focus,
+.cadastros-form .form-select.is-invalid:focus,
+.cadastros-form textarea.is-invalid:focus,
+.cadastros-card .form-control.is-invalid:focus,
+.cadastros-card .form-select.is-invalid:focus,
+.cadastros-card input.is-invalid:focus,
+.cadastros-card select.is-invalid:focus,
+.cadastros-card textarea.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 .2rem rgba(220, 53, 69, .2);
+}
+
+.cadastros-form .form-control.is-invalid,
+.cadastros-card .form-control.is-invalid {
+    padding-right: calc(1.5em + 1rem) !important;
+}
+.cadastros-form .form-select.is-invalid,
+.cadastros-card .form-select.is-invalid {
+    padding-right: 4.125rem !important;
+}
+
 .cadastros-form .form-control:focus,
 .cadastros-form .form-select:focus,
 .cadastros-card .form-control:focus,
@@ -12385,7 +12439,14 @@ body {
     border-color: #2f7d37;
     box-shadow: 0 0 0 .18rem rgba(47, 125, 55, .14);
 }
- 
+
+/* Linha com quantidade/desconto inválidos (order-scripts.js marca .is-invalid) */
+#items-body input[type="number"].is-invalid,
+#items-body input[type="number"].is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 .18rem rgba(220, 53, 69, .2);
+}
+
 /* ------------------------------------------------------------------
    DROPDOWN DE BUSCA DE PRODUTO (Tom Select)
    Usado em: order_form.html

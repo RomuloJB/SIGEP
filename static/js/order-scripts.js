@@ -9,6 +9,7 @@
     const btnAdd      = document.getElementById("btn-add-product");
     const selectEl    = document.getElementById("product-select");
     const pickerError = document.getElementById("product-picker-error");
+    const itemsError  = document.getElementById("items-error");
     const orderForm   = document.getElementById("order-form");
 
     if (!selectEl || !orderForm) return;   // sai se o template não estiver presente
@@ -48,6 +49,11 @@
     function showPickerError(message) {
         pickerError.textContent = message;
         pickerError.classList.toggle("d-none", !message);
+    }
+
+    function showItemsError(message) {
+        itemsError.textContent = message;
+        itemsError.classList.toggle("d-none", !message);
     }
 
     function stockBadge(stock) {
@@ -189,6 +195,7 @@
             warningRow.classList.toggle("d-none", !warning);
             tr.dataset.valid = warning ? "false" : "true";
 
+            showItemsError("");
             recalcTotal();
         }
 
@@ -199,6 +206,7 @@
             tr.remove();
             warningRow.remove();
             setOptionAdded(product.id, false);
+            showItemsError("");
             updateVisibility();
             recalcTotal();
         });
@@ -206,6 +214,7 @@
         itemsBody.appendChild(tr);
         itemsBody.appendChild(warningRow);
         setOptionAdded(product.id, true);
+        showItemsError("");
         updateVisibility();
         recalcTotal();
     }
@@ -242,23 +251,24 @@
     });
 
     /* ── validação antes de submeter ─────────────────────────────────────── */
+    // O form-validation.js (fase de captura) já validou os campos do pedido e
+    // limpou o resumo; aqui só entra a regra dos itens, somada ao mesmo resumo.
     orderForm.addEventListener("submit", function (e) {
         const rows = itemsBody.querySelectorAll("tr[data-product-id]");
 
+        let message = "";
         if (rows.length === 0) {
-            e.preventDefault();
-            alert("Adicione pelo menos um produto ao pedido antes de salvar.");
-            return;
+            message = "Adicione pelo menos um produto ao pedido antes de salvar.";
+        } else if (Array.prototype.some.call(rows, function (row) { return row.dataset.valid === "false"; })) {
+            message = "Corrija os itens destacados em vermelho antes de salvar.";
         }
 
-        let hasInvalid = false;
-        rows.forEach(function (row) {
-            if (row.dataset.valid === "false") hasInvalid = true;
-        });
+        showItemsError(message);
+        if (!message) return;
 
-        if (hasInvalid) {
-            e.preventDefault();
-            alert("Corrija os itens destacados em vermelho antes de salvar.");
+        e.preventDefault();
+        if (window.FormValidation) {
+            window.FormValidation.addError(orderForm, "Itens do pedido: " + message);
         }
     });
 

@@ -20,7 +20,7 @@
 
 <div class="card cadastros-card">
     <div class="card-body">
-        <form class="cadastros-form" action="" method="POST">
+        <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
             {% csrf_token %}
             
             {{ form|crispy }}

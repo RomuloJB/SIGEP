@@ -7,7 +7,22 @@ from django.db.models import Q
 from django.contrib import messages
 from cadastros.models import Company, User_Profile
 
-class BaseLoginMixin(LoginRequiredMixin):
+class FormErrorMessagesMixin:
+    """
+    Traduz a mensagem padrão do Django para campo obrigatório ("This field is required.").
+    O projeto roda com LANGUAGE_CODE='en-us' — mudar para pt-br alteraria a formatação
+    de números nos templates (ex.: data-price="12,50" quebraria o JS do pedido).
+    """
+    required_error_message = "Este campo é obrigatório."
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        for field in form.fields.values():
+            field.error_messages["required"] = self.required_error_message
+        return form
+
+
+class BaseLoginMixin(FormErrorMessagesMixin, LoginRequiredMixin):
     login_url = reverse_lazy('login')
 
 
@@ -166,7 +181,7 @@ class UserListView(SuperuserRequiredMixin, ListView):
     paginate_by = 10
 
 
-class UserUpdateView(SuperuserRequiredMixin, UpdateView):
+class UserUpdateView(SuperuserRequiredMixin, FormErrorMessagesMixin, UpdateView):
     model = User
     form_class = UserManageForm
     template_name = "usuarios/user_form.html"
@@ -257,7 +272,7 @@ class UserRegisterForm(forms.ModelForm):
         return user
 
 
-class UserRegisterView(CreateView):
+class UserRegisterView(FormErrorMessagesMixin, CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = "usuarios/register.html"
