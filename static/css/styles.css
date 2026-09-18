@@ -13117,6 +13117,20 @@ body {
     padding: 1.25rem;
 }
 
+.chart-card .chart-area {
+    position: relative;
+    height: 260px;
+}
+
+.chart-data-details summary {
+    color: #5f6f65;
+    font-weight: 600;
+    cursor: pointer;
+}
+.chart-data-details summary:hover {
+    color: #2f7d37;
+}
+
 /* ------------------------------------------------------------------
    TABELA "ÚLTIMOS PEDIDOS" — reaproveita o padrão .list-card
    ------------------------------------------------------------------ */
