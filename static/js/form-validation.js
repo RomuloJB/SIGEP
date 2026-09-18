@@ -61,20 +61,28 @@
     }
 
     /* ── marcação dos campos ─────────────────────────────────────────────── */
+    // Selects com Tom Select ficam ocultos: a borda vermelha e a mensagem vão
+    // no .ts-wrapper que o substitui visualmente.
+    function visualTarget(el) {
+        return el.tomselect ? el.tomselect.wrapper : el;
+    }
+
     function feedbackFor(el, create) {
         // Reaproveita o .invalid-feedback que o crispy renderiza logo após o campo
-        var fb = el.nextElementSibling;
+        var target = visualTarget(el);
+        var fb = target.nextElementSibling;
         if (fb && fb.classList.contains("invalid-feedback")) return fb;
         if (!create) return null;
 
         fb = document.createElement("div");
         fb.className = "invalid-feedback";
-        el.insertAdjacentElement("afterend", fb);
+        target.insertAdjacentElement("afterend", fb);
         return fb;
     }
 
     function markControl(el, message) {
         el.classList.add("is-invalid");
+        visualTarget(el).classList.add("is-invalid");
         el.setAttribute("aria-invalid", "true");
 
         var fb = feedbackFor(el, true);
@@ -85,7 +93,17 @@
     function unmarkControl(el) {
         // O .invalid-feedback some sozinho via CSS quando o campo perde .is-invalid
         el.classList.remove("is-invalid");
+        visualTarget(el).classList.remove("is-invalid");
         el.removeAttribute("aria-invalid");
+    }
+
+    function focusControl(el) {
+        visualTarget(el).scrollIntoView({ block: "center", behavior: "smooth" });
+        if (el.tomselect) {
+            el.tomselect.focus();
+        } else {
+            el.focus({ preventScroll: true });
+        }
     }
 
     function isValidatable(el) {
@@ -152,11 +170,7 @@
                 addSummaryLine(form, labelFor(el) + ": " + message, el.id);
             });
 
-            if (invalid.length) {
-                var first = invalid[0];
-                first.scrollIntoView({ block: "center", behavior: "smooth" });
-                first.focus({ preventScroll: true });
-            }
+            if (invalid.length) focusControl(invalid[0]);
 
             return invalid.length === 0;
         },

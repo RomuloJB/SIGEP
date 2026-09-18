@@ -1,5 +1,6 @@
 {% extends "cadastros/form.html" %}
 {% load static %}
+{% load masks %}
 
 {% block breadcrumb %}
 	<li class="breadcrumb-item"><a href="{% url 'company-list' %}">Empresas</a></li>
@@ -33,7 +34,7 @@
 							</tr>
 							<tr>
 								<th>CNPJ</th>
-								<td>{{ object.cnpj|default:"-" }}</td>
+								<td>{{ object.cnpj|cnpj|default:"-" }}</td>
 							</tr>
 							<tr>
 								<th>Gerente</th>

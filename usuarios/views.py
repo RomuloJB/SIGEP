@@ -6,7 +6,7 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib import messages
 from cadastros.models import Company, User_Profile
-from cadastros.forms import PhoneField
+from cadastros.forms import PhoneField, CPFField
 
 class FormErrorMessagesMixin:
     """
@@ -220,12 +220,9 @@ class UserRegisterForm(forms.ModelForm):
         required=True,
         label="Telefone",
     )
-    cpf = forms.CharField(
-        max_length=14,
+    cpf = CPFField(
         required=True,
         label="CPF",
-        help_text="Formato: 000.000.000-00",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
     )
 
     class Meta:

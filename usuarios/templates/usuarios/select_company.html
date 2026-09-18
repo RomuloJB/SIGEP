@@ -1,4 +1,5 @@
 {% load static %}
+{% load masks %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -49,7 +50,7 @@
                         </div>
                         <div class="company-card__body">
                             <div class="company-card__name">{{ company.name }}</div>
-                            <div class="company-card__cnpj">CNPJ: {{ company.cnpj }}</div>
+                            <div class="company-card__cnpj">CNPJ: {{ company.cnpj|cnpj }}</div>
                             <div class="company-card__desc">
                                 {% if company.description %}
                                     {{ company.description }}

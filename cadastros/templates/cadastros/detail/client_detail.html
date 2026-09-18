@@ -1,5 +1,6 @@
 {% extends "cadastros/form.html" %}
 {% load static %}
+{% load masks %}
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'client-list' %}">Clientes</a></li>
@@ -40,7 +41,7 @@
                         </tr>
                         <tr>
                             <th>CNPJ/CPF</th>
-                            <td>{{ object.cnpj_cpf|default:"-" }}</td>
+                            <td>{{ object.cnpj_cpf|cpf_cnpj|default:"-" }}</td>
                         </tr>
                         <tr>
                             <th>UF</th>

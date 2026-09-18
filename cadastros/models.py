@@ -1,5 +1,7 @@
 from django.db import models
 
+from .masks import format_cnpj, format_cpf_cnpj
+
 # Create your models here.
 
 class User_Profile(models.Model):
@@ -33,7 +35,7 @@ class Company(BaseClass):
     sales_rep = models.ManyToManyField('auth.User', blank=True, related_name='%(app_label)s_%(class)s_sales_rep', verbose_name="representantes")
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.cnpj)
+        return "{} ({})".format(self.name, format_cnpj(self.cnpj))
 
     class Meta:
         verbose_name = "Empresa"
@@ -51,7 +53,7 @@ class Client(BaseClass):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='clients', verbose_name="empresa")
 
     def __str__(self):
-        return "{} ({})".format(self.name, self.cnpj_cpf)
+        return "{} ({})".format(self.name, format_cpf_cnpj(self.cnpj_cpf))
 
     class Meta:
         verbose_name = "Cliente"

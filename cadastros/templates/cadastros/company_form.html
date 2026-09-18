@@ -1,0 +1,17 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'company-list' %}">Empresas</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+{% endblock breadcrumb %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
+{% endblock extra_css %}
+
+{# Gerentes/Representantes usam <select multiple data-tom-select>: dropdown com busca e chips removíveis #}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/select-search.js' %}"></script>
+{% endblock scripts %}

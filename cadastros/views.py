@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 from decimal import Decimal, InvalidOperation
 
 from .models import Company, Client, User_Profile, Order, Product, ProductOrder
-from .forms import UserProfileForm
+from .forms import UserProfileForm, ClientForm, CompanyForm
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -69,29 +69,12 @@ class PaginatedListView(ListView):
         context["per_page_options"] = self.paginate_by_options
         return context
 
-class CompanyForm(forms.ModelForm):
-    manager = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all().order_by('username'),
-        widget=forms.CheckboxSelectMultiple,
-        label="Gerentes",
-    )
-    sales_rep = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all().order_by('username'),
-        widget=forms.CheckboxSelectMultiple,
-        required=False,
-        label="Representantes",
-    )
-
-    class Meta:
-        model = Company
-        fields = ["name", "description", "cnpj", "manager", "sales_rep"]
-
 # Company
 class CompanyCreate(GroupRequiredMixin, BaseLoginMixin, CreateView):
     group_required = ['Manager']
     model = Company
     form_class = CompanyForm
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/company_form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Cadastro de Empresa", "botao": "Criar Empresa"}
 
@@ -107,7 +90,7 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
     group_required = ['Manager']
     model = Company
     form_class = CompanyForm
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/company_form.html"
     success_url = reverse_lazy("company-list")
     extra_context = {"title": "Editar dados da Empresa", "botao": "Atualizar Empresa"}
 
@@ -122,7 +105,7 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
             form.instance.manager.add(self.request.user)
         response = super().form_valid(form)
         # Superusuários nunca podem ser removidos como gerentes,
-        # mesmo que tenham sido desmarcados no checkbox por outro manager
+        # mesmo que tenham sido removidos da seleção por outro manager
         self.object.manager.add(*User.objects.filter(is_superuser=True))
         return response
 
@@ -165,7 +148,7 @@ class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
 # Client
 class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
     model = Client
-    fields = ["name", "cnpj_cpf", "address", "city", "uf"]
+    form_class = ClientForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
@@ -179,7 +162,7 @@ class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
 
 class ClientUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Client
-    fields = ["name", "cnpj_cpf", "address", "city", "uf"]
+    form_class = ClientForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}

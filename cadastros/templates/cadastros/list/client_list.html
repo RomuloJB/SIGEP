@@ -1,5 +1,6 @@
 {% extends "cadastros/form.html" %}
 {% load static %}
+{% load masks %}
 
 {% block breadcrumb %}
     <li class="breadcrumb-item active">Lista de Clientes</li>
@@ -40,7 +41,7 @@
                     <tr>
                         <td>{{ client.pk }}</td>
                         <td>{{ client.name }}</td>
-                        <td>{{ client.cnpj_cpf }}</td>
+                        <td>{{ client.cnpj_cpf|cpf_cnpj }}</td>
                         <td>{{ client.uf }}</td>
                         <td class="text-nowrap text-end">
                             <div class="dropdown">
