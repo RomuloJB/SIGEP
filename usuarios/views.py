@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib import messages
 from cadastros.models import Company, User_Profile
+from cadastros.forms import PhoneField
 
 class FormErrorMessagesMixin:
     """
@@ -215,12 +216,9 @@ class UserRegisterForm(forms.ModelForm):
         label="Nome completo",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
-    phone = forms.CharField(
-        max_length=11,
+    phone = PhoneField(
         required=True,
         label="Telefone",
-        help_text="Apenas números, com DDD. Exemplo: 41999999999",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     cpf = forms.CharField(
         max_length=14,

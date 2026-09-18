@@ -1,5 +1,6 @@
 {% extends "cadastros/form.html" %}
 {% load static %}
+{% load masks %}
 
 {% block breadcrumb %}
     <li class="breadcrumb-item active">Lista de Usuários</li>
@@ -40,7 +41,7 @@
                     <tr>
                         <td>{{ user_profile.pk }}</td>
                         <td>{{ user_profile.name }}</td>
-                        <td>{{ user_profile.phone }}</td>
+                        <td>{{ user_profile.phone|phone }}</td>
                         <td>{{ user_profile.cpf }}</td>
                         <td class="text-nowrap text-end">
                             <div class="dropdown">

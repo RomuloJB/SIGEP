@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 from decimal import Decimal, InvalidOperation
 
 from .models import Company, Client, User_Profile, Order, Product, ProductOrder
+from .forms import UserProfileForm
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -207,7 +208,7 @@ class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
 # User Profile
 class UserProfileCreate(BaseLoginMixin, CreateView):
     model = User_Profile
-    fields = ["name", "phone", "cpf"]
+    form_class = UserProfileForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
@@ -218,7 +219,7 @@ class UserProfileCreate(BaseLoginMixin, CreateView):
 
 class UserProfileUpdate(BaseLoginMixin, UpdateView):
     model = User_Profile
-    fields = ["name", "phone", "cpf"]
+    form_class = UserProfileForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Editar dados do Perfil", "botao": "Atualizar Perfil"}

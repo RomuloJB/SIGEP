@@ -1,5 +1,6 @@
 {% extends "cadastros/form.html" %}
 {% load static %}
+{% load masks %}
 
 {% block breadcrumb %}
 	<li class="breadcrumb-item"><a href="{% url 'userprofile-list' %}">Perfis de usuario</a></li>
@@ -29,7 +30,7 @@
 							</tr>
 							<tr>
 								<th>Telefone</th>
-								<td>{{ object.phone|default:"-" }}</td>
+								<td>{{ object.phone|phone|default:"-" }}</td>
 							</tr>
 							<tr>
 								<th>CPF</th>

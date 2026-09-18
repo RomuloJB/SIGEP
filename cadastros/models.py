@@ -102,7 +102,7 @@ class Order(BaseClass):
         ("IN", "Entrada"),
         ("OUT", "Saída"),
     )
-    type = models.CharField(max_length=3, choices=TYPES, default="IN", verbose_name="tipo")
+    type = models.CharField(max_length=3, choices=TYPES, default="OUT", verbose_name="tipo")
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='orders', verbose_name="empresa")
     client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name='orders', verbose_name="cliente")
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.PIX, verbose_name="método de pagamento")
