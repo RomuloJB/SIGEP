@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Column, Layout, Row
+
 from .masks import (
     CNPJ_DIGITS, CNPJ_FORMAT, CPF_DIGITS, CPF_FORMAT, PHONE_DIGITS, PHONE_FORMAT,
     format_cnpj, format_cpf, format_cpf_cnpj, format_phone, only_digits,
@@ -145,6 +148,23 @@ class ClientForm(forms.ModelForm):
         model = Client
         fields = ["name", "cnpj_cpf", "address", "city", "uf"]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Agrupa campos curtos na mesma linha (grid do Bootstrap; empilha no celular)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Row(
+                Column("name", css_class="col-12 col-md-8"),
+                Column("cnpj_cpf", css_class="col-12 col-md-4"),
+            ),
+            Row(
+                Column("address", css_class="col-12 col-md-7"),
+                Column("city", css_class="col-12 col-md-3"),
+                Column("uf", css_class="col-12 col-md-2"),
+            ),
+        )
+
 
 class UserSearchMultipleField(forms.ModelMultipleChoiceField):
     """
@@ -174,3 +194,17 @@ class CompanyForm(forms.ModelForm):
     class Meta:
         model = Company
         fields = ["name", "description", "cnpj", "manager", "sales_rep"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Row(
+                Column("name", css_class="col-12 col-md-8"),
+                Column("cnpj", css_class="col-12 col-md-4"),
+            ),
+            "description",
+            "manager",
+            "sales_rep",
+        )

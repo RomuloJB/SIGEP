@@ -76,11 +76,6 @@
                                     <div class="sb-nav-link-icon"><i class="fas fa-dolly"></i></div>
                                     Pedidos
                                 </a>
-                                <a class="nav-link" href="{% url 'userprofile-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
-                                    Perfis de Usuários
-                                </a>
-
                                 <div class="sb-sidenav-menu-heading">Adicionais</div>
                                 <a class="nav-link" href="{% url 'company-chart' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
@@ -95,6 +90,10 @@
                                 <a class="nav-link" href="{% url 'user-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>
                                     Gerenciar Usuários
+                                </a>
+                                <a class="nav-link" href="{% url 'userprofile-list' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
+                                    Perfis de Usuários
                                 </a>
                                 {% endif %}
                             {% else %}

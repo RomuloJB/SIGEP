@@ -21,4 +21,5 @@ python manage.py collectstatic
 
 # Comando para fazer o deploy no Google Cloud
 gcloud app deploy
+PADRAOifPADRAO
 Y

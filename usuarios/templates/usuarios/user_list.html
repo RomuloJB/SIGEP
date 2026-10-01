@@ -25,7 +25,6 @@
                     <tr>
                         <th>Username</th>
                         <th>Nome Completo</th>
-                        <th>E-mail</th>
                         <th>Superusuário?</th>
                         <th>Status</th>
                         <th>Grupos</th>
@@ -38,7 +37,6 @@
                     <tr>
                         <td class="fw-bold text-dark">{{ user.username }}</td>
                         <td>{{ user.get_full_name|default:"-" }}</td>
-                        <td>{{ user.email|default:"-" }}</td>
                         <td>
                             {% if user.is_superuser %}
                             <span class="badge bg-danger">Sim</span>

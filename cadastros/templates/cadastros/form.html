@@ -22,7 +22,11 @@
                 <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
                     {% csrf_token %}
 
-                    {{ form|crispy }}
+                    {% if form.helper %}
+                        {% crispy form %}
+                    {% else %}
+                        {{ form|crispy }}
+                    {% endif %}
 
                     <div class="cadastros-actions">
                         <button type="submit" class="btn btn-success btnLoading">
