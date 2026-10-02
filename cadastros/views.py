@@ -4,8 +4,8 @@ from django import forms
 from django.db import models
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView
 from django.views.generic.detail import DetailView
-from django.views.generic.list import ListView
 from django.urls import reverse_lazy
+from django_filters.views import FilterView
 from django.db.models import Sum
 from django.db import transaction
 from django.http import JsonResponse
@@ -16,6 +16,7 @@ from decimal import Decimal, InvalidOperation
 
 from .models import Company, Client, User_Profile, Order, Product, ProductOrder
 from .forms import UserProfileForm, ClientForm, CompanyForm
+from .filters import CompanyFilter, ClientFilter, UserProfileFilter, ProductFilter, OrderFilter, ProductOrderFilter
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -47,8 +48,9 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
         return context
     
 
-# Listas Paginadas
-class PaginatedListView(ListView):
+# Listas Paginadas e com filtros de busca (django-filter)
+# FilterView faz o papel da ListView e ainda aplica o filterset_class por cima do get_queryset
+class PaginatedFilterView(FilterView):
     paginate_by = 10
     paginate_by_options = (10, 20, 40)
 
@@ -122,10 +124,12 @@ class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
             return qs
         return qs.filter(manager=self.request.user).distinct()
 
-class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedListView):
+class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedFilterView):
     group_required = ['Manager']
     model = Company
     template_name = "cadastros/list/company_list.html"
+    ordering = ['name']
+    filterset_class = CompanyFilter
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -174,9 +178,11 @@ class ClientDelete(GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Excluir Cliente"}
 
-class ClientList(ActiveCompanyRequiredMixin, PaginatedListView):
+class ClientList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = Client
     template_name = "cadastros/list/client_list.html"
+    ordering = ['name']
+    filterset_class = ClientFilter
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -241,9 +247,11 @@ class UserProfileDelete(BaseLoginMixin, DeleteView):
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Excluir Perfil de Usuário"}
 
-class UserProfileList(BaseLoginMixin, PaginatedListView):
+class UserProfileList(BaseLoginMixin, PaginatedFilterView):
     model = User_Profile
     template_name = "cadastros/list/userprofile_list.html"
+    ordering = ['name']
+    filterset_class = UserProfileFilter
 
 class UserProfileDetail(BaseLoginMixin, DetailView):
     model = User_Profile
@@ -306,9 +314,11 @@ class ProductDelete(GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Excluir Produto"}
 
-class ProductList(ActiveCompanyRequiredMixin, PaginatedListView):
+class ProductList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = Product
     template_name = "cadastros/list/product_list.html"
+    ordering = ['name']
+    filterset_class = ProductFilter
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -442,9 +452,15 @@ class OrderDelete(ActiveCompanyRequiredMixin, DeleteView):
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Excluir Pedido"}
 
-class OrderList(ActiveCompanyRequiredMixin, PaginatedListView):
+class OrderList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = Order
     template_name = "cadastros/list/order_list.html"
+    ordering = ['-id']
+    filterset_class = OrderFilter
+
+    def get_queryset(self):
+        # A tabela mostra o cliente de cada pedido
+        return super().get_queryset().select_related("client")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -516,9 +532,15 @@ class ProductOrderDelete(ActiveCompanyRequiredMixin, DeleteView):
     extra_context = {"title": "Excluir Item de Pedido"}
 
 
-class ProductOrderList(ActiveCompanyRequiredMixin, PaginatedListView):
+class ProductOrderList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = ProductOrder
     template_name = "cadastros/list/productorder_list.html"
+    ordering = ['id']
+    filterset_class = ProductOrderFilter
+
+    def get_queryset(self):
+        # A tabela mostra o pedido, o cliente do pedido e o produto de cada item
+        return super().get_queryset().select_related("order__client", "product")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

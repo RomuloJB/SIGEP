@@ -1,0 +1,27 @@
+{% load crispy_forms_tags %}
+
+<style>
+    /* Deixa os campos do filtro lado a lado, em vez de um embaixo do outro */
+    form.row div[id*="div_id"] {
+        flex: 0 0 auto;
+        width: auto;
+    }
+</style>
+
+<h5>Filtros</h5>
+{# method="get": a busca vai para a URL, e não fica escondida em um POST #}
+<form class="row gy-2 gx-3 align-items-end pb-3" action="" method="get">
+    {# Sem csrf_token: ele só é necessário em formulários POST #}
+    {{ filter.form|crispy }}
+    {# Mantém a quantidade de itens por página escolhida ao filtrar #}
+    {% if request.GET.per_page %}<input type="hidden" name="per_page" value="{{ request.GET.per_page }}">{% endif %}
+    <div class="col-auto mb-3">
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Filtrar
+        </button>
+        {# O botão "Limpar" volta para a mesma página, sem os parâmetros da busca #}
+        <a href="{{ request.path }}" class="btn btn-outline-secondary">
+            <i class="fas fa-xmark"></i> Limpar
+        </a>
+    </div>
+</form>

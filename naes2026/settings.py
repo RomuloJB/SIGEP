@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'debug_toolbar',
+    'django_filters',  # pacote pip "django-filter"; app com underline e no plural
 
 
     # ativas os meus apps
