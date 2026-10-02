@@ -1,8 +1,3 @@
-"""
-Formatadores de exibição para valores gravados só com dígitos.
-Módulo sem dependências do Django para poder ser usado em models, forms e template tags.
-Valores fora do padrão esperado voltam como estão.
-"""
 import re
 
 PHONE_DIGITS = 11
@@ -19,7 +14,7 @@ def only_digits(value):
 
 
 def format_phone(value):
-    """'41999999999' -> '(41) 99999-9999'"""
+    """'44999999999' -> '(44) 99999-9999'"""
     d = only_digits(value)
     if len(d) != PHONE_DIGITS:
         return value

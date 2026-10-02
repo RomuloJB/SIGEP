@@ -13,16 +13,10 @@ from .models import Client, Company, User_Profile
 
 
 class MaskedDigitsField(forms.CharField):
-    """
-    Base para campos com máscara: o input exibe o valor formatado (máscara
-    aplicada pelo static/js/masks.js e por prepare_value) e o banco recebe só
-    os dígitos. Subclasses definem o nome da máscara (data-mask), os tamanhos
-    aceitos, o pattern do navegador e o formatador de exibição.
-    """
-    mask = ""                 # valor de data-mask lido pelo masks.js
-    allowed_lengths = ()      # quantidades de dígitos aceitas
-    max_formatted_length = 0  # vira o maxlength do input
-    pattern = ""              # validação no navegador
+    mask = ""
+    allowed_lengths = ()
+    max_formatted_length = 0
+    pattern = ""
     placeholder = ""
     invalid_message = ""
 

@@ -1,14 +1,4 @@
-/* Máscaras de entrada aplicadas enquanto o usuário digita.
- *
- * Uso: <input data-mask="phone">     ->  (NN) NNNNN-NNNN
- *      <input data-mask="cpf">       ->  000.000.000-00
- *      <input data-mask="cnpj">      ->  00.000.000/0000-00
- *      <input data-mask="cpf-cnpj">  ->  CPF até 11 dígitos; do 12º em diante vira CNPJ
- *
- * O valor formatado é enviado como está; o servidor (cadastros.forms.MaskedDigitsField)
- * guarda só os dígitos. Funciona também para inputs inseridos depois via JS,
- * pois o listener fica no document.
- */
+
 (function () {
     "use strict";
 
@@ -16,8 +6,6 @@
         return raw.replace(/\D/g, "").slice(0, max);
     }
 
-    // Preenche um padrão (ex.: "000.000.000-00") só até onde há dígitos,
-    // para a pontuação aparecer conforme o usuário digita.
     function fill(pattern, d) {
         var out = "", i = 0;
         for (var p = 0; p < pattern.length && i < d.length; p++) {
