@@ -69,6 +69,12 @@ class PaginatedFilterView(FilterView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["per_page_options"] = self.paginate_by_options
+        # Quantos filtros estão preenchidos, para o badge do botão "Filtros"
+        form = self.filterset.form
+        if form.is_valid():
+            context["active_filters"] = sum(
+                1 for value in form.cleaned_data.values() if value not in (None, "", [])
+            )
         return context
 
 # Company

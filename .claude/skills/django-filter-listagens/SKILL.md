@@ -20,9 +20,9 @@ Confira a base (já existe hoje; só recrie se tiver sumido):
 # O filtro (cadastros/filters.py)
 
 1. Um `FilterSet` por model, chamado `<Model>Filter` (ex.: `ProductFilter`).
-2. Como `LANGUAGE_CODE = 'en-us'` (proposital, ver AGENT.md), os rótulos automáticos
-   do `Meta.fields` saem em inglês. Por isso **declare cada filtro** com `label` em
-   português e deixe `Meta.fields = []`.
+2. **Declare cada filtro** com `label` em português e deixe `Meta.fields = []`
+   (os rótulos automáticos do `Meta.fields` saem como "nome contains", a partir do
+   `verbose_name` em minúsculas).
    - texto (`CharField`, `TextField`): `CharFilter(lookup_expr='icontains', label='... contém')`
    - número e moeda: dois `NumberFilter` com `lookup_expr='gte'` / `'lte'`
      (`<campo>_min` / `<campo>_max`, rótulos "... a partir de" / "... até")
@@ -55,10 +55,17 @@ Confira a base (já existe hoje; só recrie se tiver sumido):
 
 # O template da lista
 
-1. Logo abaixo do cabeçalho/título: `{% include 'cadastros/form-filter.html' %}`.
+1. O `form-filter.html` é um botão "Filtros" com dropdown (badge com o número de
+   filtros ativos, vindo de `active_filters` da `PaginatedFilterView`). Ele fica no
+   cabeçalho, dentro de `<div class="list-actions">`, antes do botão "Novo":
+   `{% include 'cadastros/form-filter.html' %}`. O estilo está em `styles.css`
+   (`.filter-dropdown`), não no template.
 2. Dentro do card, depois do `.table-responsive`: `{% include 'cadastros/paginacao.html' %}`.
 3. Nunca copie o formulário de filtros ou a paginação para dentro do template.
 4. A tabela continua percorrendo `<model>_list` / `object_list`.
+5. As regras da tabela (classes, `data-sort`, coluna de ações, lista vazia) são as
+   da skill `datatables-listagens`. Esta skill cuida do formulário de filtros, da
+   view e da paginação.
 
 # Conferência antes de terminar
 

@@ -11,13 +11,14 @@
             <h1 class="list-title">Itens de Pedidos</h1>
             <div class="list-subtitle">Lista de itens e produtos associados aos pedidos</div>
         </div>
-        <a class="btn btn-success btn-novo" href="{% url 'productorder-create' %}">
-            <i class="fas fa-plus me-1"></i>
-            Novo Item
-        </a>
+        <div class="list-actions">
+            {% include 'cadastros/form-filter.html' %}
+            <a class="btn btn-success btn-novo" href="{% url 'productorder-create' %}">
+                <i class="fas fa-plus me-1"></i>
+                Novo Item
+            </a>
+        </div>
     </div>
-
-    {% include 'cadastros/form-filter.html' %}
 
     <div class="card list-card">
         <div class="card-header">
@@ -26,8 +27,8 @@
         </div>
 
         <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0">
-                <thead>
+            <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                <thead class="table-light">
                     <tr>
                         <th>ID</th>
                         <th>Pedido</th>
@@ -35,15 +36,16 @@
                         <th class="text-end">Quantidade</th>
                         <th class="text-end">Valor Unitário</th>
                         <th class="text-end">Valor Total</th>
-                        <th></th>
+                        <th data-orderable="false" data-searchable="false">Ações</th>
                     </tr>
                 </thead>
 
                 <tbody>
                     {% for item in object_list %}
                     <tr>
-                        <td>{{ item.pk }}</td>
-                        <td>
+                        <td data-sort="{{ item.pk|stringformat:'d' }}">{{ item.pk }}</td>
+                        {# Ordena pelo número do pedido, não pelo texto "Pedido #N - Cliente" #}
+                        <td data-sort="{{ item.order.pk|default:0|stringformat:'d' }}">
                             {% if item.order %}
                             <a href="{% url 'order-detail' item.order.pk %}" class="text-decoration-none">
                                 Pedido #{{ item.order.pk }} - {{ item.order.client.name }}
@@ -62,9 +64,9 @@
                             <span class="text-muted">Sem produto</span>
                             {% endif %}
                         </td>
-                        <td class="text-end">{{ item.quantity }}</td>
-                        <td class="text-end">R$ {{ item.unit_value|floatformat:2 }}</td>
-                        <td class="text-end fw-bold">R$ {{ item.total_value|floatformat:2 }}</td>
+                        <td class="text-end" data-sort="{{ item.quantity|stringformat:'d' }}">{{ item.quantity }}</td>
+                        <td class="text-end" data-sort="{{ item.unit_value|stringformat:'.2f' }}">R$ {{ item.unit_value|floatformat:2 }}</td>
+                        <td class="text-end fw-bold" data-sort="{{ item.total_value|stringformat:'.2f' }}">R$ {{ item.total_value|floatformat:2 }}</td>
                         <td class="text-nowrap text-end">
                             <div class="dropdown">
                                 <button class="btn btn-link link-primary p-0" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-strategy="fixed" aria-expanded="false">
@@ -90,10 +92,6 @@
                                 </ul>
                             </div>
                         </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="7" class="list-empty">Nenhum item cadastrado.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

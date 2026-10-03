@@ -1,7 +1,7 @@
 import django_filters
 
 from .masks import only_digits
-from .models import Company, Client, User_Profile, Order, Product, ProductOrder, MeasureUnit, PaymentMethod
+from .models import Company, Client, User_Profile, Order, Product, ProductOrder, MeasureUnit
 
 
 # Intervalo de datas: dois campos "de" e "até", do tipo date do HTML
@@ -75,8 +75,6 @@ class ProductFilter(django_filters.FilterSet):
 class OrderFilter(django_filters.FilterSet):
     # Uma empresa pode ter muitos clientes: busca pelo texto em vez de um <select>
     client_name = django_filters.CharFilter(field_name='client__name', lookup_expr='icontains', label='Cliente contém')
-    type = django_filters.ChoiceFilter(choices=Order.TYPES, label='Tipo')
-    payment_method = django_filters.ChoiceFilter(choices=PaymentMethod.choices, label='Forma de pagamento')
     total_value_min = django_filters.NumberFilter(field_name='total_value', lookup_expr='gte', label='Valor total a partir de')
     total_value_max = django_filters.NumberFilter(field_name='total_value', lookup_expr='lte', label='Valor total até')
     created_at = created_at_range()

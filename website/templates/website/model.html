@@ -11,6 +11,8 @@
         <title>SIGEP</title>
         <link rel="icon" type="image/png" href="{% static 'assets/img/favicon-sigep.png' %}" />
         <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+        <!-- CSS do DataTables com o tema Bootstrap 5 (busca e ordenação das listagens) -->
+        <link href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
         {% block extra_css %}{% endblock extra_css %}
         <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
@@ -288,6 +290,11 @@
         <script src="{% static 'js/scripts.js' %}"></script>
         <script src="{% static 'js/form-validation.js' %}"></script>
         <script src="{% static 'js/masks.js' %}"></script>
+        <!-- jQuery (uma única vez, antes de tudo que depende dele) e DataTables -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
+        <script src="{% static 'js/datatables-init.js' %}"></script>
 
         {% block scripts %}
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>

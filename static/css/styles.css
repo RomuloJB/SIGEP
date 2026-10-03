@@ -12607,6 +12607,66 @@ body {
     margin-bottom: 0;
 }
  
+/* Botões do cabeçalho da listagem: "Filtros" + "Novo" */
+.list-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+
+/* Dropdown de filtros (cadastros/form-filter.html) */
+.list-header .filter-toggle {
+    border-radius: .85rem;
+    padding: .6rem 1.1rem;
+    font-weight: 700;
+    font-size: .9rem;
+    white-space: nowrap;
+}
+
+.filter-dropdown .filter-menu {
+    width: 34rem;
+    max-width: calc(100vw - 2rem);
+    padding: 1rem 1rem .75rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Campos em duas colunas; o intervalo de datas ocupa a linha inteira */
+.filter-dropdown .filter-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: .75rem;
+}
+
+.filter-dropdown .filter-fields > div:has(input[type="date"]) {
+    grid-column: 1 / -1;
+}
+
+.filter-dropdown .filter-fields .mb-3 {
+    margin-bottom: .6rem !important;
+}
+
+.filter-dropdown .filter-fields label {
+    font-size: .8rem;
+    font-weight: 600;
+    margin-bottom: .2rem;
+}
+
+.filter-dropdown .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    padding-top: .75rem;
+    border-top: 1px solid rgba(25, 52, 33, 0.10);
+}
+
+@media (max-width: 575.98px) {
+    .filter-dropdown .filter-fields {
+        grid-template-columns: 1fr;
+    }
+}
+
 .list-header .btn-novo {
     border-radius: .85rem;
     padding: .6rem 1.3rem;
@@ -12726,7 +12786,20 @@ body {
     color: #8a9e91;
     font-size: .95rem;
 }
- 
+
+/* DataTables: caixa "Pesquisar" dentro do card, sem a margem negativa das .row */
+.list-card .dt-container > .row {
+    margin: 0;
+}
+
+.list-card .dt-container > .row > * {
+    padding: 0;
+}
+
+.list-card .dt-container > .row:not(:has(table)) {
+    padding: .75rem 1rem 0;
+}
+
 /* Botões de ação por linha (View / Edit / Delete) */
 .list-card .btn-row {
     border-radius: .65rem;
@@ -12802,6 +12875,19 @@ body {
     .list-header .btn-novo {
         width: 100%;
         text-align: center;
+    }
+
+    /* "Filtros" e "Novo" dividem a linha no celular */
+    .list-header .list-actions {
+        width: 100%;
+    }
+
+    .list-header .list-actions > * {
+        flex: 1 1 0;
+    }
+
+    .list-header .filter-toggle {
+        width: 100%;
     }
  
     .list-filters {

@@ -1,27 +1,33 @@
 {% load crispy_forms_tags %}
 
-<style>
-    /* Deixa os campos do filtro lado a lado, em vez de um embaixo do outro */
-    form.row div[id*="div_id"] {
-        flex: 0 0 auto;
-        width: auto;
-    }
-</style>
+{# Botão "Filtros" que abre um dropdown com o formulário de busca do django-filter. #}
+{# data-bs-auto-close="outside": clicar dentro do formulário não fecha o dropdown. #}
+<div class="dropdown filter-dropdown">
+    <button class="btn btn-outline-primary filter-toggle dropdown-toggle {% if filter.form.errors %}show{% endif %}"
+            type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+            aria-expanded="{% if filter.form.errors %}true{% else %}false{% endif %}">
+        <i class="fas fa-filter me-1"></i> Filtros
+        {% if active_filters %}<span class="badge rounded-pill bg-primary ms-1">{{ active_filters }}</span>{% endif %}
+    </button>
 
-<h5>Filtros</h5>
-{# method="get": a busca vai para a URL, e não fica escondida em um POST #}
-<form class="row gy-2 gx-3 align-items-end pb-3" action="" method="get">
-    {# Sem csrf_token: ele só é necessário em formulários POST #}
-    {{ filter.form|crispy }}
-    {# Mantém a quantidade de itens por página escolhida ao filtrar #}
-    {% if request.GET.per_page %}<input type="hidden" name="per_page" value="{{ request.GET.per_page }}">{% endif %}
-    <div class="col-auto mb-3">
-        <button type="submit" class="btn btn-outline-primary">
-            <i class="fas fa-search"></i> Filtrar
-        </button>
-        {# O botão "Limpar" volta para a mesma página, sem os parâmetros da busca #}
-        <a href="{{ request.path }}" class="btn btn-outline-secondary">
-            <i class="fas fa-xmark"></i> Limpar
-        </a>
+    <div class="dropdown-menu dropdown-menu-end filter-menu {% if filter.form.errors %}show{% endif %}">
+        {# method="get": a busca vai para a URL, e não fica escondida em um POST #}
+        <form action="" method="get">
+            {# Sem csrf_token: ele só é necessário em formulários POST #}
+            <div class="filter-fields">
+                {{ filter.form|crispy }}
+            </div>
+            {# Mantém a quantidade de itens por página escolhida ao filtrar #}
+            {% if request.GET.per_page %}<input type="hidden" name="per_page" value="{{ request.GET.per_page }}">{% endif %}
+            <div class="filter-actions">
+                {# O botão "Limpar" volta para a mesma página, sem os parâmetros da busca #}
+                <a href="{{ request.path }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-xmark"></i> Limpar
+                </a>
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+            </div>
+        </form>
     </div>
-</form>
+</div>
