@@ -185,6 +185,9 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
         # Superusuários nunca podem ser removidos como gerentes,
         # mesmo que tenham sido removidos da seleção por outro manager
         self.object.manager.add(*User.objects.filter(is_superuser=True))
+        # Editou a empresa ativa: atualiza o nome exibido no cabeçalho
+        if self.request.session.get('active_company_id') == self.object.pk:
+            self.request.session['company_name'] = self.object.display_name
         return response
 
 class CompanyDelete(ExclusaoProtegidaMixin, ConfirmacaoDigitadaMixin, GroupRequiredMixin, BaseLoginMixin, DeleteView):

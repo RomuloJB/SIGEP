@@ -20,16 +20,19 @@
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand-->
-            <a class="navbar-brand ps-3" href="/">SIGEP</a>
-            <!-- Sidebar Toggle-->
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
-            <!-- Navbar Search-->
-            <div class="input-group">
-                <p class="card-company-topnav ms-auto me-0 me-md-3 my-2 my-md-0">{{ request.session.company_name }}</p>
+            <a class="navbar-brand ps-lg-3" href="/">SIGEP</a>
+            <!-- Sidebar Toggle: no celular vem antes da marca (order-first) -->
+            <button class="btn btn-link order-first order-lg-0" id="sidebarToggle" type="button" aria-label="Abrir/fechar menu"><i class="fas fa-bars"></i></button>
+            <!-- Empresa da sessão (apelido ou nome) -->
+            {% if request.session.company_name %}
+            <div class="card-company-topnav ms-auto" title="{{ request.session.company_name }}">
+                <i class="fas fa-building"></i>
+                <span>{{ request.session.company_name }}</span>
             </div>
+            {% endif %}
             <!-- Navbar-->
             {% block sidenav %}
-            <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <ul class="navbar-nav {% if not request.session.company_name %}ms-auto{% endif %} me-2 me-lg-4">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">

@@ -65,7 +65,7 @@ class ActivateCompanyView(BaseLoginMixin, View):
                 pk=pk
             )
         request.session['active_company_id'] = company.id
-        request.session['company_name'] = company.name
+        request.session['company_name'] = company.display_name
         return redirect('index')
 
 

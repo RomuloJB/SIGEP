@@ -40,6 +40,10 @@ class BaseClass(models.Model):
 
 class Company(BaseClass):
     name = models.CharField(max_length=100, verbose_name="nome")
+    session_name = models.CharField(
+        max_length=30, blank=True, verbose_name="apelido para sessão",
+        help_text="Nome curto exibido no cabeçalho da página para identificar a empresa da sessão atual. Se ficar em branco, será usado o nome da empresa.",
+    )
     description = models.CharField(max_length=255, null=True, blank=True, verbose_name="descrição")
     cnpj = models.CharField(max_length=18, verbose_name="CNPJ", help_text="Formato: 00.000.000/0000-00")
     manager = models.ManyToManyField('auth.User', related_name='%(app_label)s_%(class)s_manager', verbose_name="gerentes")
@@ -47,6 +51,11 @@ class Company(BaseClass):
 
     def __str__(self):
         return "{} ({})".format(self.name, format_cnpj(self.cnpj))
+
+    @property
+    def display_name(self):
+        # Nome mostrado no cabeçalho para a empresa da sessão
+        return self.session_name or self.name
 
     class Meta:
         verbose_name = "Empresa"

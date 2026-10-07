@@ -187,7 +187,7 @@ class CompanyForm(forms.ModelForm):
 
     class Meta:
         model = Company
-        fields = ["name", "description", "cnpj", "manager", "sales_rep"]
+        fields = ["name", "session_name", "description", "cnpj", "manager", "sales_rep"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -197,6 +197,9 @@ class CompanyForm(forms.ModelForm):
             Row(
                 Column("name", css_class="col-12 col-md-8"),
                 Column("cnpj", css_class="col-12 col-md-4"),
+            ),
+            Row(
+                Column("session_name", css_class="col-12 col-md-6"),
             ),
             "description",
             "manager",

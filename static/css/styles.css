@@ -10975,14 +10975,53 @@ body {
   color: #212529;
 }
 
+/* Botão do menu com área de toque de 44px */
+.sb-topnav #sidebarToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 1.15rem;
+}
+
+/* Empresa da sessão: encolhe e corta com "…" quando não cabe */
 .card-company-topnav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.4rem;
+  min-width: 0;
+  max-width: 20rem;
+  margin: 0 0.5rem 0 auto;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 10px;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+.card-company-topnav i {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+.card-company-topnav span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Celular/tablet: menu à esquerda e marca sem a largura fixa da sidebar */
+@media (max-width: 991.98px) {
+  .sb-topnav #sidebarToggle {
+    margin-left: 0.25rem;
+  }
+  .sb-topnav .navbar-brand {
+    width: auto;
+    flex-shrink: 0;
+    padding-left: 0.25rem;
+    margin-right: 0.5rem;
+  }
 }
 
 .sb-sidenav {
