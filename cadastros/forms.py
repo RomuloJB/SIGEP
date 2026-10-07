@@ -6,14 +6,19 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Layout, Row
 
 from .masks import (
-    CNPJ_DIGITS, CNPJ_FORMAT, CPF_DIGITS, CPF_FORMAT, PHONE_DIGITS, PHONE_FORMAT,
+    CNPJ_DIGITS, CNPJ_FORMAT, CPF_DIGITS, CPF_FORMAT, LANDLINE_DIGITS, LANDLINE_FORMAT,
+    PHONE_DIGITS, PHONE_FORMAT,
     format_cnpj, format_cpf, format_cpf_cnpj, format_phone, only_digits,
 )
 from .models import Client, Company, User_Profile
 
 
 class MaskedDigitsField(forms.CharField):
-    mask = ""
+    """
+    Campo que grava só os dígitos. A máscara de digitação é aplicada pelo
+    static/js/mascaras.js a partir do nome do campo (cpf, cnpj, phone...),
+    então o nome do campo no form precisa conter um desses termos.
+    """
     allowed_lengths = ()
     max_formatted_length = 0
     pattern = ""
@@ -28,7 +33,6 @@ class MaskedDigitsField(forms.CharField):
     def widget_attrs(self, widget):
         attrs = super().widget_attrs(widget)
         attrs.update({
-            "data-mask": self.mask,
             "inputmode": "numeric",
             "placeholder": self.placeholder,
             "pattern": self.pattern,
@@ -54,16 +58,15 @@ class MaskedDigitsField(forms.CharField):
 
 
 class PhoneField(MaskedDigitsField):
-    """Celular (NN) NNNNN-NNNN — compatível com User_Profile.phone (max_length=11)."""
-    mask = "phone"
-    allowed_lengths = (PHONE_DIGITS,)
+    """Celular (NN) NNNNN-NNNN ou fixo (NN) NNNN-NNNN — User_Profile.phone (max_length=11)."""
+    allowed_lengths = (LANDLINE_DIGITS, PHONE_DIGITS)
     max_formatted_length = len(PHONE_FORMAT)
-    pattern = r"\(\d{2}\) \d{5}-\d{4}"
+    pattern = r"\(\d{2}\) \d{4,5}-\d{4}"
     placeholder = "(41) 99999-9999"
-    invalid_message = f"Informe o telefone no formato {PHONE_FORMAT}."
+    invalid_message = f"Informe o telefone no formato {PHONE_FORMAT} ou {LANDLINE_FORMAT}."
 
     def __init__(self, **kwargs):
-        kwargs.setdefault("help_text", f"Celular com DDD. Formato: {PHONE_FORMAT}")
+        kwargs.setdefault("help_text", f"Celular ou fixo com DDD. Formato: {PHONE_FORMAT} ou {LANDLINE_FORMAT}")
         super().__init__(**kwargs)
 
     def widget_attrs(self, widget):
@@ -77,7 +80,6 @@ class PhoneField(MaskedDigitsField):
 
 class CPFField(MaskedDigitsField):
     """CPF 000.000.000-00 — grava 11 dígitos (User_Profile.cpf tem max_length=14)."""
-    mask = "cpf"
     allowed_lengths = (CPF_DIGITS,)
     max_formatted_length = len(CPF_FORMAT)
     pattern = r"\d{3}\.\d{3}\.\d{3}-\d{2}"
@@ -94,7 +96,6 @@ class CPFField(MaskedDigitsField):
 
 class CNPJField(MaskedDigitsField):
     """CNPJ 00.000.000/0000-00 — grava 14 dígitos (Company.cnpj tem max_length=18)."""
-    mask = "cnpj"
     allowed_lengths = (CNPJ_DIGITS,)
     max_formatted_length = len(CNPJ_FORMAT)
     pattern = r"\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}"
@@ -111,7 +112,6 @@ class CNPJField(MaskedDigitsField):
 
 class CPFCNPJField(MaskedDigitsField):
     """CPF ou CNPJ, escolhido pela quantidade de dígitos (11 ou 14) — Client.cnpj_cpf."""
-    mask = "cpf-cnpj"
     allowed_lengths = (CPF_DIGITS, CNPJ_DIGITS)
     max_formatted_length = len(CNPJ_FORMAT)
     pattern = r"(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2})"

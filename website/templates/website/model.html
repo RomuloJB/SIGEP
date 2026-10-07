@@ -306,7 +306,9 @@
         {% endif %}
         <script src="{% static 'js/scripts.js' %}"></script>
         <script src="{% static 'js/form-validation.js' %}"></script>
-        <script src="{% static 'js/masks.js' %}"></script>
+        <!-- Máscaras de CPF/CNPJ/telefone/CEP pelo nome do campo (depois do jQuery) -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+        <script src="{% static 'js/mascaras.js' %}"></script>
         <!-- DataTables -->
         <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>

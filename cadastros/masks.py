@@ -1,10 +1,12 @@
 import re
 
-PHONE_DIGITS = 11
+PHONE_DIGITS = 11      # celular: DDD + 9 dígitos
+LANDLINE_DIGITS = 10   # fixo: DDD + 8 dígitos
 CPF_DIGITS = 11
 CNPJ_DIGITS = 14
 
 PHONE_FORMAT = "(NN) NNNNN-NNNN"
+LANDLINE_FORMAT = "(NN) NNNN-NNNN"
 CPF_FORMAT = "000.000.000-00"
 CNPJ_FORMAT = "00.000.000/0000-00"
 
@@ -14,11 +16,13 @@ def only_digits(value):
 
 
 def format_phone(value):
-    """'44999999999' -> '(44) 99999-9999'"""
+    """'44999999999' -> '(44) 99999-9999' | '4433334444' -> '(44) 3333-4444'"""
     d = only_digits(value)
-    if len(d) != PHONE_DIGITS:
-        return value
-    return f"({d[:2]}) {d[2:7]}-{d[7:]}"
+    if len(d) == PHONE_DIGITS:
+        return f"({d[:2]}) {d[2:7]}-{d[7:]}"
+    if len(d) == LANDLINE_DIGITS:
+        return f"({d[:2]}) {d[2:6]}-{d[6:]}"
+    return value
 
 
 def format_cpf(value):
