@@ -62,10 +62,12 @@
                                     Dashboard
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Páginas</div>
+                                {% if is_manager %}
                                 <a class="nav-link" href="{% url 'company-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-building"></i></div>
                                     Empresas
                                 </a>
+                                {% endif %}
                                 <a class="nav-link" href="{% url 'client-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                                     Clientes
