@@ -64,9 +64,13 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <a class="dropdown-item text-danger" href="{% url 'userprofile-delete' user_profile.pk %}">
-                                            <i class="fas fa-trash me-1"></i> Excluir
-                                        </a>
+                                        {% if user_profile.is_manager %}
+                                            {% url 'userprofile-delete' user_profile.pk as url_excluir %}
+                                            {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir perfil de gerente" tipo="o perfil do gerente" nome=user_profile.name classe="dropdown-item text-danger" digitar=True %}
+                                        {% else %}
+                                            {% url 'userprofile-delete' user_profile.pk as url_excluir %}
+                                            {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir perfil de usuário" tipo="o perfil de" nome=user_profile.name classe="dropdown-item text-danger" %}
+                                        {% endif %}
                                     </li>
                                 </ul>
                             </div>

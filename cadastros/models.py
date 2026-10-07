@@ -13,6 +13,17 @@ class User_Profile(models.Model):
     def __str__(self):
         return "{}".format(self.name)
 
+    @property
+    def is_manager(self):
+        # Gerente = grupo Manager, superusuário ou gerente de alguma empresa.
+        # Excluir o perfil de um gerente exige confirmação digitada (ver UserProfileDelete).
+        user = self.user
+        return (
+            user.is_superuser
+            or user.groups.filter(name='Manager').exists()
+            or user.cadastros_company_manager.exists()
+        )
+
     class Meta:
         verbose_name = "Perfil de Usuário"
         verbose_name_plural = "Perfis de Usuários"

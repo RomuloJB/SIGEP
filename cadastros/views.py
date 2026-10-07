@@ -11,6 +11,11 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views import View
 from django.contrib.auth.models import User
+from django.contrib import messages
+from django.db.models import ProtectedError
+from django.shortcuts import redirect
+from django.utils.http import url_has_allowed_host_and_scheme
+from collections import Counter
 
 from decimal import Decimal, InvalidOperation
 
@@ -29,6 +34,71 @@ from braces.views import GroupRequiredMixin
 #BaseLogin
 class BaseLoginMixin(FormErrorMessagesMixin, LoginRequiredMixin):
     login_url = reverse_lazy('login')
+
+class ConfirmacaoDigitadaForm(forms.Form):
+    PALAVRA = "excluir"
+
+    confirmacao = forms.CharField(
+        label='Para confirmar, digite "excluir"',
+        widget=forms.TextInput(attrs={"class": "form-control", "autocomplete": "off"}),
+    )
+
+    def clean_confirmacao(self):
+        valor = self.cleaned_data["confirmacao"].strip().lower()
+        if valor != self.PALAVRA:
+            raise forms.ValidationError('Digite "excluir" para confirmar a exclusão.')
+        return valor
+
+class ConfirmacaoDigitadaMixin:
+    """DeleteView que exige ConfirmacaoDigitadaForm quando exige_confirmacao_digitada() é True."""
+
+    def exige_confirmacao_digitada(self):
+        return True
+
+    def get_form_class(self):
+        if self.exige_confirmacao_digitada():
+            return ConfirmacaoDigitadaForm
+        return super().get_form_class()
+
+class ExclusaoProtegidaMixin:
+    """
+    DeleteView de um registro ainda em uso (FK com on_delete=PROTECT) não estoura 500:
+    volta para a página de onde o usuário veio com uma mensagem dizendo o que o prende,
+    exibida pelo Bootbox (static/js/mensagens.js).
+    """
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ProtectedError as erro:
+            messages.error(self.request, self.mensagem_protegido(erro.protected_objects))
+            return redirect(self.url_de_volta())
+
+    def mensagem_protegido(self, protegidos):
+        contagem = Counter(obj._meta for obj in protegidos)
+        partes = [
+            "{} {}".format(qtd, (meta.verbose_name if qtd == 1 else meta.verbose_name_plural).lower())
+            for meta, qtd in contagem.items()
+        ]
+        lista = partes[0] if len(partes) == 1 else ", ".join(partes[:-1]) + " e " + partes[-1]
+        if sum(contagem.values()) == 1:
+            vinculados = "existe {} vinculado".format(lista)
+        else:
+            vinculados = "existem {} vinculados".format(lista)
+        return 'Não é possível excluir "{}": {} a este registro. Exclua esses registros antes.'.format(
+            self.object, vinculados
+        )
+
+    def url_de_volta(self):
+        # Volta para a listagem/detalhe de onde veio; se veio da própria página
+        # de exclusão (ou de fora do site), vai para a listagem.
+        anterior = self.request.META.get("HTTP_REFERER", "")
+        seguro = url_has_allowed_host_and_scheme(
+            anterior, allowed_hosts={self.request.get_host()}, require_https=self.request.is_secure()
+        )
+        if seguro and self.request.path not in anterior:
+            return anterior
+        return self.get_success_url()
 
 
 # View que lista as ccompanhias para o usuário que pertence ao sales_rep veja e ative ela na sessão
@@ -117,7 +187,7 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
         self.object.manager.add(*User.objects.filter(is_superuser=True))
         return response
 
-class CompanyDelete(GroupRequiredMixin, BaseLoginMixin, DeleteView):
+class CompanyDelete(ExclusaoProtegidaMixin, ConfirmacaoDigitadaMixin, GroupRequiredMixin, BaseLoginMixin, DeleteView):
     group_required = ['Manager']
     model = Company
     template_name = "cadastros/form_delete.html"
@@ -177,7 +247,7 @@ class ClientUpdate(ActiveCompanyRequiredMixin, UpdateView):
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
     
-class ClientDelete(GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
+class ClientDelete(ExclusaoProtegidaMixin, GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
     group_required = ['Manager']
     model = Client
     template_name = "cadastros/form_delete.html"
@@ -247,11 +317,15 @@ class UserProfileUpdate(BaseLoginMixin, UpdateView):
         )
         return profile
 
-class UserProfileDelete(BaseLoginMixin, DeleteView):
+class UserProfileDelete(ExclusaoProtegidaMixin, ConfirmacaoDigitadaMixin, BaseLoginMixin, DeleteView):
     model = User_Profile
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("userprofile-list")
     extra_context = {"title": "Excluir Perfil de Usuário"}
+
+    def exige_confirmacao_digitada(self):
+        # Só o perfil de um gerente é exclusão perigosa
+        return self.object.is_manager
 
 class UserProfileList(BaseLoginMixin, PaginatedFilterView):
     model = User_Profile
@@ -313,7 +387,7 @@ class ProductUpdate(GroupRequiredMixin, ActiveCompanyRequiredMixin, UpdateView):
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Editar dados do Produto", "botao": "Atualizar Produto"}
 
-class ProductDelete(GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
+class ProductDelete(ExclusaoProtegidaMixin, GroupRequiredMixin, ActiveCompanyRequiredMixin, DeleteView):
     group_required = ['Manager']
     model = Product
     template_name = "cadastros/form_delete.html"
@@ -452,7 +526,7 @@ class OrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
 
-class OrderDelete(ActiveCompanyRequiredMixin, DeleteView):
+class OrderDelete(ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
     model = Order
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("order-list")
@@ -531,7 +605,7 @@ class ProductOrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
         return super().form_valid(form)
     
 
-class ProductOrderDelete(ActiveCompanyRequiredMixin, DeleteView):
+class ProductOrderDelete(ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
     model = ProductOrder
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("productorder-list")

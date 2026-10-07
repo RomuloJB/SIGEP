@@ -19,9 +19,8 @@
         <a class="btn btn-outline-primary btn-novo" href="{% url 'product-update' object.pk %}">
             <i class="fas fa-pen-to-square me-1"></i> Editar
         </a>
-        <a class="btn btn-outline-danger btn-novo" href="{% url 'product-delete' object.pk %}">
-            <i class="fas fa-trash me-1"></i> Excluir
-        </a>
+        {% url 'product-delete' object.pk as url_excluir %}
+        {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir produto" tipo="o produto" nome=object.name classe="btn btn-outline-danger btn-novo" %}
     </div>
 </div>
 

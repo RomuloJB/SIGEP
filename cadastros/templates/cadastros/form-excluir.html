@@ -1,0 +1,14 @@
+{% comment %}
+Botão "Excluir" que envia POST direto para a DeleteView, depois da confirmação do
+Bootbox (static/js/confirmar-exclusao.js). Uso:
+    {% url 'client-delete' client.pk as url_excluir %}
+    {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir cliente" tipo="o cliente" nome=client.name classe="dropdown-item text-danger" %}
+digitar=True → exclusão perigosa: o usuário precisa digitar "excluir" para confirmar.
+{% endcomment %}
+<form method="post" action="{{ url }}" class="form-excluir d-inline" data-titulo="{{ titulo }}" data-tipo="{{ tipo }}" data-nome="{{ nome }}"{% if digitar %} data-confirmar-digitando="true"{% endif %}>
+    {% csrf_token %}
+    {% if digitar %}<input type="hidden" name="confirmacao" value="">{% endif %}
+    <button type="submit" class="{{ classe|default:'btn btn-outline-danger' }}">
+        <i class="fas fa-trash me-1"></i> Excluir
+    </button>
+</form>

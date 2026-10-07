@@ -72,9 +72,8 @@
                                     </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
-                                        <a class="dropdown-item text-danger" href="{% url 'product-delete' product.pk %}">
-                                            <i class="fas fa-trash me-1"></i> Excluir
-                                        </a>
+                                        {% url 'product-delete' product.pk as url_excluir %}
+                                        {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir produto" tipo="o produto" nome=product.name classe="dropdown-item text-danger" %}
                                     </li>
                                 </ul>
                             </div>

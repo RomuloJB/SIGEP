@@ -120,7 +120,12 @@
     /* ── adiciona linha de item na tabela ────────────────────────────────── */
     function addProductRow(product) {
         if (itemsBody.querySelector('tr[data-product-id="' + product.id + '"]')) {
-            alert('"' + product.name + '" já foi adicionado. Ajuste a quantidade na linha existente.');
+            const nome = document.createElement('strong');
+            nome.textContent = product.name; // nome vem do banco: entra como texto, não HTML
+            bootbox.alert({
+                title: 'Produto já adicionado',
+                message: nome.outerHTML + ' já está no pedido. Ajuste a quantidade na linha existente.',
+            });
             return;
         }
 

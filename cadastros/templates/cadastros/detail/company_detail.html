@@ -13,7 +13,8 @@
 		<div class="d-flex gap-2">
 			<a class="btn btn-outline-secondary" href="{% url 'company-list' %}">Voltar</a>
 			<a class="btn btn-outline-primary" href="{% url 'company-update' object.pk %}">Editar</a>
-			<a class="btn btn-outline-danger" href="{% url 'company-delete' object.pk %}">Excluir</a>
+			{% url 'company-delete' object.pk as url_excluir %}
+			{% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir empresa" tipo="a empresa" nome=object.name classe="btn btn-outline-danger" digitar=True %}
 		</div>
 	</div>
 
