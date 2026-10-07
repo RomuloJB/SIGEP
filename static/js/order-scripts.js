@@ -1,7 +1,6 @@
 (function () {
     "use strict";
 
-    /* ── referências DOM ─────────────────────────────────────────────────── */
     const itemsBody   = document.getElementById("items-body");
     const emptyRow    = document.getElementById("empty-row");
     const totalRow    = document.getElementById("total-row");
@@ -12,13 +11,12 @@
     const itemsError  = document.getElementById("items-error");
     const orderForm   = document.getElementById("order-form");
 
-    if (!selectEl || !orderForm) return;   // sai se o template não estiver presente
+    if (!selectEl || !orderForm) return;
     if (typeof TomSelect === "undefined") {
         console.error("order-scripts: Tom Select não foi carregado.");
         return;
     }
 
-    /* ── helpers ─────────────────────────────────────────────────────────── */
     function fmt(value) {
         return "R$ " + Number(value).toLocaleString("pt-BR", {
             minimumFractionDigits: 2,
@@ -62,10 +60,6 @@
         return '<span class="badge ' + cls + '">Estoque: ' + stock + '</span>';
     }
 
-    /* ── dropdown de produtos (Tom Select) ───────────────────────────────── */
-    // Tom Select copia os data-* de cada <option> para o objeto da opção
-    // (data-price -> price, data-price-br -> priceBr, ...). Geramos aqui o
-    // valor no formato BR para a busca aceitar tanto "12.50" quanto "12,50".
     selectEl.querySelectorAll("option").forEach(function (opt) {
         if (!opt.value) return;
         opt.dataset.priceBr = (parseFloat(opt.dataset.price) || 0).toFixed(2).replace(".", ",");
@@ -107,7 +101,6 @@
         onChange: function () { showPickerError(""); },
     });
 
-    // marca/desmarca o produto no dropdown conforme ele entra ou sai do pedido
     function setOptionAdded(id, added) {
         const data = productSelect.options[id];
         if (!data) return;
@@ -117,7 +110,6 @@
         }));
     }
 
-    /* ── adiciona linha de item na tabela ────────────────────────────────── */
     function addProductRow(product) {
         if (itemsBody.querySelector('tr[data-product-id="' + product.id + '"]')) {
             const nome = document.createElement('strong');
@@ -167,7 +159,6 @@
                 '</button>' +
             '</td>';
 
-        /* linha de aviso (vermelho), fora da <table> não dá — usamos um <tr> auxiliar */
         const warningRow = document.createElement("tr");
         warningRow.className = "warning-row d-none";
         warningRow.innerHTML = '<td colspan="7" class="text-danger small py-1 warning-text"></td>';
@@ -224,7 +215,6 @@
         recalcTotal();
     }
 
-    /* ── botão "Adicionar produto" ───────────────────────────────────────── */
     function addSelectedProduct() {
         const id = productSelect.getValue();
         if (!id) {
@@ -247,17 +237,12 @@
 
     btnAdd.addEventListener("click", addSelectedProduct);
 
-    // Enter no campo de busca: com o dropdown aberto o Tom Select seleciona a opção
-    // (e marca defaultPrevented); fechado, adiciona o produto em vez de submeter o form.
     productSelect.control_input.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" || e.defaultPrevented) return;
         e.preventDefault();
         if (productSelect.getValue()) addSelectedProduct();
     });
 
-    /* ── validação antes de submeter ─────────────────────────────────────── */
-    // O form-validation.js (fase de captura) já validou os campos do pedido e
-    // limpou o resumo; aqui só entra a regra dos itens, somada ao mesmo resumo.
     orderForm.addEventListener("submit", function (e) {
         const rows = itemsBody.querySelectorAll("tr[data-product-id]");
 
