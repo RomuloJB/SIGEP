@@ -113,7 +113,7 @@ implementar isso, é trabalho novo, não correção de bug.
 - **Idioma:** comentários, `verbose_name`, mensagens de erro e templates estão em
   **português**; nomes de campos/classes Python estão em **inglês**
   (`Company`, `Client`, `unit_value`, `stock`...). Mantenha esse padrão.
-- **`LANGUAGE_CODE = 'en-us'` é proposital**, não é esquecimento — está anotado em
+- **`LANGUAGE_CODE = 'pt-br'` é proposital**, não é esquecimento — está anotado em
   `usuarios/views.py`. Mudar para `pt-br` altera a formatação de números nos
   templates e quebra o JS de pedidos, que espera `data-price="12.50"` (ponto, não
   vírgula). Não altere sem revisar todo o JS de máscaras/preços.
