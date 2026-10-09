@@ -1,0 +1,34 @@
+{% extends "cadastros/form.html" %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Meu perfil</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="cadastros-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h1 class="cadastros-title">Meu perfil</h1>
+        <p class="cadastros-subtitle">Usuário de acesso: <strong>{{ request.user.username }}</strong></p>
+    </div>
+    <a class="btn btn-outline-primary" href="{% url 'password-change' %}">
+        <i class="fas fa-key me-1"></i> Alterar senha
+    </a>
+</div>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
+            {% csrf_token %}
+
+            {{ form|crispy }}
+
+            <div class="cadastros-actions mt-4">
+                <button type="submit" class="btn btn-success btnLoading">
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock cadastros_content %}

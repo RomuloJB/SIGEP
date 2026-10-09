@@ -1,7 +1,7 @@
 import django_filters
 
 from .masks import only_digits
-from .models import Company, Client, User_Profile, Order, Product, ProductOrder, MeasureUnit
+from .models import Company, Client, Order, Product, ProductOrder, MeasureUnit
 
 
 # Intervalo de datas: dois campos "de" e "até", do tipo date do HTML
@@ -44,16 +44,6 @@ class ClientFilter(DigitsFilterMixin, django_filters.FilterSet):
 
     class Meta:
         model = Client
-        fields = []
-
-
-class UserProfileFilter(DigitsFilterMixin, django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='Nome contém')
-    phone = django_filters.CharFilter(method='filter_digits', label='Telefone contém')
-    cpf = django_filters.CharFilter(method='filter_digits', label='CPF contém')
-
-    class Meta:
-        model = User_Profile
         fields = []
 
 

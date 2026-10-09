@@ -7,8 +7,6 @@ from .views import (
     # Client
     ClientCreate, ClientUpdate, ClientDelete, ClientList, ClientDetail,
     ProductDataView,
-    # User Profile
-    UserProfileCreate, UserProfileUpdate, UserProfileDelete, UserProfileList, UserProfileDetail,
     # Order
     OrderCreate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
     # Product
@@ -33,13 +31,6 @@ urlpatterns = [
     path("client/<int:pk>/delete/", ClientDelete.as_view(), name="client-delete"),
     path("client/", ClientList.as_view(), name="client-list"),
     path("client/<int:pk>/", ClientDetail.as_view(), name="client-detail"),
-
-    # User_Profile (Perfil de Usuário)
-    path("userprofile/create/", UserProfileCreate.as_view(), name="userprofile-create"),
-    path("userprofile/<int:pk>/update/", UserProfileUpdate.as_view(), name="userprofile-update"),
-    path("userprofile/<int:pk>/delete/", UserProfileDelete.as_view(), name="userprofile-delete"),
-    path("userprofile/", UserProfileList.as_view(), name="userprofile-list"),
-    path("userprofile/<int:pk>/", UserProfileDetail.as_view(), name="userprofile-detail"),
 
     # Order (Pedido)
     path("order/create/", OrderCreate.as_view(), name="order-create"),

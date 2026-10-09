@@ -19,9 +19,9 @@ from collections import Counter
 
 from decimal import Decimal, InvalidOperation
 
-from .models import Company, Client, User_Profile, Order, Product, ProductOrder
-from .forms import UserProfileForm, ClientForm, CompanyForm
-from .filters import CompanyFilter, ClientFilter, UserProfileFilter, ProductFilter, OrderFilter, ProductOrderFilter
+from .models import Company, Client, Order, Product, ProductOrder
+from .forms import ClientForm, CompanyForm
+from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -268,102 +268,6 @@ class ClientList(ActiveCompanyRequiredMixin, PaginatedFilterView):
 class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Client
     template_name = "cadastros/detail/client_detail.html"
-
-
-# User Profile
-class UserProfileCreate(BaseLoginMixin, CreateView):
-    model = User_Profile
-    form_class = UserProfileForm
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-class UserProfileUpdate(BaseLoginMixin, UpdateView):
-    model = User_Profile
-    form_class = UserProfileForm
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
-
-    def get_object(self, queryset=None):
-        pk = self.kwargs.get('pk')
-        if pk:
-            try:
-                profile = User_Profile.objects.get(pk=pk)
-                if profile.user == self.request.user:
-                    profile, created = User_Profile.objects.get_or_create(
-                        user=self.request.user,
-                        defaults={
-                            "name": self.request.user.get_full_name() or self.request.user.username,
-                            "phone": "",
-                            "cpf": ""
-                        }
-                    )
-                return profile
-            except User_Profile.DoesNotExist:
-                pass
-        
-        profile, created = User_Profile.objects.get_or_create(
-            user=self.request.user,
-            defaults={
-                "name": self.request.user.get_full_name() or self.request.user.username,
-                "phone": "",
-                "cpf": ""
-            }
-        )
-        return profile
-
-class UserProfileDelete(ExclusaoProtegidaMixin, ConfirmacaoDigitadaMixin, BaseLoginMixin, DeleteView):
-    model = User_Profile
-    template_name = "cadastros/form_delete.html"
-    success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Excluir Perfil de Usuário"}
-
-    def exige_confirmacao_digitada(self):
-        # Só o perfil de um gerente é exclusão perigosa
-        return self.object.is_manager
-
-class UserProfileList(BaseLoginMixin, PaginatedFilterView):
-    model = User_Profile
-    template_name = "cadastros/list/userprofile_list.html"
-    ordering = ['name']
-    filterset_class = UserProfileFilter
-
-class UserProfileDetail(BaseLoginMixin, DetailView):
-    model = User_Profile
-    template_name = "cadastros/detail/userprofile_detail.html"
-
-    def get_object(self, queryset=None):
-        pk = self.kwargs.get('pk')
-        if pk:
-            try:
-                profile = User_Profile.objects.get(pk=pk)
-                if profile.user == self.request.user:
-                    profile, created = User_Profile.objects.get_or_create(
-                        user=self.request.user,
-                        defaults={
-                            "name": self.request.user.get_full_name() or self.request.user.username,
-                            "phone": "",
-                            "cpf": ""
-                        }
-                    )
-                return profile
-            except User_Profile.DoesNotExist:
-                pass
-
-        profile, created = User_Profile.objects.get_or_create(
-            user=self.request.user,
-            defaults={
-                "name": self.request.user.get_full_name() or self.request.user.username,
-                "phone": "",
-                "cpf": ""
-            }
-        )
-        return profile
 
 
 # Product

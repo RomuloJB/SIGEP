@@ -9,7 +9,7 @@ from .masks import (
     CNPJ_DIGITS, CNPJ_FORMAT, CPF_DIGITS, CPF_FORMAT, PHONE_DIGITS, PHONE_FORMAT,
     format_cnpj, format_cpf, format_cpf_cnpj, format_phone, only_digits,
 )
-from .models import Client, Company, User_Profile
+from .models import Client, Company
 
 
 class MaskedDigitsField(forms.CharField):
@@ -124,15 +124,6 @@ class CPFCNPJField(MaskedDigitsField):
 
     def format(self, value):
         return format_cpf_cnpj(value)
-
-
-class UserProfileForm(forms.ModelForm):
-    phone = PhoneField(label="Telefone")
-    cpf = CPFField(label="CPF")
-
-    class Meta:
-        model = User_Profile
-        fields = ["name", "phone", "cpf"]
 
 
 class ClientForm(forms.ModelForm):

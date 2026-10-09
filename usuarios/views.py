@@ -27,14 +27,28 @@ class BaseLoginMixin(FormErrorMessagesMixin, LoginRequiredMixin):
     login_url = reverse_lazy('login')
 
 
+def activate_company(request, company):
+    """Grava a empresa escolhida na sessão e manda para o dashboard."""
+    request.session['active_company_id'] = company.id
+    request.session['company_name'] = company.name
+    return redirect('index')
+
+
 class SelectCompanyView(BaseLoginMixin, ListView):
     """
     Exibe a lista de empresas às quais o usuário logado tem acesso
     (seja como gerente ou como representante de vendas).
+    Com uma única empresa não há o que escolher: ela é ativada direto.
     """
     model = Company
     template_name = "usuarios/select_company.html"
     context_object_name = "companies"
+
+    def get(self, request, *args, **kwargs):
+        companies = list(self.get_queryset()[:2])
+        if len(companies) == 1:
+            return activate_company(request, companies[0])
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         if self.request.user.is_superuser:
@@ -64,9 +78,7 @@ class ActivateCompanyView(BaseLoginMixin, View):
                 ).distinct(),
                 pk=pk
             )
-        request.session['active_company_id'] = company.id
-        request.session['company_name'] = company.name
-        return redirect('index')
+        return activate_company(request, company)
 
 
 class ActiveCompanyRequiredMixin(BaseLoginMixin):
@@ -135,10 +147,13 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
         return form
 
 
-# ─── Gerenciamento de Usuários (Apenas Superuser) ─────────────────────────────
+# ─── Usuários: login + perfil (nome, telefone, CPF) editados juntos ───────────
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic import UpdateView
 
 class SuperuserRequiredMixin(UserPassesTestMixin):
@@ -146,7 +161,43 @@ class SuperuserRequiredMixin(UserPassesTestMixin):
         return self.request.user.is_authenticated and self.request.user.is_superuser
 
 
-class UserManageForm(forms.ModelForm):
+class UserProfileFieldsForm(forms.ModelForm):
+    """
+    Formulário de User que também grava o User_Profile ligado a ele, para que o
+    login e os dados pessoais da mesma pessoa sejam mantidos numa tela só.
+    """
+    email = forms.EmailField(label="E-mail")
+    name = forms.CharField(max_length=100, label="Nome completo")
+    phone = PhoneField(label="Telefone")
+    cpf = CPFField(label="CPF")
+
+    profile_fields = ("name", "phone", "cpf")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Usuários criados pelo createsuperuser ainda não têm perfil
+        profile = getattr(self.instance, "profile", None)
+        if profile:
+            for field in self.profile_fields:
+                self.initial[field] = getattr(profile, field)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Este e-mail já está em uso por outro usuário.")
+        return email
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        if commit:
+            User_Profile.objects.update_or_create(
+                user=user,
+                defaults={field: self.cleaned_data[field] for field in self.profile_fields},
+            )
+        return user
+
+
+class UserManageForm(UserProfileFieldsForm):
     groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
         widget=forms.CheckboxSelectMultiple,
@@ -156,116 +207,100 @@ class UserManageForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["username", "email", "first_name", "last_name", "is_active", "is_superuser"]
+        fields = ["username", "email", "is_active", "is_superuser", "groups"]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Adiciona classes CSS do Bootstrap
-        for field_name, field in self.fields.items():
-            if field_name != 'groups':
-                field.widget.attrs.update({'class': 'form-control'})
-        
-        if self.instance and self.instance.pk:
-            self.fields['groups'].initial = self.instance.groups.all()
+    field_order = ["username", "email", "name", "phone", "cpf", "is_active", "is_superuser", "groups"]
 
-    def save(self, commit=True):
-        user = super().save(commit=commit)
-        if commit:
-            user.groups.set(self.cleaned_data['groups'])
-        return user
 
+class UserCreateForm(UserManageForm, UserCreationForm):
+    """Cadastro pelo superusuário: campos do UserManageForm + senha validada pelo Django."""
+    field_order = ["username", "email", "name", "phone", "cpf", "password1", "password2",
+                   "is_active", "is_superuser", "groups"]
+
+
+class UserRegisterForm(UserProfileFieldsForm, UserCreationForm):
+    """Cadastro público (Sign Up): cria o login e o perfil de uma vez."""
+    class Meta(UserCreationForm.Meta):
+        fields = ["username", "email"]
+
+    field_order = ["username", "email", "name", "phone", "cpf", "password1", "password2"]
+
+
+class MyProfileForm(UserProfileFieldsForm):
+    """Dados que o próprio usuário pode alterar em "Meu perfil"."""
+    class Meta:
+        model = User
+        fields = ["email"]
+
+    field_order = ["name", "email", "phone", "cpf"]
+
+
+# ─── Gerenciamento de Usuários (Apenas Superuser) ─────────────────────────────
 
 class UserListView(SuperuserRequiredMixin, ListView):
     model = User
     template_name = "usuarios/user_list.html"
     context_object_name = "users"
+    queryset = User.objects.select_related("profile").prefetch_related("groups").order_by("username")
     paginate_by = 10
+    paginate_by_options = (10, 20, 40)
+
+    def get_paginate_by(self, queryset):
+        # Mesmo ?per_page=10|20|40 das listagens de cadastros (cadastros/paginacao.html)
+        per_page = self.request.GET.get("per_page", "")
+        return int(per_page) if per_page.isdigit() and int(per_page) in self.paginate_by_options else self.paginate_by
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["per_page_options"] = self.paginate_by_options
+        return context
 
 
-class UserUpdateView(SuperuserRequiredMixin, FormErrorMessagesMixin, UpdateView):
+class UserCreateView(SuperuserRequiredMixin, FormErrorMessagesMixin, SuccessMessageMixin, CreateView):
+    model = User
+    form_class = UserCreateForm
+    template_name = "usuarios/user_form.html"
+    success_url = reverse_lazy("user-list")
+    success_message = 'Usuário "%(username)s" cadastrado com sucesso.'
+    extra_context = {
+        "title": "Novo Usuário",
+        "subtitle": "Cadastre o acesso, os dados pessoais e as permissões do novo usuário.",
+        "botao": "Cadastrar Usuário",
+    }
+
+
+class UserUpdateView(SuperuserRequiredMixin, FormErrorMessagesMixin, SuccessMessageMixin, UpdateView):
     model = User
     form_class = UserManageForm
     template_name = "usuarios/user_form.html"
     success_url = reverse_lazy("user-list")
-    extra_context = {"title": "Gerenciar Usuário", "botao": "Salvar Alterações"}
+    success_message = 'Usuário "%(username)s" atualizado com sucesso.'
+    extra_context = {
+        "title": "Gerenciar Usuário",
+        "subtitle": "Altere os dados cadastrais e as permissões de grupos do usuário.",
+        "botao": "Salvar Alterações",
+    }
+
+
+# ─── Meu perfil (qualquer usuário logado, só os próprios dados) ───────────────
+
+class MyProfileView(BaseLoginMixin, SuccessMessageMixin, UpdateView):
+    form_class = MyProfileForm
+    template_name = "usuarios/my_profile.html"
+    success_url = reverse_lazy("my-profile")
+    success_message = "Seus dados foram atualizados."
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+
+class MyPasswordChangeView(BaseLoginMixin, SuccessMessageMixin, PasswordChangeView):
+    template_name = "usuarios/password_change.html"
+    success_url = reverse_lazy("my-profile")
+    success_message = "Sua senha foi alterada."
 
 
 # ─── Cadastro Público de Usuários (Sign Up) ───────────────────────────────────
-
-class UserRegisterForm(forms.ModelForm):
-    password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        label="Senha",
-        required=True
-    )
-    confirm_password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
-        label="Confirmar Senha",
-        required=True
-    )
-    email = forms.EmailField(
-        required=True,
-        label="E-mail",
-        widget=forms.EmailInput(attrs={'class': 'form-control'})
-    )
-    
-    # Campos do perfil
-    name = forms.CharField(
-        max_length=255,
-        required=True,
-        label="Nome completo",
-        widget=forms.TextInput(attrs={'class': 'form-control'})
-    )
-    phone = PhoneField(
-        required=True,
-        label="Telefone",
-    )
-    cpf = CPFField(
-        required=True,
-        label="CPF",
-    )
-
-    class Meta:
-        model = User
-        fields = ["username", "email", "password"]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Adiciona classes do bootstrap aos campos restantes
-        for field_name, field in self.fields.items():
-            if field_name not in ['password', 'confirm_password', 'email', 'name', 'phone', 'cpf']:
-                field.widget.attrs.update({'class': 'form-control'})
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("Este e-mail já está em uso por outro usuário.")
-        return email
-
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirm_password = cleaned_data.get("confirm_password")
-
-        if password and confirm_password and password != confirm_password:
-            self.add_error('confirm_password', "As senhas não coincidem.")
-        return cleaned_data
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])
-        if commit:
-            user.save()
-            User_Profile.objects.update_or_create(
-                user=user,
-                defaults={
-                    'name': self.cleaned_data['name'],
-                    'phone': self.cleaned_data['phone'],
-                    'cpf': self.cleaned_data['cpf']
-                }
-            )
-        return user
-
 
 class UserRegisterView(FormErrorMessagesMixin, CreateView):
     model = User
@@ -277,4 +312,3 @@ class UserRegisterView(FormErrorMessagesMixin, CreateView):
         response = super().form_valid(form)
         messages.success(self.request, "Cadastro realizado com sucesso! Faça login para continuar.")
         return response
-
