@@ -101,6 +101,19 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
             return redirect('select-company')
         return super().dispatch(request, *args, **kwargs)
 
+    def ve_todos_os_pedidos(self):
+        # RN02: gerente da empresa ativa (ou superusuário) vê todos os pedidos dela;
+        # representante vê só os que ele criou.
+        user = self.request.user
+        return user.is_superuser or self.active_company.manager.filter(pk=user.pk).exists()
+
+    def pedidos_visiveis(self):
+        from cadastros.models import Order
+        pedidos = Order.objects.filter(company=self.active_company)
+        if self.ve_todos_os_pedidos():
+            return pedidos
+        return pedidos.filter(created_by=self.request.user)
+
     def get_queryset(self):
         queryset = super().get_queryset()
         # Filtra registros pelo Tenant (Empresa Ativa)

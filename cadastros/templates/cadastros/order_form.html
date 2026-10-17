@@ -21,6 +21,14 @@
             </div>
         </div>
 
+        {% if pedido_original %}
+        <div class="alert alert-info">
+            <i class="fas fa-copy me-1"></i>
+            Cópia do pedido <a href="{% url 'order-detail' pedido_original.pk %}">#{{ pedido_original.pk }}</a>.
+            Os valores unitários são os atuais de cada produto e o estoque é conferido de novo ao salvar.
+        </div>
+        {% endif %}
+
         {# Erros de formulário (non_field_errors) são renderizados pelo {{ form|crispy }} abaixo #}
         <form action="" method="POST" id="order-form" class="needs-validation" novalidate>
             {% csrf_token %}
@@ -115,6 +123,8 @@
 
 {# Fica fora do block content: aninhado, o Django renderiza o bloco duas vezes #}
 {% block scripts %}
+{# Itens da duplicação ou do envio com erro; o order-scripts.js monta as linhas #}
+{{ itens_iniciais|json_script:"itens-iniciais" }}
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
 <script src="{% static 'js/order-scripts.js' %}"></script>
 {% endblock scripts %}

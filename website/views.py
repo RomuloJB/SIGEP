@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django.db.models import Count, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
-from cadastros.models import Order, Client
+from cadastros.models import Client
 
 from usuarios.views import ActiveCompanyRequiredMixin
 
@@ -31,7 +31,7 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
         """
         Dados dos gráficos do dashboard: valor vendido e quantidade de pedidos por
         mês nos últimos `qtd_meses` (meses sem pedido entram com zero), usando o
-        mesmo critério dos cards (todos os pedidos da empresa ativa).
+        mesmo critério dos cards (pedidos visíveis ao usuário na empresa ativa).
         """
         meses = ultimos_meses(qtd_meses)
         inicio = timezone.make_aware(datetime.combine(date(*meses[0], 1), time.min))
@@ -39,7 +39,7 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
         por_mes = {
             (linha["mes"].year, linha["mes"].month): linha
             for linha in (
-                Order.objects.filter(company=self.active_company, created_at__gte=inicio)
+                self.pedidos_visiveis().filter(created_at__gte=inicio)
                 .annotate(mes=TruncMonth("created_at"))
                 .values("mes")
                 .annotate(total=Sum("total_value"), qtd=Count("id"))
@@ -58,25 +58,27 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # 1. Total em vendas (da empresa ativa)
-        total_vendas = Order.objects.filter(company=self.active_company).aggregate(total=Sum('total_value'))['total'] or 0
-        
-        # 2. Vendas neste mês (da empresa ativa)
+        # Gerente: pedidos da empresa ativa; representante: só os dele (RN02)
+        pedidos = self.pedidos_visiveis()
+
+        # 1. Total em vendas
+        total_vendas = pedidos.aggregate(total=Sum('total_value'))['total'] or 0
+
+        # 2. Vendas neste mês
         hoje = timezone.now()
-        vendas_mes = Order.objects.filter(
-            company=self.active_company,
+        vendas_mes = pedidos.filter(
             created_at__year=hoje.year,
             created_at__month=hoje.month
         ).aggregate(total=Sum('total_value'))['total'] or 0
-        
-        # 3. Quantidade de vendas (total de pedidos da empresa ativa)
-        qtd_vendas = Order.objects.filter(company=self.active_company).count()
-        
+
+        # 3. Quantidade de vendas
+        qtd_vendas = pedidos.count()
+
         # 4. Quantidade de clientes (da empresa ativa)
         qtd_clientes = Client.objects.filter(company=self.active_company).count()
 
-        # Extra: Pega os últimos 10 pedidos da empresa ativa
-        ultimos_pedidos = Order.objects.filter(company=self.active_company).select_related('client').order_by('-created_at')[:10]
+        # Extra: Pega os últimos 10 pedidos
+        ultimos_pedidos = pedidos.select_related('client').order_by('-created_at')[:10]
         
         context['total_vendas'] = total_vendas
         context['vendas_mes'] = vendas_mes
