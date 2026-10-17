@@ -92,6 +92,10 @@
                                     <div class="sb-nav-link-icon"><i class="fas fa-circle-info"></i></div>
                                     Sobre
                                 </a>
+                                <a class="nav-link" href="{% url 'ia:meu-consumo' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-robot"></i></div>
+                                    Meu consumo de IA
+                                </a>
                                 {% if request.user.is_superuser %}
                                 <div class="sb-sidenav-menu-heading">Administração</div>
                                 <a class="nav-link" href="{% url 'user-list' %}">
@@ -101,6 +105,18 @@
                                 <a class="nav-link" href="{% url 'userprofile-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
                                     Perfis de Usuários
+                                </a>
+                                <a class="nav-link" href="{% url 'ia:requisicao-list' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-list-check"></i></div>
+                                    Requisições de IA
+                                </a>
+                                <a class="nav-link" href="{% url 'ia:configuracao' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-sliders"></i></div>
+                                    Configuração da IA
+                                </a>
+                                <a class="nav-link" href="{% url 'ia:usuario-list' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user-gear"></i></div>
+                                    IA por usuário
                                 </a>
                                 {% endif %}
                             {% else %}

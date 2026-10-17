@@ -90,7 +90,8 @@ class ConfiguracaoIA(models.Model):
     )
     reter_requisicoes_dias = models.PositiveSmallIntegerField(
         default=60, verbose_name="reter requisições (dias)",
-        help_text="Por quantos dias os registros das chamadas são guardados antes de serem apagados.",
+        help_text="Por quantos dias os registros das chamadas são guardados antes de serem apagados "
+                  "pela limpeza diária. O consumo do mês não é apagado. 0 = nunca apagar.",
     )
 
     # Preços (só para estimar custo)

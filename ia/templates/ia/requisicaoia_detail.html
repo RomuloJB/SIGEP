@@ -1,0 +1,91 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'ia:requisicao-list' %}">Requisições de IA</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Requisição #{{ object.pk }}</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="list-header mb-4">
+    <div>
+        <h1 class="list-title">Requisição #{{ object.pk }}</h1>
+        <div class="list-subtitle">{{ object.finalidade }} — {{ object.criado_em|date:"d/m/Y H:i:s" }}</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-novo" href="{% url 'ia:requisicao-list' %}">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card list-card h-100">
+            <div class="card-header"><i class="fas fa-circle-info me-1"></i> Chamada</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="w-50">Situação</th>
+                            <td>
+                                <span class="badge {% if object.situacao == 'sucesso' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ object.get_situacao_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>Usuário</th><td>{{ object.usuario }}</td></tr>
+                        <tr><th>Origem</th><td>{{ object.get_origem_display }}</td></tr>
+                        <tr><th>Finalidade</th><td>{{ object.finalidade }}</td></tr>
+                        <tr><th>Referência</th><td>{{ object.referencia|default:"—" }}</td></tr>
+                        <tr><th>Provedor / modelo</th><td>{{ object.provedor }} / {{ object.modelo|default:"—" }}</td></tr>
+                        <tr><th>Versão do prompt</th><td>{{ object.versao_prompt|default:"—" }}</td></tr>
+                        <tr><th>Tentativa</th><td>{{ object.tentativa }}</td></tr>
+                        <tr><th>Motivo do fim</th><td>{{ object.motivo_fim|default:"—" }}</td></tr>
+                        <tr><th>Duração</th><td>{{ object.duracao_ms }} ms</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card list-card h-100">
+            <div class="card-header"><i class="fas fa-coins me-1"></i> Tokens e arquivo</div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr><th class="w-50">Tokens de entrada</th><td>{{ object.tokens_entrada }}</td></tr>
+                        <tr><th>Tokens de saída</th><td>{{ object.tokens_saida }} <span class="text-muted small">(raciocínio: {{ object.tokens_raciocinio }})</span></td></tr>
+                        <tr><th>Tokens no total</th><td class="fw-semibold">{{ object.tokens_total }}</td></tr>
+                        <tr><th>Custo estimado</th><td>US$ {{ object.custo_estimado|floatformat:6 }}</td></tr>
+                        <tr><th>Arquivo</th><td>{% if object.arquivo_mime %}{{ object.arquivo_mime }} ({{ object.arquivo_tamanho }} bytes){% else %}—{% endif %}</td></tr>
+                        <tr><th>Hash do arquivo</th><td class="text-break small">{{ object.arquivo_hash|default:"—" }}</td></tr>
+                        <tr><th>Hash do contexto</th><td class="text-break small">{{ object.contexto_hash|default:"—" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if object.erro %}
+<div class="card list-card mb-4">
+    <div class="card-header text-danger"><i class="fas fa-triangle-exclamation me-1"></i> Erro</div>
+    <div class="card-body">
+        <pre class="mb-0 text-wrap">{{ object.erro }}</pre>
+    </div>
+</div>
+{% endif %}
+
+<div class="card list-card mb-4">
+    <div class="card-header"><i class="fas fa-comment-dots me-1"></i> Resposta</div>
+    <div class="card-body">
+        {% if object.resposta %}
+        <pre class="mb-0 text-wrap">{{ object.resposta }}</pre>
+        {% else %}
+        <span class="text-muted">Sem resposta.</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock cadastros_content %}

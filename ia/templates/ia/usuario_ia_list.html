@@ -1,0 +1,102 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">IA por usuário</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+    <div class="list-header">
+        <div>
+            <h1 class="list-title">IA por usuário</h1>
+            <div class="list-subtitle">Limite efetivo, uso do mês e exceções de cada usuário</div>
+        </div>
+        <div class="list-actions">
+            {% include 'cadastros/form-filter.html' %}
+        </div>
+    </div>
+
+    <div class="card list-card">
+        <div class="card-header">
+            <div class="small text-muted">Total: {{ page_obj.paginator.count }}</div>
+            <span class="badge bg-light text-dark">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Nome</th>
+                        <th class="text-end">Limite mensal</th>
+                        <th class="text-end">Uso do mês</th>
+                        <th>IA</th>
+                        <th data-orderable="false" data-searchable="false">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for usuario in user_list %}
+                    <tr>
+                        <td class="fw-bold text-dark">{{ usuario.username }}</td>
+                        <td>{{ usuario.get_full_name|default:"—" }}</td>
+                        {% if usuario.limite_proprio is not None %}
+                        <td class="text-end" data-sort="{{ usuario.limite_proprio|stringformat:'d' }}">próprio: {{ usuario.limite_proprio }}</td>
+                        {% else %}
+                        <td class="text-end" data-sort="{{ limite_padrao|stringformat:'d' }}"><span class="text-muted">padrão:</span> {{ limite_padrao }}</td>
+                        {% endif %}
+                        <td class="text-end" data-sort="{{ usuario.uso_mes|stringformat:'d' }}">{{ usuario.uso_mes }}</td>
+                        <td>
+                            {% if usuario.ia_habilitada %}
+                            <span class="badge bg-success">Ligada</span>
+                            {% else %}
+                            <span class="badge bg-danger">Desligada</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-link link-primary p-0" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-strategy="fixed" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'ia:usuario-update' usuario.pk %}">
+                                            <i class="fas fa-pen-to-square me-1"></i> Editar
+                                        </a>
+                                    </li>
+                                    {% if usuario.excecao_id %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        {% url 'ia:usuario-padrao' usuario.pk as url_padrao %}
+                                        {% include 'cadastros/form-excluir.html' with url=url_padrao titulo="Voltar ao padrão" tipo="a configuração de IA própria de" nome=usuario.username classe="dropdown-item text-danger" rotulo="Voltar ao padrão" %}
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'cadastros/paginacao.html' %}
+    </div>
+    {% block extra__js %}
+    <script>
+        document.addEventListener('show.bs.dropdown', function (e) {
+            const scrollParent = e.target.closest('.table-responsive');
+            if (scrollParent) {
+                scrollParent.style.overflow = 'visible';
+            }
+        });
+
+        document.addEventListener('hide.bs.dropdown', function (e) {
+            const scrollParent = e.target.closest('.table-responsive');
+            if (scrollParent) {
+                scrollParent.style.overflow = '';
+            }
+        });
+    </script>
+    {% endblock extra__js %}
+{% endblock cadastros_content %}
