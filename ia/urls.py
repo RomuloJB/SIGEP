@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    ConfiguracaoIAUpdate, ConfiguracaoIAUsuarioPadrao, ConfiguracaoIAUsuarioUpdate, MeuConsumoView,
+    ConfiguracaoIAUpdate, ConfiguracaoIAUsuarioPadrao, ConfiguracaoIAUsuarioUpdate, ManutencaoView, MeuConsumoView,
     RequisicaoIADetail, RequisicaoIAList, TestarConexaoView, UsuarioIAList,
 )
 
@@ -16,4 +16,5 @@ urlpatterns = [
     path("usuarios/", UsuarioIAList.as_view(), name="usuario-list"),
     path("usuarios/<int:usuario_id>/", ConfiguracaoIAUsuarioUpdate.as_view(), name="usuario-update"),
     path("usuarios/<int:usuario_id>/padrao/", ConfiguracaoIAUsuarioPadrao.as_view(), name="usuario-padrao"),
+    path("manutencao/", ManutencaoView.as_view(), name="manutencao"),
 ]

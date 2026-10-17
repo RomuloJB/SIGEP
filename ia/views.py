@@ -204,3 +204,24 @@ class ConfiguracaoIAUsuarioPadrao(ExclusaoProtegidaMixin, SuperuserRequiredMixin
 
     def get_success_message(self, cleaned_data):
         return "A IA de {} voltou ao padrão.".format(self.get_usuario())
+
+
+# ─── Manutenção (rota interna do agendador) ───────────────────────────────────
+
+@method_decorator(csrf_exempt, name="dispatch")
+class ManutencaoView(View):
+    """
+    POST interno do agendador diário: roda a limpeza da auditoria.
+    Autenticado pelo cabeçalho X-Tarefas-Segredo, comparado com TAREFAS_SEGREDO do .env.
+    Sem TAREFAS_SEGREDO configurado, a rota recusa tudo.
+    """
+    http_method_names = ["post"]
+    CABECALHO = "X-Tarefas-Segredo"
+
+    @sensitive_variables("esperado", "recebido")
+    def post(self, request):
+        esperado = os.getenv("TAREFAS_SEGREDO", "")
+        recebido = request.headers.get(self.CABECALHO, "")
+        if not esperado or not hmac.compare_digest(recebido.encode(), esperado.encode()):
+            return HttpResponseForbidden("Segredo inválido.")
+        return JsonResponse({"apagadas": limpar_requisicoes()})
