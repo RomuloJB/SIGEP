@@ -1,0 +1,17 @@
+{% autoescape off %}Um novo pedido foi salvo na empresa {{ pedido.company.name }}.
+
+Pedido: #{{ pedido.pk }}
+Cliente: {{ pedido.client.name }}
+Representante: {{ pedido.created_by.get_full_name|default:pedido.created_by.username }}
+Pagamento: {{ pedido.get_payment_method_display }}
+
+Itens:
+{% for item in itens %}- {{ item.quantity }} x {{ item.product.name }} — R$ {{ item.total_value|floatformat:2 }}
+{% endfor %}
+Total do pedido: R$ {{ pedido.total_value|floatformat:2 }}
+
+Ver o pedido: {{ url }}
+
+--
+E-mail automático do SIGEP. Não responda.
+{% endautoescape %}

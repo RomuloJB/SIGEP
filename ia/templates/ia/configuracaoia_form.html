@@ -1,0 +1,44 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Configuração da IA</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="cadastros-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h1 class="cadastros-title">{{ title }}</h1>
+        <p class="cadastros-subtitle">Modelo, limites e preços usados em todas as chamadas à IA. A chave de API fica só no arquivo .env.</p>
+    </div>
+    {# Testa a configuração já salva, não o que está digitado no formulário #}
+    <form method="post" action="{% url 'ia:testar-conexao' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary btnLoading">
+            <i class="fas fa-plug me-1"></i> Testar conexão
+        </button>
+    </form>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-circle-info me-1"></i> As mudanças valem na próxima chamada, sem deploy.
+</div>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
+            {% csrf_token %}
+
+            {% crispy form %}
+
+            <div class="cadastros-actions mt-4">
+                <span class="small text-muted me-auto">Última alteração: {{ object.atualizado_em|date:"d/m/Y H:i" }}</span>
+                <button type="submit" class="btn btn-success btnLoading">
+                    Salvar configuração
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock cadastros_content %}

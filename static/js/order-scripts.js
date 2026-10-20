@@ -121,14 +121,14 @@
             return;
         }
 
-        const price     = parseFloat(product.price) || 0;
-        const stock     = parseInt(product.stock, 10) || 0;
-        const lineTotal = price * 1; // qty inicial = 1, desconto inicial = 0
+        const price    = parseFloat(product.price) || 0;
+        const stock    = parseInt(product.stock, 10) || 0;
+        // Linha nova começa com qtd 1 e sem desconto; itens iniciais trazem os seus
+        const qty      = product.quantity != null ? parseInt(product.quantity, 10) : 1;
+        const discount = parseFloat(product.discount) || 0;
 
         const tr = document.createElement("tr");
         tr.dataset.productId = product.id;
-        tr.dataset.lineTotal = lineTotal;
-        tr.dataset.valid = "true";
 
         tr.innerHTML =
             '<td>' +
@@ -142,17 +142,17 @@
             '<td>' +
                 '<input type="number" name="quantity[]"' +
                        ' class="form-control form-control-sm qty-input"' +
-                       ' min="1" max="' + stock + '" value="1"' +
+                       ' min="1" max="' + stock + '" value="' + (isNaN(qty) ? "" : qty) + '"' +
                        ' style="width:80px">' +
             '</td>' +
             '<td class="text-end">' + fmt(price) + '</td>' +
             '<td>' +
                 '<input type="number" name="discount[]"' +
                        ' class="form-control form-control-sm discount-input"' +
-                       ' min="0" step="0.01" value="0.00"' +
+                       ' min="0" step="0.01" value="' + discount.toFixed(2) + '"' +
                        ' style="width:100px">' +
             '</td>' +
-            '<td class="text-end fw-semibold line-total-cell">' + fmt(lineTotal) + '</td>' +
+            '<td class="text-end fw-semibold line-total-cell"></td>' +
             '<td class="text-center">' +
                 '<button type="button" class="btn btn-sm btn-outline-danger btn-remove" title="Remover">' +
                     '<i class="fas fa-trash"></i>' +
@@ -210,9 +210,8 @@
         itemsBody.appendChild(tr);
         itemsBody.appendChild(warningRow);
         setOptionAdded(product.id, true);
-        showItemsError("");
         updateVisibility();
-        recalcTotal();
+        updateRow(); // calcula o total da linha e já avisa estoque/desconto inválidos
     }
 
     function addSelectedProduct() {
@@ -236,6 +235,26 @@
     }
 
     btnAdd.addEventListener("click", addSelectedProduct);
+
+    // Itens já preenchidos: pedido duplicado ou formulário devolvido com erro
+    const initialItems = document.getElementById("itens-iniciais");
+    if (initialItems) {
+        JSON.parse(initialItems.textContent).forEach(function (item) {
+            const data = productSelect.options[item.product_id];
+            if (!data) return; // produto que não é mais da empresa ativa
+            if (itemsBody.querySelector('tr[data-product-id="' + data.value + '"]')) return;
+            addProductRow({
+                id       : data.value,
+                name     : data.name,
+                sku      : data.sku,
+                unit     : data.unit,
+                price    : data.price,
+                stock    : data.stock,
+                quantity : item.quantity,
+                discount : item.discount,
+            });
+        });
+    }
 
     productSelect.control_input.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" || e.defaultPrevented) return;

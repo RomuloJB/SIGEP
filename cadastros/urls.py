@@ -8,7 +8,7 @@ from .views import (
     ClientCreate, ClientUpdate, ClientDelete, ClientList, ClientDetail,
     ProductDataView,
     # Order
-    OrderCreate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
+    OrderCreate, OrderDuplicate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
     # Product
     ProductCreate, ProductUpdate, ProductDelete, ProductList, ProductDetail,
     # ProductOrder
@@ -34,6 +34,7 @@ urlpatterns = [
 
     # Order (Pedido)
     path("order/create/", OrderCreate.as_view(), name="order-create"),
+    path("order/<int:pk>/duplicate/", OrderDuplicate.as_view(), name="order-duplicate"),
     path("order/<int:pk>/update/", OrderUpdate.as_view(), name="order-update"),
     path("order/<int:pk>/delete/", OrderDelete.as_view(), name="order-delete"),
     path("order/", OrderList.as_view(), name="order-list"),

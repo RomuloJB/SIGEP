@@ -20,16 +20,19 @@
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand-->
-            <a class="navbar-brand ps-3" href="/">SIGEP</a>
-            <!-- Sidebar Toggle-->
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
-            <!-- Navbar Search-->
-            <div class="input-group">
-                <p class="card-company-topnav ms-auto me-0 me-md-3 my-2 my-md-0">{{ request.session.company_name }}</p>
+            <a class="navbar-brand ps-lg-3" href="/">SIGEP</a>
+            <!-- Sidebar Toggle: no celular vem antes da marca (order-first) -->
+            <button class="btn btn-link order-first order-lg-0" id="sidebarToggle" type="button" aria-label="Abrir/fechar menu"><i class="fas fa-bars"></i></button>
+            <!-- Empresa da sessão (apelido ou nome) -->
+            {% if request.session.company_name %}
+            <div class="card-company-topnav ms-auto" title="{{ request.session.company_name }}">
+                <i class="fas fa-building"></i>
+                <span>{{ request.session.company_name }}</span>
             </div>
+            {% endif %}
             <!-- Navbar-->
             {% block sidenav %}
-            <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <ul class="navbar-nav {% if not request.session.company_name %}ms-auto{% endif %} me-2 me-lg-4">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -62,10 +65,12 @@
                                     Dashboard
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Páginas</div>
+                                {% if is_manager %}
                                 <a class="nav-link" href="{% url 'company-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-building"></i></div>
                                     Empresas
                                 </a>
+                                {% endif %}
                                 <a class="nav-link" href="{% url 'client-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
                                     Clientes
@@ -87,12 +92,35 @@
                                     <div class="sb-nav-link-icon"><i class="fas fa-circle-info"></i></div>
                                     Sobre
                                 </a>
+                                <a class="nav-link" href="{% url 'ia:meu-consumo' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-robot"></i></div>
+                                    Meu consumo de IA
+                                </a>
                                 {% if request.user.is_superuser %}
                                 <div class="sb-sidenav-menu-heading">Administração</div>
                                 <a class="nav-link" href="{% url 'user-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>
                                     Gerenciar Usuários
                                 </a>
+<<<<<<< HEAD
+=======
+                                <a class="nav-link" href="{% url 'userprofile-list' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
+                                    Perfis de Usuários
+                                </a>
+                                <a class="nav-link" href="{% url 'ia:requisicao-list' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-list-check"></i></div>
+                                    Requisições de IA
+                                </a>
+                                <a class="nav-link" href="{% url 'ia:configuracao' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-sliders"></i></div>
+                                    Configuração da IA
+                                </a>
+                                <a class="nav-link" href="{% url 'ia:usuario-list' %}">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user-gear"></i></div>
+                                    IA por usuário
+                                </a>
+>>>>>>> 683eefa1855f5ec6515f6605ade88c8f21ee042c
                                 {% endif %}
                             {% else %}
                                 <div class="sb-sidenav-menu-heading">Acesso</div>
@@ -297,7 +325,9 @@
         {% endif %}
         <script src="{% static 'js/scripts.js' %}"></script>
         <script src="{% static 'js/form-validation.js' %}"></script>
-        <script src="{% static 'js/masks.js' %}"></script>
+        <!-- Máscaras de CPF/CNPJ/telefone/CEP pelo nome do campo (depois do jQuery) -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+        <script src="{% static 'js/mascaras.js' %}"></script>
         <!-- DataTables -->
         <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>

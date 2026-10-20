@@ -1,0 +1,147 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Requisições de IA</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+    <div class="list-header">
+        <div>
+            <h1 class="list-title">Requisições de IA</h1>
+            <div class="list-subtitle">Cada tentativa de chamada à IA, com tokens, custo estimado e resultado</div>
+        </div>
+        <div class="list-actions">
+            {% include 'cadastros/form-filter.html' %}
+        </div>
+    </div>
+
+    {# Resumo do mês atual (independe dos filtros da lista) #}
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card stat-card stat-card-accent">
+                <div class="card-body">
+                    <p class="stat-label mb-0">Tokens em {{ resumo.mes|date:"m/Y" }}</p>
+                    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                </div>
+                <div class="card-footer">
+                    <h2 class="stat-value">{{ resumo.tokens }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card stat-card stat-card-accent">
+                <div class="card-body">
+                    <p class="stat-label mb-0">Custo estimado no mês</p>
+                    <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                </div>
+                <div class="card-footer">
+                    <h2 class="stat-value">US$ {{ resumo.custo|floatformat:4 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card stat-card stat-card-accent">
+                <div class="card-body">
+                    <p class="stat-label mb-0">Erros e bloqueios no mês</p>
+                    <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                </div>
+                <div class="card-footer">
+                    <h2 class="stat-value">{{ resumo.erros }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card list-card h-100">
+                <div class="card-header"><i class="fas fa-link me-1"></i> Referências que mais gastaram no mês</div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <tbody>
+                            {% for item in resumo.maiores_referencias %}
+                            <tr>
+                                <td>{{ item.nome }}</td>
+                                <td class="text-end text-nowrap">{{ item.tokens }} tokens</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="list-empty">Nenhuma requisição com referência neste mês.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card list-card h-100">
+                <div class="card-header"><i class="fas fa-users me-1"></i> Usuários que mais gastaram no mês</div>
+                <div class="card-body p-0">
+                    <table class="table mb-0">
+                        <tbody>
+                            {% for consumo in resumo.maiores_usuarios %}
+                            <tr>
+                                <td>{{ consumo.usuario }}</td>
+                                <td class="text-end text-nowrap">{{ consumo.tokens_total }} tokens</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td class="list-empty">Nenhum consumo neste mês.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card list-card">
+        <div class="card-header">
+            <div class="small text-muted">Total: {{ page_obj.paginator.count }}</div>
+            <span class="badge bg-light text-dark">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data/hora</th>
+                        <th>Usuário</th>
+                        <th>Finalidade</th>
+                        <th>Referência</th>
+                        <th>Situação</th>
+                        <th class="text-end">Tokens</th>
+                        <th class="text-end">Custo estimado (US$)</th>
+                        <th class="text-end">Duração (ms)</th>
+                        <th data-orderable="false" data-searchable="false">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for requisicao in requisicaoia_list %}
+                    <tr>
+                        <td data-sort="{{ requisicao.criado_em|date:'Y-m-d H:i:s' }}">{{ requisicao.criado_em|date:'d/m/Y H:i:s' }}</td>
+                        <td>{{ requisicao.usuario }}</td>
+                        <td>{{ requisicao.finalidade }}</td>
+                        <td>{{ requisicao.referencia|default:"—" }}</td>
+                        <td>
+                            <span class="badge {% if requisicao.situacao == 'sucesso' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ requisicao.get_situacao_display }}
+                            </span>
+                        </td>
+                        <td class="text-end" data-sort="{{ requisicao.tokens_total|stringformat:'d' }}">{{ requisicao.tokens_total }}</td>
+                        <td class="text-end" data-sort="{{ requisicao.custo_estimado|stringformat:'.6f' }}">{{ requisicao.custo_estimado|floatformat:6 }}</td>
+                        <td class="text-end" data-sort="{{ requisicao.duracao_ms|stringformat:'d' }}">{{ requisicao.duracao_ms }}</td>
+                        <td class="text-nowrap text-end">
+                            <a class="btn btn-link link-primary p-0" href="{% url 'ia:requisicao-detail' requisicao.pk %}" title="Detalhes">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'cadastros/paginacao.html' %}
+    </div>
+{% endblock cadastros_content %}

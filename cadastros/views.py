@@ -4,7 +4,7 @@ from django import forms
 from django.db import models
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView
 from django.views.generic.detail import DetailView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django_filters.views import FilterView
 from django.db.models import Sum
 from django.db import transaction
@@ -13,11 +13,16 @@ from django.views import View
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import ProtectedError
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.functional import cached_property
+from django.forms.models import model_to_dict
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from collections import Counter
 
 from decimal import Decimal, InvalidOperation
+import logging
 
 from .models import Company, Client, Order, Product, ProductOrder
 from .forms import ClientForm, CompanyForm
@@ -29,6 +34,8 @@ from usuarios.views import ActiveCompanyRequiredMixin, FormErrorMessagesMixin
 
 # Define a permissão de um certo grupo para certas ações
 from braces.views import GroupRequiredMixin
+
+logger = logging.getLogger(__name__)
 
 
 #BaseLogin
@@ -100,6 +107,51 @@ class ExclusaoProtegidaMixin:
             return anterior
         return self.get_success_url()
 
+class PedidosVisiveisMixin:
+    """
+    RN02/RF15: o representante só lista, abre, edita, exclui ou duplica os pedidos
+    que ele criou; o gerente da empresa ativa enxerga todos (ve_todos_os_pedidos).
+    Vem antes do ActiveCompanyRequiredMixin, que já filtra pela empresa.
+    """
+    campo_autor = "created_by"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.ve_todos_os_pedidos():
+            return queryset
+        return queryset.filter(**{self.campo_autor: self.request.user})
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        # Itens de pedido: o <select> de pedido só oferece os pedidos visíveis
+        if "order" in form.fields:
+            form.fields["order"].queryset = self.pedidos_visiveis()
+        return form
+
+
+def notificar_gerentes_novo_pedido(request, pedido):
+    """RF07: avisa por e-mail os gerentes da empresa que um pedido foi salvo."""
+    destinatarios = list(
+        pedido.company.manager.exclude(pk=pedido.created_by_id)
+        .exclude(email="")
+        .values_list("email", flat=True)
+    )
+    if not destinatarios:
+        return
+
+    contexto = {
+        "pedido": pedido,
+        "itens": pedido.product_orders.select_related("product"),
+        "url": request.build_absolute_uri(reverse("order-detail", args=[pedido.pk])),
+    }
+    assunto = "Novo pedido #{} — {}".format(pedido.pk, pedido.client.name)
+    corpo = render_to_string("cadastros/email/novo_pedido.txt", contexto)
+    try:
+        send_mail(assunto, corpo, None, destinatarios)
+    except Exception:
+        # O pedido já foi gravado: falha no SMTP fica no log, não vira erro 500
+        logger.exception("Falha ao enviar o e-mail do pedido #%s aos gerentes", pedido.pk)
+
 
 # View que lista as ccompanhias para o usuário que pertence ao sales_rep veja e ative ela na sessão
 # Essa View adiciona na sessão o ID da company e um objeto self.company_active na view, sendo usado
@@ -114,7 +166,7 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
         # Exibe os totais relacionados à empresa ativa selecionada
         context["total_clients"] = Client.objects.filter(company=self.active_company).count()
         context["total_products"] = Product.objects.filter(company=self.active_company).count()
-        context["total_orders"] = Order.objects.filter(company=self.active_company).count()
+        context["total_orders"] = self.pedidos_visiveis().count()
         return context
     
 
@@ -185,6 +237,9 @@ class CompanyUpdate(GroupRequiredMixin, BaseLoginMixin, UpdateView):
         # Superusuários nunca podem ser removidos como gerentes,
         # mesmo que tenham sido removidos da seleção por outro manager
         self.object.manager.add(*User.objects.filter(is_superuser=True))
+        # Editou a empresa ativa: atualiza o nome exibido no cabeçalho
+        if self.request.session.get('active_company_id') == self.object.pk:
+            self.request.session['company_name'] = self.object.display_name
         return response
 
 class CompanyDelete(ExclusaoProtegidaMixin, ConfirmacaoDigitadaMixin, GroupRequiredMixin, BaseLoginMixin, DeleteView):
@@ -347,7 +402,22 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         # Envia a lista de produtos disponíveis da empresa ativa para o template popular o <select>
         context["products"] = Product.objects.filter(company=self.active_company).order_by("name")
+        # Linhas que o order-scripts.js monta ao abrir a tela
+        context["itens_iniciais"] = self.itens_iniciais()
         return context
+
+    def itens_iniciais(self):
+        # Ao voltar com erro, a tabela de itens é remontada com o que foi enviado
+        if self.request.method != "POST":
+            return []
+        return [
+            {"product_id": pid, "quantity": qty, "discount": disc}
+            for pid, qty, disc in zip(
+                self.request.POST.getlist("product_id[]"),
+                self.request.POST.getlist("quantity[]"),
+                self.request.POST.getlist("discount[]"),
+            )
+        ]
 
     @transaction.atomic
     def form_valid(self, form):
@@ -421,22 +491,59 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
             product.stock = (product.stock or 0) - qty
             product.save(update_fields=["stock"])
 
+        # Só depois do commit: se o pedido falhar, nenhum gerente é avisado
+        pedido = self.object
+        transaction.on_commit(lambda: notificar_gerentes_novo_pedido(self.request, pedido))
+
         return response
 
-class OrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
+class OrderDuplicate(PedidosVisiveisMixin, OrderCreate):
+    """
+    RF12: abre o formulário de novo pedido já preenchido com o cabeçalho e os itens
+    de um pedido existente. Salvar passa pelas validações do OrderCreate (estoque,
+    desconto, valor atual do produto) e cria outro pedido; o original não muda.
+    """
+
+    @cached_property
+    def original(self):
+        # get_queryset já aplica empresa ativa e RN02: pedido alheio dá 404
+        return get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
+
+    def get_initial(self):
+        return model_to_dict(self.original, fields=self.fields)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Duplicar Pedido #{}".format(self.original.pk)
+        context["pedido_original"] = self.original
+        return context
+
+    def itens_iniciais(self):
+        if self.request.method == "POST":
+            return super().itens_iniciais()
+        # Mesmo produto em mais de uma linha (itens lançados pela tela "Itens de
+        # Pedido") vira uma linha só, porque o formulário não aceita repetidos
+        itens = {}
+        for item in self.original.product_orders.exclude(product=None).order_by("id"):
+            linha = itens.setdefault(item.product_id, {"product_id": item.product_id, "quantity": 0, "discount": Decimal("0")})
+            linha["quantity"] += item.quantity
+            linha["discount"] += item.discount
+        return list(itens.values())
+
+class OrderUpdate(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, UpdateView):
     model = Order
     fields = ["type", "client", "payment_method", "address", "city", "uf"]
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
 
-class OrderDelete(ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
+class OrderDelete(PedidosVisiveisMixin, ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
     model = Order
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Excluir Pedido"}
 
-class OrderList(ActiveCompanyRequiredMixin, PaginatedFilterView):
+class OrderList(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = Order
     template_name = "cadastros/list/order_list.html"
     ordering = ['-id']
@@ -451,7 +558,7 @@ class OrderList(ActiveCompanyRequiredMixin, PaginatedFilterView):
         context["total_orders"] = self.get_queryset().count()
         return context
 
-class OrderDetail(ActiveCompanyRequiredMixin, DetailView):
+class OrderDetail(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
     model = Order
     template_name = "cadastros/detail/order_detail.html"
 
@@ -466,7 +573,7 @@ class OrderDetail(ActiveCompanyRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
 
         product_orders = (
-            self.object.productorder_set.select_related("product")
+            self.object.product_orders.select_related("product")
             .all()
             .order_by("id")
         )
@@ -479,7 +586,11 @@ class OrderDetail(ActiveCompanyRequiredMixin, DetailView):
 
 # ─── ProductOrder ──────────────────────────────────────────────────────────────
 
-class ProductOrderCreate(ActiveCompanyRequiredMixin, CreateView):
+class ItensVisiveisMixin(PedidosVisiveisMixin):
+    # Itens seguem a RN02 pelo autor do pedido a que pertencem
+    campo_autor = "order__created_by"
+
+class ProductOrderCreate(ItensVisiveisMixin, ActiveCompanyRequiredMixin, CreateView):
     model = ProductOrder
     fields = ["order", "product", "quantity", "unit_value", "discount"]
     template_name = "cadastros/form.html"
@@ -494,7 +605,7 @@ class ProductOrderCreate(ActiveCompanyRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductOrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
+class ProductOrderUpdate(ItensVisiveisMixin, ActiveCompanyRequiredMixin, UpdateView):
     model = ProductOrder
     fields = ["order", "product", "quantity", "unit_value", "discount"]
     template_name = "cadastros/form.html"
@@ -509,14 +620,14 @@ class ProductOrderUpdate(ActiveCompanyRequiredMixin, UpdateView):
         return super().form_valid(form)
     
 
-class ProductOrderDelete(ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
+class ProductOrderDelete(ItensVisiveisMixin, ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
     model = ProductOrder
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("productorder-list")
     extra_context = {"title": "Excluir Item de Pedido"}
 
 
-class ProductOrderList(ActiveCompanyRequiredMixin, PaginatedFilterView):
+class ProductOrderList(ItensVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = ProductOrder
     template_name = "cadastros/list/productorder_list.html"
     ordering = ['id']
@@ -532,6 +643,6 @@ class ProductOrderList(ActiveCompanyRequiredMixin, PaginatedFilterView):
         return context
 
 
-class ProductOrderDetail(ActiveCompanyRequiredMixin, DetailView):
+class ProductOrderDetail(ItensVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
     model = ProductOrder
     template_name = "cadastros/detail/productorder_detail.html"

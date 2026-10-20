@@ -1,0 +1,44 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'ia:usuario-list' %}">IA por usuário</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ object.usuario.username }}</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="cadastros-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+        <h1 class="cadastros-title">IA de {{ object.usuario.username }}</h1>
+        <p class="cadastros-subtitle">
+            {% if object.pk %}Este usuário tem uma configuração própria.{% else %}Este usuário segue os padrões da configuração da IA.{% endif %}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-novo" href="{% url 'ia:usuario-list' %}">
+            <i class="fas fa-arrow-left me-1"></i> Voltar
+        </a>
+        {% if object.pk %}
+        {% url 'ia:usuario-padrao' object.usuario.pk as url_padrao %}
+        {% include 'cadastros/form-excluir.html' with url=url_padrao titulo="Voltar ao padrão" tipo="a configuração de IA própria de" nome=object.usuario.username classe="btn btn-outline-danger btn-novo" rotulo="Voltar ao padrão" %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
+            {% csrf_token %}
+
+            {{ form|crispy }}
+
+            <div class="cadastros-actions mt-4">
+                <button type="submit" class="btn btn-success btnLoading">
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock cadastros_content %}
