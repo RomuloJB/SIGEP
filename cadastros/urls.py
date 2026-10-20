@@ -9,6 +9,7 @@ from .views import (
     ProductDataView,
     # Order
     OrderCreate, OrderDuplicate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
+    SalesReport,
     # Product
     ProductCreate, ProductUpdate, ProductDelete, ProductList, ProductDetail,
     # ProductOrder
@@ -39,6 +40,9 @@ urlpatterns = [
     path("order/<int:pk>/delete/", OrderDelete.as_view(), name="order-delete"),
     path("order/", OrderList.as_view(), name="order-list"),
     path("order/<int:pk>/", OrderDetail.as_view(), name="order-detail"),
+
+    # Relatório de vendas
+    path("report/sales/", SalesReport.as_view(), name="sales-report"),
 
     # Product (Produto)
     path("product/create/", ProductCreate.as_view(), name="product-create"),

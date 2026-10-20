@@ -97,14 +97,3 @@ class ContactView(TemplateView, BaseLoginMixin):
 
 class AboutView(TemplateView, BaseLoginMixin):
     template_name = "website/startbootstrap-sigep/about.html"
-
-# erros
-
-class CompanyChartsView(TemplateView):
-    template_name = "website/startbootstrap-sigep/errors/401.html"
-
-class CompanyChartsView(TemplateView):
-    template_name = "website/startbootstrap-sigep/errors/404.html"
-
-class CompanyChartsView(TemplateView):
-    template_name = "website/startbootstrap-sigep/errors/500.html"

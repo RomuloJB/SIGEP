@@ -10,9 +10,8 @@ from cadastros.forms import PhoneField, CPFField
 
 class FormErrorMessagesMixin:
     """
-    Traduz a mensagem padrão do Django para campo obrigatório ("This field is required.").
-    O projeto roda com LANGUAGE_CODE='en-us' — mudar para pt-br alteraria a formatação
-    de números nos templates (ex.: data-price="12,50" quebraria o JS do pedido).
+    Garante a mesma mensagem de campo obrigatório ("Este campo é obrigatório.")
+    em todos os formulários, inclusive nos campos com error_messages próprios.
     """
     required_error_message = "Este campo é obrigatório."
 
@@ -30,7 +29,7 @@ class BaseLoginMixin(FormErrorMessagesMixin, LoginRequiredMixin):
 def activate_company(request, company):
     """Grava a empresa escolhida na sessão e manda para o dashboard."""
     request.session['active_company_id'] = company.id
-    request.session['company_name'] = company.name
+    request.session['company_name'] = company.display_name
     return redirect('index')
 
 

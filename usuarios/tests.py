@@ -86,6 +86,13 @@ class SelectCompanyTests(TestCase):
         response = self.client.get(reverse("select-company"))
         self.assertContains(response, "Nenhuma empresa associada")
 
+    def test_cabecalho_usa_o_apelido_da_empresa(self):
+        company = self._empresa("Empresa de Nome Comprido Ltda")
+        company.session_name = "Comprido"
+        company.save()
+        self.client.get(reverse("activate-company", args=[company.pk]))
+        self.assertEqual(self.client.session["company_name"], "Comprido")
+
 
 class UserManagementTests(TestCase):
     def setUp(self):

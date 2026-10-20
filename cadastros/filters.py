@@ -5,10 +5,10 @@ from .models import Company, Client, Order, Product, ProductOrder, MeasureUnit
 
 
 # Intervalo de datas: dois campos "de" e "até", do tipo date do HTML
-def created_at_range():
+def created_at_range(label='Cadastrado entre'):
     return django_filters.DateFromToRangeFilter(
         field_name='created_at',
-        label='Cadastrado entre',
+        label=label,
         widget=django_filters.widgets.RangeWidget(attrs={'type': 'date'}),
     )
 
@@ -68,6 +68,15 @@ class OrderFilter(django_filters.FilterSet):
     total_value_min = django_filters.NumberFilter(field_name='total_value', lookup_expr='gte', label='Valor total a partir de')
     total_value_max = django_filters.NumberFilter(field_name='total_value', lookup_expr='lte', label='Valor total até')
     created_at = created_at_range()
+
+    class Meta:
+        model = Order
+        fields = []
+
+
+class SalesReportFilter(django_filters.FilterSet):
+    created_at = created_at_range(label='Período')
+    client_name = django_filters.CharFilter(field_name='client__name', lookup_expr='icontains', label='Cliente contém')
 
     class Meta:
         model = Order

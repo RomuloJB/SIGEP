@@ -23,11 +23,15 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ik0x$61z*kp^5tx++m#g(rjdz8wktnvlk^kqwt3t%w3l+@#8vv'
+# SECRET_KEY e DEBUG vêm do .env, que também sobe no deploy. Em produção o
+# app.yaml define DEBUG=False, e isso prevalece: o load_dotenv não sobrescreve
+# variáveis que já existem no ambiente.
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("SECRET_KEY não configurada")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Desligado quando a variável falta; para desenvolver, coloque DEBUG=True no .env
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['*']
 
@@ -43,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'crispy_forms',
     'crispy_bootstrap5',
-    'debug_toolbar',
     'django_filters',  # pacote pip "django-filter"; app com underline e no plural
 
 
@@ -58,25 +61,12 @@ INSTALLED_APPS = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
-# E-mail (RF07: aviso aos gerentes). Sem EMAIL_HOST no .env, os e-mails
-# aparecem no terminal do runserver em vez de serem enviados.
-EMAIL_HOST = os.getenv("EMAIL_HOST", "")
-if EMAIL_HOST:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-    EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
-    EMAIL_TIMEOUT = 10
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL") or os.getenv("EMAIL_HOST_USER") or "webmaster@localhost"
-
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "login"
 LOGIN_URL = "login"
 
-# E-mail (credenciais no .env). Sem EMAIL_HOST, o e-mail é impresso no terminal do runserver.
+# E-mail (credenciais no .env): redefinição de senha e aviso aos gerentes (RF07).
+# Sem EMAIL_HOST, o e-mail é impresso no terminal do runserver.
 EMAIL_HOST = os.getenv("EMAIL_HOST", "")
 if EMAIL_HOST:
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -95,6 +85,12 @@ PASSWORD_RESET_TIMEOUT = 60 * 10  # 10minutos
 #evitar que o link do email saia com http ou inves de https
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# RNF02: fora do modo debug, os cookies de sessão e CSRF só trafegam por HTTPS.
+# O redirecionamento de HTTP para HTTPS é feito pelo App Engine (secure: always no app.yaml).
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -103,8 +99,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+# Debug toolbar só no desenvolvimento
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 # Config dos IPs que poderão visualizar os dados do debug
 INTERNAL_IPS = [
@@ -199,3 +199,13 @@ STATICFILES_DIRS = [ BASE_DIR / "static" ]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Sem DEBUG, o Django não escreve os erros (tracebacks dos 500) no terminal.
+# Mandando para o stderr, eles aparecem nos logs do Google Cloud.
+if not DEBUG:
+    LOGGING = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "handlers": {"console": {"class": "logging.StreamHandler"}},
+        "root": {"handlers": ["console"], "level": "WARNING"},
+    }
