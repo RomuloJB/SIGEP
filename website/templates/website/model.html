@@ -39,7 +39,7 @@
                         {% if request.user.is_authenticated %}
                             <li><span class="dropdown-item-text">Olá, {{ request.user.get_username }}</span></li>
                             <li><hr class="dropdown-divider" /></li>
-                            <li class="dropdown-item">Alterar senha</li>
+                            <li><a class="dropdown-item" href="{% url 'my-profile' %}">Meu perfil</a></li>
                             <li>
                                 <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}
@@ -84,7 +84,7 @@
                                     Pedidos
                                 </a>
                                 <div class="sb-sidenav-menu-heading">Adicionais</div>
-                                <a class="nav-link" href="{% url 'company-chart' %}">
+                                <a class="nav-link" href="{% url 'sales-report' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                                     Relatórios
                                 </a>
@@ -101,10 +101,6 @@
                                 <a class="nav-link" href="{% url 'user-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>
                                     Gerenciar Usuários
-                                </a>
-                                <a class="nav-link" href="{% url 'userprofile-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-user-circle"></i></div>
-                                    Perfis de Usuários
                                 </a>
                                 <a class="nav-link" href="{% url 'ia:requisicao-list' %}">
                                     <div class="sb-nav-link-icon"><i class="fas fa-list-check"></i></div>

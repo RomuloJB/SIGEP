@@ -1,14 +1,14 @@
 import django_filters
 
 from .masks import only_digits
-from .models import Company, Client, User_Profile, Order, Product, ProductOrder, MeasureUnit
+from .models import Company, Client, Order, Product, ProductOrder, MeasureUnit
 
 
 # Intervalo de datas: dois campos "de" e "até", do tipo date do HTML
-def created_at_range():
+def created_at_range(label='Cadastrado entre'):
     return django_filters.DateFromToRangeFilter(
         field_name='created_at',
-        label='Cadastrado entre',
+        label=label,
         widget=django_filters.widgets.RangeWidget(attrs={'type': 'date'}),
     )
 
@@ -47,16 +47,6 @@ class ClientFilter(DigitsFilterMixin, django_filters.FilterSet):
         fields = []
 
 
-class UserProfileFilter(DigitsFilterMixin, django_filters.FilterSet):
-    name = django_filters.CharFilter(lookup_expr='icontains', label='Nome contém')
-    phone = django_filters.CharFilter(method='filter_digits', label='Telefone contém')
-    cpf = django_filters.CharFilter(method='filter_digits', label='CPF contém')
-
-    class Meta:
-        model = User_Profile
-        fields = []
-
-
 class ProductFilter(django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Nome contém')
     sku = django_filters.CharFilter(lookup_expr='icontains', label='SKU contém')
@@ -78,6 +68,15 @@ class OrderFilter(django_filters.FilterSet):
     total_value_min = django_filters.NumberFilter(field_name='total_value', lookup_expr='gte', label='Valor total a partir de')
     total_value_max = django_filters.NumberFilter(field_name='total_value', lookup_expr='lte', label='Valor total até')
     created_at = created_at_range()
+
+    class Meta:
+        model = Order
+        fields = []
+
+
+class SalesReportFilter(django_filters.FilterSet):
+    created_at = created_at_range(label='Período')
+    client_name = django_filters.CharFilter(field_name='client__name', lookup_expr='icontains', label='Cliente contém')
 
     class Meta:
         model = Order

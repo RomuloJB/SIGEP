@@ -7,10 +7,9 @@ from .views import (
     # Client
     ClientCreate, ClientUpdate, ClientDelete, ClientList, ClientDetail,
     ProductDataView,
-    # User Profile
-    UserProfileCreate, UserProfileUpdate, UserProfileDelete, UserProfileList, UserProfileDetail,
     # Order
     OrderCreate, OrderDuplicate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
+    SalesReport,
     # Product
     ProductCreate, ProductUpdate, ProductDelete, ProductList, ProductDetail,
     # ProductOrder
@@ -34,13 +33,6 @@ urlpatterns = [
     path("client/", ClientList.as_view(), name="client-list"),
     path("client/<int:pk>/", ClientDetail.as_view(), name="client-detail"),
 
-    # User_Profile (Perfil de Usuário)
-    path("userprofile/create/", UserProfileCreate.as_view(), name="userprofile-create"),
-    path("userprofile/<int:pk>/update/", UserProfileUpdate.as_view(), name="userprofile-update"),
-    path("userprofile/<int:pk>/delete/", UserProfileDelete.as_view(), name="userprofile-delete"),
-    path("userprofile/", UserProfileList.as_view(), name="userprofile-list"),
-    path("userprofile/<int:pk>/", UserProfileDetail.as_view(), name="userprofile-detail"),
-
     # Order (Pedido)
     path("order/create/", OrderCreate.as_view(), name="order-create"),
     path("order/<int:pk>/duplicate/", OrderDuplicate.as_view(), name="order-duplicate"),
@@ -48,6 +40,9 @@ urlpatterns = [
     path("order/<int:pk>/delete/", OrderDelete.as_view(), name="order-delete"),
     path("order/", OrderList.as_view(), name="order-list"),
     path("order/<int:pk>/", OrderDetail.as_view(), name="order-detail"),
+
+    # Relatório de vendas
+    path("report/sales/", SalesReport.as_view(), name="sales-report"),
 
     # Product (Produto)
     path("product/create/", ProductCreate.as_view(), name="product-create"),

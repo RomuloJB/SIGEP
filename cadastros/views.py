@@ -1,12 +1,11 @@
-from urllib import request
-
 from django import forms
 from django.db import models
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView
 from django.views.generic.detail import DetailView
 from django.urls import reverse, reverse_lazy
 from django_filters.views import FilterView
-from django.db.models import Sum
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncMonth
 from django.db import transaction
 from django.http import JsonResponse
 from django.views import View
@@ -24,9 +23,9 @@ from collections import Counter
 from decimal import Decimal, InvalidOperation
 import logging
 
-from .models import Company, Client, User_Profile, Order, Product, ProductOrder
-from .forms import UserProfileForm, ClientForm, CompanyForm
-from .filters import CompanyFilter, ClientFilter, UserProfileFilter, ProductFilter, OrderFilter, ProductOrderFilter
+from .models import Company, Client, Order, Product, ProductOrder
+from .forms import ClientForm, CompanyForm
+from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter, SalesReportFilter
 
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -325,102 +324,6 @@ class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
     template_name = "cadastros/detail/client_detail.html"
 
 
-# User Profile
-class UserProfileCreate(BaseLoginMixin, CreateView):
-    model = User_Profile
-    form_class = UserProfileForm
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Cadastro de Perfil de Usuário", "botao": "Criar Perfil"}
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-class UserProfileUpdate(BaseLoginMixin, UpdateView):
-    model = User_Profile
-    form_class = UserProfileForm
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Editar dados do Perfil", "botao": "Atualizar Perfil"}
-
-    def get_object(self, queryset=None):
-        pk = self.kwargs.get('pk')
-        if pk:
-            try:
-                profile = User_Profile.objects.get(pk=pk)
-                if profile.user == self.request.user:
-                    profile, created = User_Profile.objects.get_or_create(
-                        user=self.request.user,
-                        defaults={
-                            "name": self.request.user.get_full_name() or self.request.user.username,
-                            "phone": "",
-                            "cpf": ""
-                        }
-                    )
-                return profile
-            except User_Profile.DoesNotExist:
-                pass
-        
-        profile, created = User_Profile.objects.get_or_create(
-            user=self.request.user,
-            defaults={
-                "name": self.request.user.get_full_name() or self.request.user.username,
-                "phone": "",
-                "cpf": ""
-            }
-        )
-        return profile
-
-class UserProfileDelete(ExclusaoProtegidaMixin, ConfirmacaoDigitadaMixin, BaseLoginMixin, DeleteView):
-    model = User_Profile
-    template_name = "cadastros/form_delete.html"
-    success_url = reverse_lazy("userprofile-list")
-    extra_context = {"title": "Excluir Perfil de Usuário"}
-
-    def exige_confirmacao_digitada(self):
-        # Só o perfil de um gerente é exclusão perigosa
-        return self.object.is_manager
-
-class UserProfileList(BaseLoginMixin, PaginatedFilterView):
-    model = User_Profile
-    template_name = "cadastros/list/userprofile_list.html"
-    ordering = ['name']
-    filterset_class = UserProfileFilter
-
-class UserProfileDetail(BaseLoginMixin, DetailView):
-    model = User_Profile
-    template_name = "cadastros/detail/userprofile_detail.html"
-
-    def get_object(self, queryset=None):
-        pk = self.kwargs.get('pk')
-        if pk:
-            try:
-                profile = User_Profile.objects.get(pk=pk)
-                if profile.user == self.request.user:
-                    profile, created = User_Profile.objects.get_or_create(
-                        user=self.request.user,
-                        defaults={
-                            "name": self.request.user.get_full_name() or self.request.user.username,
-                            "phone": "",
-                            "cpf": ""
-                        }
-                    )
-                return profile
-            except User_Profile.DoesNotExist:
-                pass
-
-        profile, created = User_Profile.objects.get_or_create(
-            user=self.request.user,
-            defaults={
-                "name": self.request.user.get_full_name() or self.request.user.username,
-                "phone": "",
-                "cpf": ""
-            }
-        )
-        return profile
-
-
 # Product
 class ProductCreate(GroupRequiredMixin, ActiveCompanyRequiredMixin, CreateView):
     group_required = ['Manager']
@@ -677,6 +580,62 @@ class OrderDetail(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
         context["product_orders_total"] = (
             product_orders.aggregate(total=Sum("total_value")).get("total") or 0
         )
+        return context
+
+
+# ─── Relatório de vendas ───────────────────────────────────────────────────────
+
+class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
+    """
+    Totais de vendas por mês, cliente, produto e representante, filtrados por
+    período e cliente. Segue a RN02: o representante vê só os próprios pedidos.
+    """
+    model = Order
+    template_name = "cadastros/sales_report.html"
+    ordering = ['-id']
+    filterset_class = SalesReportFilter
+
+    def get_paginate_by(self, queryset):
+        # Os totais saem de todos os pedidos filtrados, sem paginação
+        return None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Sem ordenação: o ORDER BY entraria no GROUP BY e quebraria os agrupamentos
+        pedidos = self.object_list.order_by()
+
+        resumo = pedidos.aggregate(total=Sum("total_value"), qtd=Count("id"))
+        total = resumo["total"] or Decimal("0")
+        context["total_vendas"] = total
+        context["qtd_pedidos"] = resumo["qtd"]
+        context["ticket_medio"] = total / resumo["qtd"] if resumo["qtd"] else Decimal("0")
+
+        context["por_mes"] = (
+            pedidos.annotate(mes=TruncMonth("created_at"))
+            .values("mes")
+            .annotate(qtd=Count("id"), total=Sum("total_value"))
+            .order_by("-mes")
+        )
+        context["por_cliente"] = (
+            pedidos.values("client_id", "client__name")
+            .annotate(qtd=Count("id"), total=Sum("total_value"))
+            .order_by("-total")
+        )
+        context["por_produto"] = (
+            ProductOrder.objects.filter(order__in=pedidos)
+            .exclude(product=None)
+            .values("product_id", "product__sku", "product__name")
+            .annotate(quantidade=Sum("quantity"), desconto=Sum("discount"), total=Sum("total_value"))
+            .order_by("-total")
+        )
+
+        context["ve_todos_os_pedidos"] = self.ve_todos_os_pedidos()
+        if context["ve_todos_os_pedidos"]:
+            context["por_representante"] = (
+                pedidos.values("created_by__username", "created_by__profile__name")
+                .annotate(qtd=Count("id"), total=Sum("total_value"))
+                .order_by("-total")
+            )
         return context
 
 

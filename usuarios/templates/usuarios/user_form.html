@@ -4,14 +4,14 @@
 
 {% block breadcrumb %}
     <li class="breadcrumb-item"><a href="{% url 'user-list' %}">Usuários</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Editar Usuário</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
 {% endblock breadcrumb %}
 
 {% block cadastros_content %}
 <div class="cadastros-header d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="cadastros-title">{{ title }}</h1>
-        <p class="cadastros-subtitle">Altere os dados cadastrais e as permissões de grupos do usuário.</p>
+        <p class="cadastros-subtitle">{{ subtitle }}</p>
     </div>
     <a class="btn btn-outline-secondary" href="{% url 'user-list' %}">
         <i class="fas fa-arrow-left me-1"></i> Voltar

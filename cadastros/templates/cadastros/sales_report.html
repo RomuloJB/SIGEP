@@ -1,0 +1,158 @@
+{% extends "cadastros/form.html" %}
+
+{% block cadastros_content %}
+    <div class="list-header">
+        <div>
+            <h1 class="list-title">Relatório de Vendas</h1>
+            <div class="list-subtitle">
+                {% if ve_todos_os_pedidos %}Pedidos de toda a empresa{% else %}Somente os seus pedidos{% endif %}{% if active_filters %}, com filtros aplicados{% endif %}
+            </div>
+        </div>
+        <div class="list-actions">
+            {% include 'cadastros/form-filter.html' %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card stat-card-accent">
+                <div class="card-body">
+                    <p class="stat-label mb-0">Total vendido</p>
+                    <div class="stat-icon"><i class="fas fa-sack-dollar"></i></div>
+                </div>
+                <div class="card-footer">
+                    <h2 class="stat-value">R$ {{ total_vendas|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card stat-card-accent">
+                <div class="card-body">
+                    <p class="stat-label mb-0">Pedidos</p>
+                    <div class="stat-icon"><i class="fas fa-dolly"></i></div>
+                </div>
+                <div class="card-footer">
+                    <h2 class="stat-value">{{ qtd_pedidos }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card stat-card-accent">
+                <div class="card-body">
+                    <p class="stat-label mb-0">Ticket médio</p>
+                    <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+                </div>
+                <div class="card-footer">
+                    <h2 class="stat-value">R$ {{ ticket_medio|floatformat:2 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6">
+            <div class="card list-card h-100">
+                <div class="card-header"><span><i class="fas fa-calendar me-1"></i> Vendas por mês</span></div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mês</th>
+                                <th class="text-end">Pedidos</th>
+                                <th class="text-end">Valor vendido</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for linha in por_mes %}
+                            <tr>
+                                <td data-sort="{{ linha.mes|date:'Y-m' }}">{{ linha.mes|date:'m/Y' }}</td>
+                                <td class="text-end" data-sort="{{ linha.qtd|stringformat:'d' }}">{{ linha.qtd }}</td>
+                                <td class="text-end" data-sort="{{ linha.total|stringformat:'.2f' }}">R$ {{ linha.total|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card list-card h-100">
+                <div class="card-header"><span><i class="fas fa-users me-1"></i> Vendas por cliente</span></div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cliente</th>
+                                <th class="text-end">Pedidos</th>
+                                <th class="text-end">Valor vendido</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for linha in por_cliente %}
+                            <tr>
+                                <td><a href="{% url 'client-detail' linha.client_id %}" class="text-decoration-none">{{ linha.client__name }}</a></td>
+                                <td class="text-end" data-sort="{{ linha.qtd|stringformat:'d' }}">{{ linha.qtd }}</td>
+                                <td class="text-end" data-sort="{{ linha.total|stringformat:'.2f' }}">R$ {{ linha.total|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card list-card mb-4">
+        <div class="card-header"><span><i class="fas fa-box me-1"></i> Vendas por produto</span></div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                <thead class="table-light">
+                    <tr>
+                        <th>SKU</th>
+                        <th>Produto</th>
+                        <th class="text-end">Quantidade</th>
+                        <th class="text-end">Descontos</th>
+                        <th class="text-end">Valor vendido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in por_produto %}
+                    <tr>
+                        <td>{{ linha.product__sku }}</td>
+                        <td><a href="{% url 'product-detail' linha.product_id %}" class="text-decoration-none">{{ linha.product__name }}</a></td>
+                        <td class="text-end" data-sort="{{ linha.quantidade|stringformat:'d' }}">{{ linha.quantidade }}</td>
+                        <td class="text-end" data-sort="{{ linha.desconto|stringformat:'.2f' }}">R$ {{ linha.desconto|floatformat:2 }}</td>
+                        <td class="text-end" data-sort="{{ linha.total|stringformat:'.2f' }}">R$ {{ linha.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if ve_todos_os_pedidos %}
+    <div class="card list-card mb-4">
+        <div class="card-header"><span><i class="fas fa-user-tie me-1"></i> Vendas por representante</span></div>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 table-datatable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Representante</th>
+                        <th class="text-end">Pedidos</th>
+                        <th class="text-end">Valor vendido</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in por_representante %}
+                    <tr>
+                        <td>{{ linha.created_by__profile__name|default:linha.created_by__username }}</td>
+                        <td class="text-end" data-sort="{{ linha.qtd|stringformat:'d' }}">{{ linha.qtd }}</td>
+                        <td class="text-end" data-sort="{{ linha.total|stringformat:'.2f' }}">R$ {{ linha.total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+{% endblock cadastros_content %}

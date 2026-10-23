@@ -45,6 +45,12 @@
                 {% csrf_token %}
                 {{ form|crispy }}
 
+                <div class="text-end">
+                    <a class="link-secondary small text-decoration-none" href="{% url 'password-reset' %}">
+                        Esqueceu a senha?
+                    </a>
+                </div>
+
                 <div class="d-grid mt-4">
                     <button class="btn btn-primary" type="submit">
                         Entrar
