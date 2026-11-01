@@ -171,25 +171,30 @@
             const discount = parseFloat(discInput.value) || 0;
             const subtotal = (isNaN(qty) ? 0 : qty) * price;
 
-            let warning = "";
+            // erro: valor inválido, impede qualquer salvamento.
+            // aviso de estoque: o rascunho pode ser salvo; só o envio exige estoque.
+            let erro = "";
+            let avisoEstoque = "";
             if (isNaN(qty) || qty <= 0) {
-                warning = "A quantidade deve ser maior que zero.";
-            } else if (qty > stock) {
-                warning = "Estoque insuficiente! Disponível: " + stock + ".";
+                erro = "A quantidade deve ser maior que zero.";
             } else if (discount < 0) {
-                warning = "O desconto não pode ser negativo.";
+                erro = "O desconto não pode ser negativo.";
             } else if (discount > subtotal) {
-                warning = "O desconto não pode ser maior que o valor do item.";
+                erro = "O desconto não pode ser maior que o valor do item.";
+            } else if (qty > stock) {
+                avisoEstoque = "Estoque insuficiente! Disponível: " + stock + ". Dá para salvar em rascunho, mas só enviar com estoque.";
             }
 
-            const total = warning ? 0 : Math.max(subtotal - discount, 0);
+            const total = erro ? 0 : Math.max(subtotal - discount, 0);
             tr.querySelector(".line-total-cell").textContent = fmt(total);
             tr.dataset.lineTotal = total;
 
+            const warning = erro || avisoEstoque;
             qtyInput.classList.toggle("is-invalid", !!warning);
             warningRow.querySelector(".warning-text").textContent = warning;
             warningRow.classList.toggle("d-none", !warning);
-            tr.dataset.valid = warning ? "false" : "true";
+            tr.dataset.valid = erro ? "false" : "true";
+            tr.dataset.semEstoque = avisoEstoque ? "true" : "false";
 
             showItemsError("");
             recalcTotal();
@@ -264,21 +269,69 @@
 
     orderForm.addEventListener("submit", function (e) {
         const rows = itemsBody.querySelectorAll("tr[data-product-id]");
+        // Botão clicado: "rascunho" ou "enviar". Enter num campo usa o primeiro botão (rascunho)
+        const submitter = e.submitter;
+        const acao = submitter && submitter.name === "acao" ? submitter.value : "rascunho";
+
+        function algumaLinha(campo, valor) {
+            return Array.prototype.some.call(rows, function (row) { return row.dataset[campo] === valor; });
+        }
 
         let message = "";
         if (rows.length === 0) {
             message = "Adicione pelo menos um produto ao pedido antes de salvar.";
-        } else if (Array.prototype.some.call(rows, function (row) { return row.dataset.valid === "false"; })) {
+        } else if (algumaLinha("valid", "false")) {
             message = "Corrija os itens destacados em vermelho antes de salvar.";
+        } else if (acao === "enviar" && algumaLinha("semEstoque", "true")) {
+            message = "Há itens sem estoque suficiente. Ajuste as quantidades ou salve em rascunho.";
         }
 
         showItemsError(message);
-        if (!message) return;
-
-        e.preventDefault();
-        if (window.FormValidation) {
-            window.FormValidation.addError(orderForm, "Itens do pedido: " + message);
+        if (message) {
+            e.preventDefault();
+            if (window.FormValidation) {
+                window.FormValidation.addError(orderForm, "Itens do pedido: " + message);
+            }
+            return;
         }
+
+        // O model.html desabilita o botão clicado ("Aguarde"), e o navegador não envia
+        // o valor de botão desabilitado: a ação segue num campo oculto
+        let campoAcao = orderForm.querySelector('input[type="hidden"][name="acao"]');
+        if (!campoAcao) {
+            campoAcao = document.createElement("input");
+            campoAcao.type = "hidden";
+            campoAcao.name = "acao";
+            orderForm.appendChild(campoAcao);
+        }
+        campoAcao.value = acao;
+    });
+
+    // "Cancelar" sai sem salvar; se algo foi preenchido, confirma antes de descartar
+    let alterado = false;
+    orderForm.addEventListener("input", function () { alterado = true; });
+    orderForm.addEventListener("change", function () { alterado = true; });
+    itemsBody.addEventListener("click", function (e) {
+        if (e.target.closest(".btn-remove")) alterado = true;
+    });
+    btnAdd.addEventListener("click", function () { alterado = true; });
+
+    document.querySelectorAll(".btn-cancelar-pedido").forEach(function (link) {
+        link.addEventListener("click", function (e) {
+            if (!alterado || typeof bootbox === "undefined") return;
+            e.preventDefault();
+            bootbox.confirm({
+                title: "Descartar pedido",
+                message: "Sair sem salvar? O que foi preenchido neste pedido será perdido.",
+                buttons: {
+                    confirm: { label: "Sim, descartar", className: "btn-danger" },
+                    cancel: { label: "Continuar editando", className: "btn-outline-secondary" },
+                },
+                callback: function (confirmado) {
+                    if (confirmado) window.location.href = link.href;
+                },
+            });
+        });
     });
 
 })();

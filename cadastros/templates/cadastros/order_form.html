@@ -14,11 +14,12 @@
 {% block content %}
 <div class="cadastros-shell">
     <div class="cadastros-container">
-        <div class="cadastros-header">
+        <div class="cadastros-header flex-wrap">
             <div>
                 <h1 class="cadastros-title">{{ title }}</h1>
                 <p class="cadastros-subtitle">Preencha os dados do pedido e adicione os produtos.</p>
             </div>
+            {% include 'cadastros/pedido-botoes.html' with classe="border-0 pt-0 mt-0" %}
         </div>
 
         {% if pedido_original %}
@@ -110,12 +111,7 @@
             </div>
 
             {# ── Ações ── #}
-            <div class="cadastros-actions">
-                <a href="{% url 'order-list' %}" class="btn btn-outline-secondary me-2">Cancelar</a>
-                <button type="submit" class="btn btn-success btnLoading" id="btn-save">
-                    Salvar Pedido
-                </button>
-            </div>
+            {% include 'cadastros/pedido-botoes.html' %}
         </form>
     </div>
 </div>

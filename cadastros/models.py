@@ -108,12 +108,22 @@ class Product(BaseClass):
         ordering = ['name']
 
 
+class OrderStatus(models.TextChoices):
+    EM_DIGITACAO = "digitacao", "Em digitação"
+    PENDENTE = "pendente", "Pendente"
+    APROVADO = "aprovado", "Aprovado"
+    REJEITADO = "rejeitado", "Rejeitado"
+    CANCELADO = "cancelado", "Cancelado"
+
+
 class Order(BaseClass):
     TYPES=(
         ("IN", "Entrada"),
         ("OUT", "Saída"),
     )
     type = models.CharField(max_length=3, choices=TYPES, default="OUT", verbose_name="tipo")
+    # Regras de mudança de status e de estoque: cadastros/pedidos.py
+    status = models.CharField(max_length=10, choices=OrderStatus.choices, default=OrderStatus.EM_DIGITACAO, verbose_name="status")
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='orders', verbose_name="empresa")
     client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name='orders', verbose_name="cliente")
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.PIX, verbose_name="método de pagamento")

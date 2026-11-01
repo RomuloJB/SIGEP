@@ -51,8 +51,6 @@ class VisibilidadePedidosTestCase(CadastrosTestCase):
         self.assertEqual(
             [item.order_id for item in resposta.context["object_list"]], [self.pedido_rep1.pk],
         )
-        formulario = self.client.get(reverse("productorder-create")).context["form"]
-        self.assertEqual(list(formulario.fields["order"].queryset), [self.pedido_rep1])
 
     def test_painel_do_representante_conta_so_os_proprios_pedidos(self):
         self.entrar(self.rep1)

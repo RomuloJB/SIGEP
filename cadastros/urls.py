@@ -8,12 +8,12 @@ from .views import (
     ClientCreate, ClientUpdate, ClientDelete, ClientList, ClientDetail,
     ProductDataView,
     # Order
-    OrderCreate, OrderDuplicate, OrderUpdate, OrderDelete, OrderList, OrderDetail,
+    OrderCreate, OrderDuplicate, OrderUpdate, OrderDelete, OrderList, OrderDetail, OrderStatusChange,
     SalesReport,
     # Product
     ProductCreate, ProductUpdate, ProductDelete, ProductList, ProductDetail,
     # ProductOrder
-    ProductOrderCreate, ProductOrderUpdate, ProductOrderDelete, ProductOrderList, ProductOrderDetail,
+    ProductOrderList, ProductOrderDetail,
 )
 
 urlpatterns = [
@@ -38,6 +38,7 @@ urlpatterns = [
     path("order/<int:pk>/duplicate/", OrderDuplicate.as_view(), name="order-duplicate"),
     path("order/<int:pk>/update/", OrderUpdate.as_view(), name="order-update"),
     path("order/<int:pk>/delete/", OrderDelete.as_view(), name="order-delete"),
+    path("order/<int:pk>/status/", OrderStatusChange.as_view(), name="order-status"),
     path("order/", OrderList.as_view(), name="order-list"),
     path("order/<int:pk>/", OrderDetail.as_view(), name="order-detail"),
 
@@ -54,10 +55,7 @@ urlpatterns = [
     # API auxiliar – dados de produto (usada pelo JS do formulário de pedido)
     path("api/product/<int:pk>/", ProductDataView.as_view(), name="product-data"),
 
-    # ProductOrder (Item de Pedido)
-    path("productorder/create/", ProductOrderCreate.as_view(), name="productorder-create"),
-    path("productorder/<int:pk>/update/", ProductOrderUpdate.as_view(), name="productorder-update"),
-    path("productorder/<int:pk>/delete/", ProductOrderDelete.as_view(), name="productorder-delete"),
+    # ProductOrder (Item de Pedido): só consulta; os itens mudam pelo formulário do pedido
     path("productorder/", ProductOrderList.as_view(), name="productorder-list"),
     path("productorder/<int:pk>/", ProductOrderDetail.as_view(), name="productorder-detail"),
 ]

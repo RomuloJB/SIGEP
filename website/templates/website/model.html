@@ -147,7 +147,7 @@
                         <div class="dashboard-container">
                             <div class="dashboard-header">
                                 <h1 class="dashboard-title">Dashboard</h1>
-                                <p class="dashboard-subtitle">Visão geral das vendas e pedidos do sistema.</p>
+                                <p class="dashboard-subtitle">Visão geral das vendas e pedidos do sistema. Os valores de vendas consideram só pedidos aprovados.</p>
                             </div>
 
                             <div class="row g-4 mb-4">
@@ -252,6 +252,7 @@
                                                 <th>ID Pedido</th>
                                                 <th>Cliente</th>
                                                 <th>Data</th>
+                                                <th>Status</th>
                                                 <th class="text-end">Valor</th>
                                             </tr>
                                         </thead>
@@ -260,6 +261,7 @@
                                                 <th>ID Pedido</th>
                                                 <th>Cliente</th>
                                                 <th>Data</th>
+                                                <th>Status</th>
                                                 <th class="text-end">Valor</th>
                                             </tr>
                                         </tfoot>
@@ -273,11 +275,12 @@
                                                 </td>
                                                 <td>{{ pedido.client.name|default:"Excluído/Não associado" }}</td>
                                                 <td>{{ pedido.created_at|date:"d/m/Y" }}</td>
+                                                <td>{% include 'cadastros/pedido-status.html' %}</td>
                                                 <td class="text-end fw-semibold">R$ {{ pedido.total_value|floatformat:2 }}</td>
                                             </tr>
                                             {% empty %}
                                             <tr>
-                                                <td colspan="4" class="list-empty">Nenhum pedido realizado ainda.</td>
+                                                <td colspan="5" class="list-empty">Nenhum pedido realizado ainda.</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -309,6 +312,8 @@
         <!-- Bootbox: alertas e confirmações como modais do Bootstrap (depois de jQuery e do bundle do Bootstrap) -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/6.0.0/bootbox.min.js"></script>
         <script src="{% static 'js/confirmar-exclusao.js' %}"></script>
+        <!-- Confirmação de ações como a mudança de status do pedido (form.form-confirmar) -->
+        <script src="{% static 'js/confirmar-acao.js' %}"></script>
         {% if messages %}
         <!-- Mensagens do Django (ex.: exclusão bloqueada), exibidas pelo Bootbox em mensagens.js -->
         <div id="mensagens-django" hidden>

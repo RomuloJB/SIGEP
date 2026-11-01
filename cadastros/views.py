@@ -1,7 +1,7 @@
 from django import forms
 from django.db import models
 from django.views.generic import CreateView, UpdateView, DeleteView, TemplateView
-from django.views.generic.detail import DetailView
+from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.urls import reverse, reverse_lazy
 from django_filters.views import FilterView
 from django.db.models import Count, Sum
@@ -23,7 +23,8 @@ from collections import Counter
 from decimal import Decimal, InvalidOperation
 import logging
 
-from .models import Company, Client, Order, Product, ProductOrder
+from . import pedidos
+from .models import Company, Client, Order, OrderStatus, Product, ProductOrder
 from .forms import ClientForm, CompanyForm
 from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter, SalesReportFilter
 
@@ -108,9 +109,10 @@ class ExclusaoProtegidaMixin:
 
 class PedidosVisiveisMixin:
     """
-    RN02/RF15: o representante só lista, abre, edita, exclui ou duplica os pedidos
-    que ele criou; o gerente da empresa ativa enxerga todos (ve_todos_os_pedidos).
-    Vem antes do ActiveCompanyRequiredMixin, que já filtra pela empresa.
+    RN02/RF15: o representante só lista, abre, edita, exclui, duplica ou muda o
+    status dos pedidos que ele criou; o gerente da empresa ativa enxerga todos
+    (ve_todos_os_pedidos). Vem antes do ActiveCompanyRequiredMixin, que já filtra
+    pela empresa.
     """
     campo_autor = "created_by"
 
@@ -120,18 +122,12 @@ class PedidosVisiveisMixin:
             return queryset
         return queryset.filter(**{self.campo_autor: self.request.user})
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        # Itens de pedido: o <select> de pedido só oferece os pedidos visíveis
-        if "order" in form.fields:
-            form.fields["order"].queryset = self.pedidos_visiveis()
-        return form
 
-
-def notificar_gerentes_novo_pedido(request, pedido):
-    """RF07: avisa por e-mail os gerentes da empresa que um pedido foi salvo."""
+def notificar_gerentes_pedido_enviado(request, pedido):
+    """RF07: avisa por e-mail os gerentes da empresa que um pedido aguarda aprovação."""
+    # Quem enviou não recebe o próprio aviso
     destinatarios = list(
-        pedido.company.manager.exclude(pk=pedido.created_by_id)
+        pedido.company.manager.exclude(pk=request.user.pk)
         .exclude(email="")
         .values_list("email", flat=True)
     )
@@ -143,7 +139,7 @@ def notificar_gerentes_novo_pedido(request, pedido):
         "itens": pedido.product_orders.select_related("product"),
         "url": request.build_absolute_uri(reverse("order-detail", args=[pedido.pk])),
     }
-    assunto = "Novo pedido #{} — {}".format(pedido.pk, pedido.client.name)
+    assunto = "Pedido #{} aguardando aprovação — {}".format(pedido.pk, pedido.client.name)
     corpo = render_to_string("cadastros/email/novo_pedido.txt", contexto)
     try:
         send_mail(assunto, corpo, None, destinatarios)
@@ -390,12 +386,19 @@ class ProductDataView(ActiveCompanyRequiredMixin, View):
 
 # ─── Order ─────────────────────────────────────────────────────────────────────
 
-class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
+class PedidoFormMixin:
+    """
+    Formulário de pedido com itens: criar, duplicar e editar rascunho. O botão
+    clicado chega em "acao": "rascunho" grava o pedido Em digitação, sem mexer no
+    estoque; "enviar" grava e passa para Pendente, conferindo e baixando o estoque
+    (RN05/RN08). Sem "acao" (ex.: Enter num campo), grava como rascunho.
+    """
     model = Order
     fields = ["type", "client", "payment_method", "address", "city", "uf"]
     template_name = "cadastros/order_form.html"
-    success_url = reverse_lazy("order-list")
-    extra_context = {"title": "Cadastro de Pedido", "botao": "Criar Pedido"}
+
+    def enviando(self):
+        return self.request.POST.get("acao") == "enviar"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -403,7 +406,11 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
         context["products"] = Product.objects.filter(company=self.active_company).order_by("name")
         # Linhas que o order-scripts.js monta ao abrir a tela
         context["itens_iniciais"] = self.itens_iniciais()
+        context["url_cancelar"] = self.url_cancelar()
         return context
+
+    def url_cancelar(self):
+        return reverse("order-list")
 
     def itens_iniciais(self):
         # Ao voltar com erro, a tabela de itens é remontada com o que foi enviado
@@ -418,16 +425,18 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
             )
         ]
 
-    @transaction.atomic
-    def form_valid(self, form):
-        form.instance.created_by = self.request.user
-
+    def itens_validados(self):
+        """
+        Lê os itens do POST. O estoque só é conferido ao enviar: o rascunho não
+        reserva nada, e a conferência acontece quando ele passa para Pendente.
+        """
         product_ids = self.request.POST.getlist("product_id[]")
         quantities = self.request.POST.getlist("quantity[]")
         discounts = self.request.POST.getlist("discount[]")
 
         items = []
         errors = []
+        vistos = set()
 
         for pid, qty_str, disc_str in zip(product_ids, quantities, discounts):
             try:
@@ -435,6 +444,11 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
             except (Product.DoesNotExist, ValueError):
                 errors.append(f"Produto inválido (id={pid}).")
                 continue
+
+            if product.pk in vistos:
+                errors.append(f"O produto '{product.name}' aparece mais de uma vez.")
+                continue
+            vistos.add(product.pk)
 
             try:
                 qty = int(qty_str)
@@ -452,7 +466,7 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
                 errors.append(f"Desconto inválido para o produto '{product.name}'.")
                 continue
 
-            if (product.stock or 0) < qty:
+            if self.enviando() and (product.stock or 0) < qty:
                 errors.append(
                     f"Estoque insuficiente para '{product.name}': "
                     f"disponível {product.stock}, solicitado {qty}."
@@ -466,6 +480,19 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
 
             items.append((product, qty, discount, subtotal - discount))
 
+        return items, errors
+
+    def pode_salvar(self):
+        return True
+
+    @transaction.atomic
+    def form_valid(self, form):
+        if not self.pode_salvar():
+            messages.error(self.request, "Este pedido já foi enviado e não pode mais ser editado.")
+            return redirect("order-detail", pk=self.object.pk)
+
+        items, errors = self.itens_validados()
+
         if errors:
             form.add_error(None, " | ".join(errors))
             return self.form_invalid(form)
@@ -474,10 +501,12 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
             form.add_error(None, "Adicione pelo menos um produto ao pedido.")
             return self.form_invalid(form)
 
-        total = sum(line_total for _, _, _, line_total in items)
-        form.instance.total_value = total
+        form.instance.total_value = sum(line_total for _, _, _, line_total in items)
+        form.instance.status = OrderStatus.EM_DIGITACAO
         response = super().form_valid(form)
 
+        # Rascunho editado: os itens são regravados (rascunho não tem estoque baixado)
+        self.object.product_orders.all().delete()
         for product, qty, discount, line_total in items:
             ProductOrder.objects.create(
                 order=self.object,
@@ -487,20 +516,47 @@ class OrderCreate(ActiveCompanyRequiredMixin, CreateView):
                 discount=discount,
                 total_value=line_total,
             )
-            product.stock = (product.stock or 0) - qty
-            product.save(update_fields=["stock"])
 
-        # Só depois do commit: se o pedido falhar, nenhum gerente é avisado
-        pedido = self.object
-        transaction.on_commit(lambda: notificar_gerentes_novo_pedido(self.request, pedido))
+        if self.enviando():
+            # O estoque já foi conferido com os produtos travados: aqui ele é baixado
+            pedidos.alterar_status(self.object, OrderStatus.PENDENTE)
+            # Só depois do commit: se o pedido falhar, nenhum gerente é avisado
+            pedido = self.object
+            transaction.on_commit(lambda: notificar_gerentes_pedido_enviado(self.request, pedido))
+            messages.success(self.request, "Pedido nº {} enviado para aprovação.".format(self.object.pk))
+        else:
+            messages.success(self.request, "Pedido nº {} salvo em rascunho (Em digitação).".format(self.object.pk))
 
         return response
+
+    def get_success_url(self):
+        return reverse("order-detail", args=[self.object.pk])
+
+
+def itens_do_pedido(pedido):
+    # Mesmo produto em mais de uma linha (itens lançados pela antiga tela "Itens de
+    # Pedido") vira uma linha só, porque o formulário não aceita repetidos
+    itens = {}
+    for item in pedido.product_orders.exclude(product=None).order_by("id"):
+        linha = itens.setdefault(item.product_id, {"product_id": item.product_id, "quantity": 0, "discount": Decimal("0")})
+        linha["quantity"] += item.quantity
+        linha["discount"] += item.discount
+    return list(itens.values())
+
+
+class OrderCreate(PedidoFormMixin, ActiveCompanyRequiredMixin, CreateView):
+    extra_context = {"title": "Cadastro de Pedido"}
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        return super().form_valid(form)
 
 class OrderDuplicate(PedidosVisiveisMixin, OrderCreate):
     """
     RF12: abre o formulário de novo pedido já preenchido com o cabeçalho e os itens
-    de um pedido existente. Salvar passa pelas validações do OrderCreate (estoque,
-    desconto, valor atual do produto) e cria outro pedido; o original não muda.
+    de um pedido existente (de qualquer status). Salvar passa pelas validações do
+    formulário (estoque, desconto, valor atual do produto) e cria outro pedido; o
+    original não muda.
     """
 
     @cached_property
@@ -520,27 +576,101 @@ class OrderDuplicate(PedidosVisiveisMixin, OrderCreate):
     def itens_iniciais(self):
         if self.request.method == "POST":
             return super().itens_iniciais()
-        # Mesmo produto em mais de uma linha (itens lançados pela tela "Itens de
-        # Pedido") vira uma linha só, porque o formulário não aceita repetidos
-        itens = {}
-        for item in self.original.product_orders.exclude(product=None).order_by("id"):
-            linha = itens.setdefault(item.product_id, {"product_id": item.product_id, "quantity": 0, "discount": Decimal("0")})
-            linha["quantity"] += item.quantity
-            linha["discount"] += item.discount
-        return list(itens.values())
+        return itens_do_pedido(self.original)
 
-class OrderUpdate(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, UpdateView):
-    model = Order
-    fields = ["type", "client", "payment_method", "address", "city", "uf"]
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("order-list")
-    extra_context = {"title": "Editar dados do Pedido", "botao": "Atualizar Pedido"}
+class OrderUpdate(PedidoFormMixin, PedidosVisiveisMixin, ActiveCompanyRequiredMixin, UpdateView):
+    """
+    RF11/RN05: só o rascunho (Em digitação) é editado, cabeçalho e itens. Pedido
+    enviado volta para a tela de detalhe; para corrigi-lo, o gerente o devolve
+    para digitação.
+    """
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status != OrderStatus.EM_DIGITACAO:
+            return self.pedido_bloqueado()
+        return self.render_to_response(self.get_context_data())
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.status != OrderStatus.EM_DIGITACAO:
+            return self.pedido_bloqueado()
+        return super().post(request, *args, **kwargs)
+
+    def pedido_bloqueado(self):
+        messages.error(
+            self.request,
+            'Só pedidos "Em digitação" podem ser editados. O pedido nº {} está "{}".'.format(
+                self.object.pk, self.object.get_status_display(),
+            ),
+        )
+        return redirect("order-detail", pk=self.object.pk)
+
+    def pode_salvar(self):
+        # Trava o pedido e confere de novo: o status pode ter mudado com a tela aberta
+        return Order.objects.select_for_update().filter(
+            pk=self.object.pk, status=OrderStatus.EM_DIGITACAO,
+        ).exists()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Editar Pedido #{}".format(self.object.pk)
+        return context
+
+    def url_cancelar(self):
+        return reverse("order-detail", args=[self.object.pk])
+
+    def itens_iniciais(self):
+        if self.request.method == "POST":
+            return super().itens_iniciais()
+        return itens_do_pedido(self.object)
 
 class OrderDelete(PedidosVisiveisMixin, ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
+    # Só rascunho é excluído (não tem estoque baixado); pedido enviado se cancela
     model = Order
     template_name = "cadastros/form_delete.html"
     success_url = reverse_lazy("order-list")
     extra_context = {"title": "Excluir Pedido"}
+
+    def get_queryset(self):
+        return super().get_queryset().filter(status=OrderStatus.EM_DIGITACAO)
+
+class OrderStatusChange(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, SingleObjectMixin, View):
+    """
+    Muda o status pelos botões da tela do pedido (RF14/RN03): o representante envia
+    ou cancela; o gerente muda para qualquer status. O estoque acompanha a mudança
+    (cadastros/pedidos.py).
+    """
+    model = Order
+    http_method_names = ["post"]
+
+    def post(self, request, pk):
+        novo = request.POST.get("status", "")
+        with transaction.atomic():
+            # Trava o pedido: dois cliques em "Enviar" não baixam o estoque duas vezes
+            pedido = get_object_or_404(self.get_queryset().select_for_update(), pk=pk)
+            atual = pedido.get_status_display()
+
+            if novo not in pedidos.status_permitidos(pedido, self.ve_todos_os_pedidos()):
+                messages.error(
+                    request,
+                    'Você não pode mudar o pedido nº {} de "{}" para "{}".'.format(
+                        pk, atual, dict(OrderStatus.choices).get(novo, novo),
+                    ),
+                )
+                return redirect("order-detail", pk=pk)
+
+            try:
+                pedidos.alterar_status(pedido, novo)
+            except pedidos.EstoqueInsuficiente as erro:
+                messages.error(request, 'O pedido nº {} continua "{}". {}'.format(pk, atual, erro))
+                return redirect("order-detail", pk=pk)
+
+            if novo == OrderStatus.PENDENTE:
+                transaction.on_commit(lambda: notificar_gerentes_pedido_enviado(request, pedido))
+
+        messages.success(request, 'O pedido nº {} agora está "{}".'.format(pk, pedido.get_status_display()))
+        return redirect("order-detail", pk=pk)
 
 class OrderList(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = Order
@@ -580,6 +710,9 @@ class OrderDetail(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
         context["product_orders_total"] = (
             product_orders.aggregate(total=Sum("total_value")).get("total") or 0
         )
+        # Botões de mudança de status que este usuário pode usar neste pedido
+        context["acoes_status"] = pedidos.acoes_disponiveis(self.object, self.ve_todos_os_pedidos())
+        context["em_digitacao"] = self.object.status == OrderStatus.EM_DIGITACAO
         return context
 
 
@@ -588,12 +721,16 @@ class OrderDetail(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
 class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
     """
     Totais de vendas por mês, cliente, produto e representante, filtrados por
-    período e cliente. Segue a RN02: o representante vê só os próprios pedidos.
+    período e cliente. Só pedidos aprovados contam como venda. Segue a RN02: o
+    representante vê só os próprios pedidos.
     """
     model = Order
     template_name = "cadastros/sales_report.html"
     ordering = ['-id']
     filterset_class = SalesReportFilter
+
+    def get_queryset(self):
+        return super().get_queryset().filter(status=OrderStatus.APROVADO)
 
     def get_paginate_by(self, queryset):
         # Os totais saem de todos os pedidos filtrados, sem paginação
@@ -602,27 +739,27 @@ class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFil
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Sem ordenação: o ORDER BY entraria no GROUP BY e quebraria os agrupamentos
-        pedidos = self.object_list.order_by()
+        vendas = self.object_list.order_by()
 
-        resumo = pedidos.aggregate(total=Sum("total_value"), qtd=Count("id"))
+        resumo = vendas.aggregate(total=Sum("total_value"), qtd=Count("id"))
         total = resumo["total"] or Decimal("0")
         context["total_vendas"] = total
         context["qtd_pedidos"] = resumo["qtd"]
         context["ticket_medio"] = total / resumo["qtd"] if resumo["qtd"] else Decimal("0")
 
         context["por_mes"] = (
-            pedidos.annotate(mes=TruncMonth("created_at"))
+            vendas.annotate(mes=TruncMonth("created_at"))
             .values("mes")
             .annotate(qtd=Count("id"), total=Sum("total_value"))
             .order_by("-mes")
         )
         context["por_cliente"] = (
-            pedidos.values("client_id", "client__name")
+            vendas.values("client_id", "client__name")
             .annotate(qtd=Count("id"), total=Sum("total_value"))
             .order_by("-total")
         )
         context["por_produto"] = (
-            ProductOrder.objects.filter(order__in=pedidos)
+            ProductOrder.objects.filter(order__in=vendas)
             .exclude(product=None)
             .values("product_id", "product__sku", "product__name")
             .annotate(quantidade=Sum("quantity"), desconto=Sum("discount"), total=Sum("total_value"))
@@ -632,7 +769,7 @@ class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFil
         context["ve_todos_os_pedidos"] = self.ve_todos_os_pedidos()
         if context["ve_todos_os_pedidos"]:
             context["por_representante"] = (
-                pedidos.values("created_by__username", "created_by__profile__name")
+                vendas.values("created_by__username", "created_by__profile__name")
                 .annotate(qtd=Count("id"), total=Sum("total_value"))
                 .order_by("-total")
             )
@@ -641,46 +778,11 @@ class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFil
 
 # ─── ProductOrder ──────────────────────────────────────────────────────────────
 
+# Os itens só mudam pelo formulário do pedido (rascunho), que acerta total e
+# estoque; estas telas são só de consulta.
 class ItensVisiveisMixin(PedidosVisiveisMixin):
     # Itens seguem a RN02 pelo autor do pedido a que pertencem
     campo_autor = "order__created_by"
-
-class ProductOrderCreate(ItensVisiveisMixin, ActiveCompanyRequiredMixin, CreateView):
-    model = ProductOrder
-    fields = ["order", "product", "quantity", "unit_value", "discount"]
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("productorder-list")
-    extra_context = {"title": "Cadastro de Item de Pedido", "botao": "Criar Item"}
-
-    def form_valid(self, form):
-        quantity = form.cleaned_data.get('quantity', 0)
-        unit_value = form.cleaned_data.get('unit_value', 0)
-        discount = form.cleaned_data.get('discount') or 0
-        form.instance.total_value = (quantity * unit_value) - discount
-        return super().form_valid(form)
-
-
-class ProductOrderUpdate(ItensVisiveisMixin, ActiveCompanyRequiredMixin, UpdateView):
-    model = ProductOrder
-    fields = ["order", "product", "quantity", "unit_value", "discount"]
-    template_name = "cadastros/form.html"
-    success_url = reverse_lazy("productorder-list")
-    extra_context = {"title": "Editar dados do Item de Pedido", "botao": "Atualizar Item"}
-
-    def form_valid(self, form):
-        quantity = form.cleaned_data.get('quantity', 0)
-        unit_value = form.cleaned_data.get('unit_value', 0)
-        discount = form.cleaned_data.get('discount') or 0
-        form.instance.total_value = (quantity * unit_value) - discount
-        return super().form_valid(form)
-    
-
-class ProductOrderDelete(ItensVisiveisMixin, ExclusaoProtegidaMixin, ActiveCompanyRequiredMixin, DeleteView):
-    model = ProductOrder
-    template_name = "cadastros/form_delete.html"
-    success_url = reverse_lazy("productorder-list")
-    extra_context = {"title": "Excluir Item de Pedido"}
-
 
 class ProductOrderList(ItensVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
     model = ProductOrder

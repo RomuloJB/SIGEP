@@ -1,0 +1,2 @@
+{# Selo colorido do status do pedido. Uso: {% include 'cadastros/pedido-status.html' with pedido=order %} #}
+<span class="badge {% if pedido.status == 'digitacao' %}bg-secondary{% elif pedido.status == 'pendente' %}bg-warning text-dark{% elif pedido.status == 'aprovado' %}bg-success{% elif pedido.status == 'rejeitado' %}bg-danger{% else %}bg-dark{% endif %}">{{ pedido.get_status_display }}</span>

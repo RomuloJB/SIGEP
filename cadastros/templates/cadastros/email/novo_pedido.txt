@@ -1,4 +1,4 @@
-{% autoescape off %}Um novo pedido foi salvo na empresa {{ pedido.company.name }}.
+{% autoescape off %}Um pedido foi enviado para aprovação na empresa {{ pedido.company.name }}.
 
 Pedido: #{{ pedido.pk }}
 Cliente: {{ pedido.client.name }}

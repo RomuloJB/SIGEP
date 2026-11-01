@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from cadastros.models import Client, Company, Order, Product, ProductOrder
+from cadastros.models import Client, Company, Order, OrderStatus, Product, ProductOrder
 
 
 class CadastrosTestCase(TestCase):
@@ -31,9 +31,10 @@ class CadastrosTestCase(TestCase):
         sessao["active_company_id"] = self.empresa.pk
         sessao.save()
 
-    def criar_pedido(self, autor, quantidade):
+    def criar_pedido(self, autor, quantidade, status=OrderStatus.APROVADO):
+        # Grava direto no banco, sem mexer no estoque do produto
         pedido = Order.objects.create(
-            company=self.empresa, client=self.cliente, uf="PR",
+            company=self.empresa, client=self.cliente, uf="PR", status=status,
             total_value=self.produto.unit_value * quantidade, created_by=autor,
         )
         ProductOrder.objects.create(
@@ -42,9 +43,9 @@ class CadastrosTestCase(TestCase):
         )
         return pedido
 
-    def dados_do_pedido(self, quantidade=1, desconto="0"):
+    def dados_do_pedido(self, quantidade=1, desconto="0", acao="enviar"):
         return {
             "type": "OUT", "client": self.cliente.pk, "payment_method": "pix", "uf": "PR",
-            "address": "", "city": "",
+            "address": "", "city": "", "acao": acao,
             "product_id[]": [self.produto.pk], "quantity[]": [quantidade], "discount[]": [desconto],
         }
