@@ -26,6 +26,7 @@
             {{ form|crispy }}
 
             <div class="cadastros-actions mt-4">
+                {% include 'cadastros/botao-voltar.html' %}
                 <button type="submit" class="btn btn-primary btnLoading">
                     <i class="fas fa-floppy-disk"></i> Salvar alterações
                 </button>

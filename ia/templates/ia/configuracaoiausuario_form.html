@@ -34,6 +34,7 @@
             {{ form|crispy }}
 
             <div class="cadastros-actions mt-4">
+                {% url 'ia:usuario-list' as url_voltar %}{% include 'cadastros/botao-voltar.html' with fallback=url_voltar %}
                 <button type="submit" class="btn btn-primary btnLoading">
                     <i class="fas fa-floppy-disk"></i> Salvar
                 </button>
