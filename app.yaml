@@ -14,6 +14,15 @@ automatic_scaling:
   min_instances: 0
   max_instances: 2
 
-# Tem prioridade sobre o .env que sobe junto no deploy
+# Páginas estáticas para falhas do próprio App Engine (timeout, cota, instância fora do ar).
+# Erros do Django (400/403/404/500) são tratados pelo app erros.
+error_handlers:
+- file: erros/paginas/erro_app_engine.html
+- error_code: over_quota
+  file: erros/paginas/erro_app_engine.html
+- error_code: timeout
+  file: erros/paginas/erro_app_engine.html
+
+# Fora do App Engine o DEBUG vem do settings.py (True só no Windows); aqui fica explícito
 env_variables:
   DEBUG: "False"

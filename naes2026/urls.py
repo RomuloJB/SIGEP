@@ -30,3 +30,9 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns.append(path('__debug__/', include('debug_toolbar.urls')))
+
+# Páginas de erro (app erros): valem com DEBUG=False, como no App Engine
+handler400 = 'erros.views.erro_400'
+handler403 = 'erros.views.erro_403'
+handler404 = 'erros.views.erro_404'
+handler500 = 'erros.views.erro_500'
