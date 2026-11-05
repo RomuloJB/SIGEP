@@ -15,24 +15,40 @@
         <link href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
         {% block extra_css %}{% endblock extra_css %}
         <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+        <!-- Aplica a sidebar recolhida antes de desenhar a página, para ela não piscar expandida -->
+        <script>
+            try {
+                if (localStorage.getItem('sigep|sidebar-recolhida') === '1') {
+                    document.documentElement.classList.add('sidebar-recolhida');
+                }
+            } catch (e) {}
+        </script>
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     </head>
     <body class="sb-nav-fixed">
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand-->
-            <a class="navbar-brand ps-lg-3" href="/">SIGEP</a>
+            <a class="navbar-brand ps-lg-3" href="/">
+                <img src="{% static 'assets/img/favicon-sigep.png' %}" alt="" width="32" height="32">
+                SIGEP
+            </a>
             <!-- Sidebar Toggle: no celular vem antes da marca (order-first) -->
-            <button class="btn btn-link order-first order-lg-0" id="sidebarToggle" type="button" aria-label="Abrir/fechar menu"><i class="fas fa-bars"></i></button>
-            <!-- Empresa da sessão (apelido ou nome) -->
-            {% if request.session.company_name %}
-            <div class="card-company-topnav ms-auto" title="{{ request.session.company_name }}">
+            <button class="btn btn-link order-first order-lg-0" id="sidebarToggle" type="button" aria-controls="appSidebar" aria-label="Abrir/fechar menu"><i class="fas fa-bars"></i></button>
+            <!-- Empresa da sessão (apelido ou nome): clicar leva à troca de empresa -->
+            {% if request.user.is_authenticated %}
+            <a class="card-company-topnav ms-auto" href="{% url 'select-company' %}" title="Trocar de empresa">
                 <i class="fas fa-building"></i>
-                <span>{{ request.session.company_name }}</span>
-            </div>
+                <span class="card-company-topnav__texto">
+                    <span class="card-company-topnav__nome">{{ request.session.company_name|default:"Selecionar empresa" }}</span>
+                    {% if request.session.company_name %}
+                    <span class="card-company-topnav__papel">{% if request.user.is_superuser %}Administrador{% elif is_manager %}Gerente{% else %}Representante{% endif %}</span>
+                    {% endif %}
+                </span>
+                <svg class="card-company-topnav__seletor" aria-hidden="true"><use href="{% static 'assets/icons/sidebar.svg' %}#chevrons-up-down"></use></svg>
+            </a>
             {% endif %}
             <!-- Navbar-->
-            {% block sidenav %}
-            <ul class="navbar-nav {% if not request.session.company_name %}ms-auto{% endif %} me-2 me-lg-4">
+            <ul class="navbar-nav {% if not request.user.is_authenticated %}ms-auto{% endif %} me-2 me-lg-4">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
@@ -53,94 +69,10 @@
                 </li>
             </ul>
         </nav>
-        <div id="layoutSidenav">
-            <div id="layoutSidenav_nav">
-                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                    <div class="sb-sidenav-menu">
-                        <div class="nav">
-                            {% if request.user.is_authenticated %}
-                                <div class="sb-sidenav-menu-heading">Início</div>
-                                <a class="nav-link" href="/">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                    Dashboard
-                                </a>
-                                <div class="sb-sidenav-menu-heading">Páginas</div>
-                                {% if is_manager %}
-                                <a class="nav-link" href="{% url 'company-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-building"></i></div>
-                                    Empresas
-                                </a>
-                                {% endif %}
-                                <a class="nav-link" href="{% url 'client-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                                    Clientes
-                                </a>
-                                <a class="nav-link" href="{% url 'product-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-box"></i></div>
-                                    Produtos
-                                </a>
-                                <a class="nav-link" href="{% url 'order-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-dolly"></i></div>
-                                    Pedidos
-                                </a>
-                                <div class="sb-sidenav-menu-heading">Adicionais</div>
-                                <a class="nav-link" href="{% url 'sales-report' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                                    Relatórios
-                                </a>
-                                <a class="nav-link" href="{% url 'about' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-circle-info"></i></div>
-                                    Sobre
-                                </a>
-                                <a class="nav-link" href="{% url 'ia:meu-consumo' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-robot"></i></div>
-                                    Meu consumo de IA
-                                </a>
-                                {% if request.user.is_superuser %}
-                                <div class="sb-sidenav-menu-heading">Administração</div>
-                                <a class="nav-link" href="{% url 'user-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-user-shield"></i></div>
-                                    Gerenciar Usuários
-                                </a>
-                                <a class="nav-link" href="{% url 'ia:requisicao-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-list-check"></i></div>
-                                    Requisições de IA
-                                </a>
-                                <a class="nav-link" href="{% url 'ia:configuracao' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-sliders"></i></div>
-                                    Configuração da IA
-                                </a>
-                                <a class="nav-link" href="{% url 'ia:usuario-list' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-user-gear"></i></div>
-                                    IA por usuário
-                                </a>
-                                {% endif %}
-                            {% else %}
-                                <div class="sb-sidenav-menu-heading">Acesso</div>
-                                <a class="nav-link" href="{% url 'login' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-right-to-bracket"></i></div>
-                                    Entrar
-                                </a>
-                                <a class="nav-link" href="{% url 'about' %}">
-                                    <div class="sb-nav-link-icon"><i class="fas fa-circle-info"></i></div>
-                                    Sobre
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Logado como:</div>
-                        {% if request.user.is_authenticated %}
-                            {{ request.user.get_username }}
-                        {% else %}
-                            Visitante
-                        {% endif %}
-                    </div>
-                </nav>
-            </div>
-            {% endblock %}
+        <div class="app-layout">
+            {% include 'website/sidebar.html' %}
 
-            <div id="layoutSidenav_content">
+            <div class="app-content" id="appContent">
                 <main>
                     {% block content %}
                     <div class="dashboard-shell">
@@ -321,7 +253,7 @@
         </div>
         <script src="{% static 'js/mensagens.js' %}"></script>
         {% endif %}
-        <script src="{% static 'js/scripts.js' %}"></script>
+        <script src="{% static 'js/sidebar.js' %}"></script>
         <script src="{% static 'js/form-validation.js' %}"></script>
         <!-- Máscaras de CPF/CNPJ/telefone/CEP pelo nome do campo (depois do jQuery) -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>

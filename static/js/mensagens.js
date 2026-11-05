@@ -26,5 +26,6 @@
         });
     }
 
-    proxima();
+    // O Bootstrap 5 só registra $.fn.modal, usado pelo Bootbox, no DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', proxima);
 })();

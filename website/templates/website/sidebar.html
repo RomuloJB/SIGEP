@@ -1,0 +1,63 @@
+{% load static sidebar %}
+{% comment %}
+Sidebar do sistema. As opções ficam em website/templatetags/sidebar.py, o estilo na
+seção SIDEBAR do styles.css e o comportamento em static/js/sidebar.js. Computador:
+fixa e recolhe para só ícones. Celular: gaveta aberta pelo botão da barra superior.
+data-rotulo vira a dica (title) de cada link enquanto a sidebar está recolhida.
+{% endcomment %}
+{% static 'assets/icons/sidebar.svg' as icones %}
+{% menu_lateral as grupos %}
+<aside class="app-sidebar" id="appSidebar" aria-label="Menu lateral">
+    {# Só na gaveta do celular, que cobre a barra superior #}
+    <div class="app-sidebar__topo">
+        <span class="app-sidebar__topo-titulo">Menu</span>
+        <button type="button" class="app-sidebar__botao app-sidebar__fechar" id="sidebarFechar" aria-label="Fechar menu">
+            <svg aria-hidden="true"><use href="{{ icones }}#x"></use></svg>
+        </button>
+    </div>
+
+    <nav class="app-sidebar__nav" aria-label="Navegação principal">
+        {% for grupo in grupos %}
+        <div class="app-sidebar__grupo">
+            <h2 class="app-sidebar__titulo">{{ grupo.titulo }}</h2>
+            <ul class="app-sidebar__lista">
+                {% for item in grupo.itens %}
+                <li>
+                    <a class="app-sidebar__link{% if item.ativo %} is-ativo{% endif %}" href="{{ item.url }}" data-rotulo="{{ item.rotulo }}"{% if item.ativo %} aria-current="page"{% endif %}>
+                        <svg class="app-sidebar__icone" aria-hidden="true"><use href="{{ icones }}#{{ item.icone }}"></use></svg>
+                        <span class="app-sidebar__rotulo">{{ item.rotulo }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </nav>
+
+    <div class="app-sidebar__rodape">
+        {% if request.user.is_authenticated %}
+        {% with nome=request.user.profile.name|default:request.user.get_username %}
+        <a class="app-sidebar__usuario" href="{% url 'my-profile' %}" data-rotulo="{{ nome }}">
+            <span class="app-sidebar__avatar" aria-hidden="true">{{ nome|iniciais }}</span>
+            <span class="app-sidebar__texto">
+                <span class="app-sidebar__texto-principal">{{ nome }}</span>
+                <span class="app-sidebar__texto-secundario">{{ request.user.email|default:request.user.get_username }}</span>
+            </span>
+        </a>
+        {% endwith %}
+        {% else %}
+        <a class="app-sidebar__usuario" href="{% url 'login' %}" data-rotulo="Visitante">
+            <span class="app-sidebar__avatar" aria-hidden="true">{{ "Visitante"|iniciais }}</span>
+            <span class="app-sidebar__texto">
+                <span class="app-sidebar__texto-principal">Visitante</span>
+                <span class="app-sidebar__texto-secundario">Não conectado</span>
+            </span>
+        </a>
+        {% endif %}
+        <button type="button" class="app-sidebar__botao app-sidebar__recolher" id="sidebarRecolher" aria-controls="appSidebar" aria-expanded="true" aria-label="Recolher menu" title="Recolher menu">
+            <svg class="app-sidebar__icone-recolher" aria-hidden="true"><use href="{{ icones }}#panel-left-close"></use></svg>
+            <svg class="app-sidebar__icone-expandir" aria-hidden="true"><use href="{{ icones }}#panel-left-open"></use></svg>
+        </button>
+    </div>
+</aside>
+<div class="app-sidebar-fundo" id="sidebarFundo"></div>
