@@ -360,6 +360,17 @@ body {
   height: 280px;
 }
 
+.chart-card .chart-area-lg {
+  height: 340px;
+}
+
+.grafico-vazio {
+  margin: 0;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--sg-muted);
+}
+
 .chart-data-details summary {
   color: var(--sg-muted);
   font-weight: 600;

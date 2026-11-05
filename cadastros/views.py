@@ -23,7 +23,7 @@ from collections import Counter
 from decimal import Decimal, InvalidOperation
 import logging
 
-from . import pedidos
+from . import pedidos, relatorios
 from .models import Company, Client, Order, OrderStatus, Product, ProductOrder
 from .forms import ClientForm, CompanyForm
 from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter, SalesReportFilter
@@ -761,6 +761,37 @@ class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFil
                 .annotate(qtd=Count("id"), total=Sum("total_value"))
                 .order_by("-total")
             )
+        return context
+
+
+class ManagementReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
+    """
+    Painel gerencial: indicadores e gráficos (funil de status, vendas por forma de
+    pagamento, UF, produto, cliente e representante, estoque crítico) no período
+    do filtro. Os cálculos ficam em cadastros/relatorios.py. Segue a RN02: o
+    representante vê só os próprios pedidos e não vê o gráfico por representante.
+    """
+    model = Order
+    template_name = "cadastros/management_report.html"
+    ordering = ['-id']
+    filterset_class = SalesReportFilter
+
+    def get_paginate_by(self, queryset):
+        return None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = self.object_list
+        vendas = pedidos.filter(status=OrderStatus.APROVADO)
+        ve_todos = self.ve_todos_os_pedidos()
+        dados = relatorios.dados_gerenciais(pedidos, vendas, self.active_company, ve_todos)
+
+        context.update(dados["resumo"])
+        context["descontos"] = dados["descontos"]
+        context["sem_venda"] = dados["sem_venda"]
+        context["graficos"] = dados["graficos"]
+        context["limite_estoque_baixo"] = relatorios.LIMITE_ESTOQUE_BAIXO
+        context["ve_todos_os_pedidos"] = ve_todos
         return context
 
 

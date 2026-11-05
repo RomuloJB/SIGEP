@@ -8,7 +8,7 @@ from cadastros.models import Company, User_Profile
 from website.templatetags.sidebar import iniciais
 
 OPCOES_REPRESENTANTE = [
-    "Dashboard", "Clientes", "Produtos", "Pedidos", "Relatórios", "Sobre", "Meu consumo de IA",
+    "Dashboard", "Clientes", "Produtos", "Pedidos", "Relatório de vendas", "Painel gerencial", "Sobre", "Meu consumo de IA",
 ]
 OPCOES_ADMINISTRACAO = ["Gerenciar Usuários", "Requisições de IA", "Configuração da IA", "IA por usuário"]
 
@@ -71,7 +71,8 @@ class SidebarTests(TestCase):
             ("product-list", "Produtos"),
             ("order-create", "Pedidos"),
             ("productorder-list", "Pedidos"),
-            ("sales-report", "Relatórios"),
+            ("sales-report", "Relatório de vendas"),
+            ("management-report", "Painel gerencial"),
             ("ia:meu-consumo", "Meu consumo de IA"),
         ]
         for rota, opcao in casos:

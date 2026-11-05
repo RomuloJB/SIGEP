@@ -1,0 +1,169 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Painel gerencial</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fas fa-chart-pie"></i> Painel gerencial</h1>
+            <p class="page-subtitle">
+                {% if ve_todos_os_pedidos %}Pedidos de toda a empresa{% else %}Somente os seus pedidos{% endif %}{% if active_filters %}, com filtros aplicados{% endif %}.
+                Vendas são os pedidos aprovados; use o filtro para escolher o período ou o cliente.
+            </p>
+        </div>
+        <div class="page-actions">
+            {% include 'cadastros/form-filter.html' with rotulo="Filtros" %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-6">
+            {% include 'website/componentes/kpi-card.html' with label="Total vendido" valor=total_vendido moeda=True icone="fa-sack-dollar" cor="primary" ajuda="Pedidos aprovados no período" %}
+        </div>
+        <div class="col-xl-4 col-md-6">
+            {% include 'website/componentes/kpi-card.html' with label="Ticket médio" valor=ticket_medio moeda=True icone="fa-receipt" cor="info" ajuda="Valor médio por pedido aprovado" %}
+        </div>
+        <div class="col-xl-4 col-md-6">
+            {% if taxa_aprovacao is None %}
+                {% include 'website/componentes/kpi-card.html' with label="Taxa de aprovação" valor="—" icone="fa-circle-check" cor="primary" ajuda="Ainda não há pedidos aprovados ou rejeitados" %}
+            {% else %}
+                <div class="card kpi-card kpi-primary">
+                    <div class="card-body">
+                        <div class="kpi-icon" aria-hidden="true"><i class="fas fa-circle-check"></i></div>
+                        <div class="kpi-body">
+                            <p class="kpi-label">Taxa de aprovação</p>
+                            <p class="kpi-value">{{ taxa_aprovacao|floatformat:1 }}%</p>
+                            <p class="kpi-help">Aprovados entre os pedidos já decididos</p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card kpi-card kpi-warning">
+                <div class="card-body">
+                    <div class="kpi-icon" aria-hidden="true"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="kpi-body">
+                        <p class="kpi-label">Aguardando aprovação</p>
+                        <p class="kpi-value">{{ pendentes_qtd }} <small class="fs-6 fw-semibold text-muted">pedido{{ pendentes_qtd|pluralize }}</small></p>
+                        <p class="kpi-help">R$ {{ pendentes_valor|floatformat:2 }} em análise</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card kpi-card kpi-danger">
+                <div class="card-body">
+                    <div class="kpi-icon" aria-hidden="true"><i class="fas fa-tags"></i></div>
+                    <div class="kpi-body">
+                        <p class="kpi-label">Descontos concedidos</p>
+                        <p class="kpi-value">R$ {{ descontos.valor|floatformat:2 }}</p>
+                        <p class="kpi-help">{{ descontos.percentual|floatformat:1 }}% do valor de tabela</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            {% include 'website/componentes/kpi-card.html' with label="Produtos sem venda" valor=sem_venda icone="fa-box-open" cor="neutral" ajuda="Cadastrados e sem nenhuma venda no período" %}
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-filter-circle-dollar"></i> Funil de pedidos</h2>
+                    <span class="card-meta">Quantidade por status</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area"><canvas id="grafico-status" role="img" aria-label="Quantidade de pedidos por status"></canvas></div>
+                    <p class="grafico-vazio" hidden>Sem pedidos no período.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-credit-card"></i> Vendas por forma de pagamento</h2>
+                    <span class="card-meta">Valor vendido</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area"><canvas id="grafico-pagamento" role="img" aria-label="Valor vendido por forma de pagamento"></canvas></div>
+                    <p class="grafico-vazio" hidden>Sem vendas no período.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-box"></i> Produtos mais vendidos</h2>
+                    <span class="card-meta">Top 10 por valor</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area chart-area-lg"><canvas id="grafico-produtos" role="img" aria-label="Produtos mais vendidos por valor"></canvas></div>
+                    <p class="grafico-vazio" hidden>Sem vendas no período.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-users"></i> Melhores clientes</h2>
+                    <span class="card-meta">Top 10 por valor</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area chart-area-lg"><canvas id="grafico-clientes" role="img" aria-label="Melhores clientes por valor"></canvas></div>
+                    <p class="grafico-vazio" hidden>Sem vendas no período.</p>
+                </div>
+            </div>
+        </div>
+        {% if ve_todos_os_pedidos %}
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-user-tie"></i> Vendas por representante</h2>
+                    <span class="card-meta">Valor vendido</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area"><canvas id="grafico-representantes" role="img" aria-label="Valor vendido por representante"></canvas></div>
+                    <p class="grafico-vazio" hidden>Sem vendas no período.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-map-location-dot"></i> Vendas por estado</h2>
+                    <span class="card-meta">Valor vendido por UF</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area"><canvas id="grafico-uf" role="img" aria-label="Valor vendido por UF"></canvas></div>
+                    <p class="grafico-vazio" hidden>Sem vendas no período.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-triangle-exclamation"></i> Estoque crítico</h2>
+                    <span class="card-meta">Até {{ limite_estoque_baixo }} unidades</span>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area"><canvas id="grafico-estoque" role="img" aria-label="Produtos com estoque baixo"></canvas></div>
+                    <p class="grafico-vazio" hidden>Nenhum produto com estoque baixo.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock cadastros_content %}
+
+{# Fora do block content: aninhado, o Django renderiza o bloco duas vezes #}
+{% block scripts %}
+{{ graficos|json_script:"relatorios-dados" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="{% static 'js/relatorios-graficos.js' %}"></script>
+{% endblock scripts %}

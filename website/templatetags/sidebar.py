@@ -21,7 +21,8 @@ PAGINAS = [
     item("Pedidos", "order-list", "shopping-bag", ("order-", "productorder-")),
 ]
 ADICIONAIS = ("Adicionais", [
-    item("Relatórios", "sales-report", "chart-no-axes-combined"),
+    item("Relatório de vendas", "sales-report", "chart-no-axes-combined"),
+    item("Painel gerencial", "management-report", "chart-pie"),
     item("Sobre", "about", "info"),
     item("Meu consumo de IA", "ia:meu-consumo", "bot"),
 ])
