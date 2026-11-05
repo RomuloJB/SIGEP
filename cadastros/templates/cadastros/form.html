@@ -10,10 +10,10 @@
 <div class="cadastros-shell">
     <div class="cadastros-container">
         {% block cadastros_content %}
-        <div class="cadastros-header">
+        <div class="page-header">
             <div>
-                <h1 class="cadastros-title">{{ title }}</h1>
-                <p class="cadastros-subtitle">Preencha todos os campos obrigatorios.</p>
+                <h1 class="page-title"><i class="fas fa-pen-to-square"></i> {{ title }}</h1>
+                <p class="page-subtitle">Preencha os campos abaixo. Os campos com * são obrigatórios.</p>
             </div>
         </div>
 
@@ -29,8 +29,8 @@
                     {% endif %}
 
                     <div class="cadastros-actions">
-                        <button type="submit" class="btn btn-success btnLoading">
-                            Salvar
+                        <button type="submit" class="btn btn-primary btnLoading">
+                            <i class="fas fa-floppy-disk"></i> Salvar
                         </button>
                     </div>
                 </form>
