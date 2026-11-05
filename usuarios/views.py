@@ -114,9 +114,11 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
 
     def ve_todos_os_pedidos(self):
         # RN02: gerente da empresa ativa (ou superusuário) vê todos os pedidos dela;
-        # representante vê só os que ele criou.
-        user = self.request.user
-        return user.is_superuser or self.active_company.manager.filter(pk=user.pk).exists()
+        # representante vê só os que ele criou. Calculado uma vez por requisição.
+        if not hasattr(self, "_ve_todos_os_pedidos"):
+            user = self.request.user
+            self._ve_todos_os_pedidos = user.is_superuser or self.active_company.manager.filter(pk=user.pk).exists()
+        return self._ve_todos_os_pedidos
 
     def pedidos_visiveis(self):
         from cadastros.models import Order

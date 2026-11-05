@@ -96,15 +96,15 @@
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <span>Total de produtos</span>
-                    <strong>{{ object.products.count }}</strong>
+                    <strong>{{ object.products.all|length }}</strong>
                 </div>
                 <div class="d-flex align-items-center justify-content-between mt-2">
                     <span>Total de pedidos</span>
-                    <strong>{{ object.orders.count }}</strong>
+                    <strong>{{ object.orders.all|length }}</strong>
                 </div>
                 <div class="d-flex align-items-center justify-content-between mt-2">
                     <span>Total de representantes</span>
-                    <strong>{{ object.sales_rep.count }}</strong>
+                    <strong>{{ object.sales_rep.all|length }}</strong>
                 </div>
                 <p class="page-subtitle">
                     Os totais refletem os registros associados a esta empresa.

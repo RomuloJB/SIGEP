@@ -96,7 +96,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <span>Total de itens em pedidos</span>
-                    <strong class="fs-5">{{ object.product_orders.count }}</strong>
+                    <strong class="fs-5">{{ object.product_orders.all|length }}</strong>
                 </div>
                 <p class="page-subtitle">
                     Considera todos os itens cadastrados em ProductOrder para este produto.

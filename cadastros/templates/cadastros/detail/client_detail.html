@@ -72,7 +72,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <span>Total de pedidos</span>
-                    <strong class="fs-5">{{ object.orders.count }}</strong>
+                    <strong class="fs-5">{{ object.orders.all|length }}</strong>
                 </div>
                 <p class="page-subtitle">
                     Considera todos os pedidos associados a este cliente.

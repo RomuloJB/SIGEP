@@ -3,7 +3,7 @@ from datetime import date, datetime, time
 from braces.views import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from cadastros.models import Client, OrderStatus
@@ -65,18 +65,16 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
         # Gerente: pedidos da empresa ativa; representante: só os dele (RN02)
         vendas = self.vendas()
 
-        # 1. Total em vendas
-        total_vendas = vendas.aggregate(total=Sum('total_value'))['total'] or 0
-
-        # 2. Vendas neste mês
+        # 1 a 3. Total em vendas, vendas neste mês e quantidade de vendas, em uma consulta só
         hoje = timezone.now()
-        vendas_mes = vendas.filter(
-            created_at__year=hoje.year,
-            created_at__month=hoje.month
-        ).aggregate(total=Sum('total_value'))['total'] or 0
-
-        # 3. Quantidade de vendas
-        qtd_vendas = vendas.count()
+        resumo = vendas.aggregate(
+            total=Sum('total_value'),
+            mes=Sum('total_value', filter=Q(created_at__year=hoje.year, created_at__month=hoje.month)),
+            qtd=Count('id'),
+        )
+        total_vendas = resumo['total'] or 0
+        vendas_mes = resumo['mes'] or 0
+        qtd_vendas = resumo['qtd']
 
         # 4. Quantidade de clientes (da empresa ativa)
         qtd_clientes = Client.objects.filter(company=self.active_company).count()
