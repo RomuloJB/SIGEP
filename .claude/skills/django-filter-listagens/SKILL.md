@@ -64,7 +64,7 @@ Confira a base (já existe hoje; só recrie se tiver sumido):
 3. Nunca copie o formulário de filtros ou a paginação para dentro do template.
 4. A tabela continua percorrendo `<model>_list` / `object_list`.
 5. As regras da tabela (classes, `data-sort`, coluna de ações, lista vazia) são as
-   da skill `datatables-listagens`. Esta skill cuida do formulário de filtros, da
+   da skill `listagens-tabelas`. Esta skill cuida do formulário de filtros, da
    view e da paginação.
 
 # Conferência antes de terminar

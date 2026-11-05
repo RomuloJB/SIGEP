@@ -27,11 +27,11 @@ A base já está instalada (só recrie se tiver sumido):
    para a DeleteView depois da confirmação do Bootbox:
    ```django
    {% url 'client-delete' client.pk as url_excluir %}
-   {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir cliente" tipo="o cliente" nome=client.name classe="dropdown-item text-danger" %}
+   {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir cliente" tipo="o cliente" nome=client.name classe="dropdown-item" %}
    ```
    - `titulo`: "Excluir <o que é>"; `tipo`: com artigo ("o cliente", "a empresa", "o pedido nº");
-     `nome`: o registro citado na mensagem; `classe`: `dropdown-item text-danger` no menu de
-     ações da listagem, `btn btn-outline-danger btn-novo` nas telas de detalhe.
+     `nome`: o registro citado na mensagem; `classe`: `dropdown-item` no menu de
+     ações da listagem (o ícone vermelho já vem do include), `btn btn-outline-danger` nas telas de detalhe.
    - Não escreva JS por template: `confirmar-exclusao.js` intercepta toda `form.form-excluir`.
 5. Exclusão perigosa (empresa, perfil de gerente, ou algo que apague muitos dados em
    cascata) exige digitar "excluir", como no GitHub:
