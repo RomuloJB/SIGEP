@@ -54,15 +54,15 @@
                         {% if request.user.is_authenticated %}
                             <li><span class="dropdown-item-text">Olá, {{ request.user.get_username }}</span></li>
                             <li><hr class="dropdown-divider" /></li>
-                            <li><a class="dropdown-item" href="{% url 'my-profile' %}">Meu perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'my-profile' %}"><i class="fas fa-user icon-view"></i> Meu perfil</a></li>
                             <li>
                                 <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}
-                                    <button class="dropdown-item" type="submit">Sair</button>
+                                    <button class="dropdown-item" type="submit"><i class="fas fa-right-from-bracket icon-delete"></i> Sair</button>
                                 </form>
                             </li>
                         {% else %}
-                            <li><a class="dropdown-item" href="{% url 'login' %}">Entrar</a></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}"><i class="fas fa-right-to-bracket icon-approve"></i> Entrar</a></li>
                         {% endif %}
                     </ul>
                 </li>
