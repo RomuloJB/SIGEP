@@ -1,5 +1,5 @@
 {# Rodapé de paginação das listagens. Os links repetem todos os parâmetros da URL atual #}
-{# (filtros e per_page), exceto o page: para ?name=re&page=1, gera ?name=re&page=2 #}
+{# (filtros), exceto o page: para ?name=re&page=1, gera ?name=re&page=2 #}
 <div class="card-footer bg-transparent d-flex align-items-center justify-content-between flex-wrap gap-2">
     {% if is_paginated %}
     <nav aria-label="Paginação">
@@ -30,14 +30,4 @@
     {% else %}
     <span class="small text-muted">Mostrando todos os registros.</span>
     {% endif %}
-
-    <div class="d-flex align-items-center gap-2">
-        <span class="small text-muted">Itens por página</span>
-        <div class="btn-group btn-group-sm" role="group" aria-label="Itens por página">
-            {% for option in per_page_options %}
-                {# Troca o per_page mantendo os filtros e volta para a primeira página #}
-                <a class="btn btn-outline-secondary {% if page_obj.paginator.per_page == option %}active{% endif %}" href="?{% for chave, valor in request.GET.items %}{% if chave != 'page' and chave != 'per_page' %}{{ chave }}={{ valor|urlencode }}&{% endif %}{% endfor %}per_page={{ option }}">{{ option }}</a>
-            {% endfor %}
-        </div>
-    </div>
 </div>

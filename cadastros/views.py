@@ -169,23 +169,9 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
 # FilterView faz o papel da ListView e ainda aplica o filterset_class por cima do get_queryset
 class PaginatedFilterView(FilterView):
     paginate_by = 10
-    paginate_by_options = (10, 20, 40)
-
-    def get_paginate_by(self, queryset):
-        per_page = self.request.GET.get("per_page", self.paginate_by)
-        try:
-            per_page = int(per_page)
-        except (TypeError, ValueError):
-            return self.paginate_by
-
-        if per_page in self.paginate_by_options:
-            return per_page
-
-        return self.paginate_by
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["per_page_options"] = self.paginate_by_options
         # Quantos filtros estão preenchidos, para o badge do botão "Filtros"
         form = self.filterset.form
         if form.is_valid():

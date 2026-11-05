@@ -255,17 +255,6 @@ class UserListView(SuperuserRequiredMixin, ListView):
     context_object_name = "users"
     queryset = User.objects.select_related("profile").prefetch_related("groups").order_by("username")
     paginate_by = 10
-    paginate_by_options = (10, 20, 40)
-
-    def get_paginate_by(self, queryset):
-        # Mesmo ?per_page=10|20|40 das listagens de cadastros (cadastros/paginacao.html)
-        per_page = self.request.GET.get("per_page", "")
-        return int(per_page) if per_page.isdigit() and int(per_page) in self.paginate_by_options else self.paginate_by
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["per_page_options"] = self.paginate_by_options
-        return context
 
 
 class UserCreateView(SuperuserRequiredMixin, FormErrorMessagesMixin, SuccessMessageMixin, CreateView):

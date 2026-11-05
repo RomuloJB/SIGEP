@@ -21,8 +21,6 @@
             <div class="filter-fields">
                 {{ filter.form|crispy }}
             </div>
-            {# Mantém a quantidade de itens por página escolhida ao filtrar #}
-            {% if request.GET.per_page %}<input type="hidden" name="per_page" value="{{ request.GET.per_page }}">{% endif %}
             <div class="filter-actions">
                 {# O botão "Limpar" volta para a mesma página, sem os parâmetros da busca #}
                 <a href="{{ request.path }}" class="btn btn-sm btn-outline-secondary">

@@ -44,7 +44,7 @@ Confira a base (já existe hoje; só recrie se tiver sumido):
 
 # A view (cadastros/views.py)
 
-1. A listagem herda de `PaginatedFilterView` (FilterView + `?per_page=10|20|40`),
+1. A listagem herda de `PaginatedFilterView` (FilterView, 10 itens por página),
    mantendo os mixins de acesso (`GroupRequiredMixin`, `ActiveCompanyRequiredMixin`,
    `BaseLoginMixin`) ANTES dela, na mesma ordem.
 2. Atributos obrigatórios: `model`, `template_name`, `ordering` (evita

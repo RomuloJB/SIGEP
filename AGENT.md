@@ -124,7 +124,7 @@ implementar isso, é trabalho novo, não correção de bug.
   (`CreateView`/`UpdateView`/`DeleteView`/`ListView`/`DetailView`). Siga esse
   padrão em vez de introduzir function-based views novas, salvo necessidade clara.
 - **Listagens paginadas:** herdam de `PaginatedFilterView` (em `cadastros/views.py`,
-  baseada na `FilterView` do django-filter), que aceita `?per_page=10|20|40`.
+  baseada na `FilterView` do django-filter), com 10 itens por página.
   Cada listagem define `ordering` e um `filterset_class` de `cadastros/filters.py`;
   o template inclui `cadastros/form-filter.html` (abaixo do título) e
   `cadastros/paginacao.html` (após a tabela), que preserva os filtros na URL.
