@@ -14,12 +14,11 @@
 {% block content %}
 <div class="cadastros-shell">
     <div class="cadastros-container">
-        <div class="cadastros-header flex-wrap">
+        <div class="page-header">
             <div>
-                <h1 class="cadastros-title">{{ title }}</h1>
-                <p class="cadastros-subtitle">Preencha os dados do pedido e adicione os produtos.</p>
+                <h1 class="page-title"><i class="fas fa-cart-shopping"></i> {{ title }}</h1>
+                <p class="page-subtitle">Informe os dados do pedido, adicione os produtos e salve como rascunho ou envie para aprovação.</p>
             </div>
-            {% include 'cadastros/pedido-botoes.html' with classe="border-0 pt-0 mt-0" %}
         </div>
 
         {% if pedido_original %}
@@ -36,7 +35,9 @@
 
             {# ── Dados gerais do pedido ── #}
             <div class="card cadastros-card mb-4">
-                <div class="card-header fw-semibold">Dados do pedido</div>
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-file-invoice"></i> Dados do pedido</h2>
+                </div>
                 <div class="card-body">
                     {{ form|crispy }}
                 </div>
@@ -44,7 +45,9 @@
 
             {# ── Itens do pedido ── #}
             <div class="card mb-4">
-                <div class="card-header fw-semibold">Itens do pedido</div>
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-boxes-stacked"></i> Itens do pedido</h2>
+                </div>
                 <div class="card-body">
                     <div class="row g-2 align-items-end mb-3">
                         <div class="col-md-8">
@@ -69,15 +72,15 @@
                             {% endif %}
                         </div>
                         <div class="col-md-4">
-                            <button type="button" class="btn btn-success w-100" id="btn-add-product" {% if not products %}disabled{% endif %}>
-                                <i class="fas fa-plus me-1"></i> Adicionar produto
+                            <button type="button" class="btn btn-primary w-100" id="btn-add-product" {% if not products %}disabled{% endif %}>
+                                <i class="fas fa-plus"></i> Adicionar produto
                             </button>
                         </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-striped align-middle mb-0" id="items-table">
-                            <thead class="table-light text-uppercase small">
+                        <table class="table align-middle mb-0" id="items-table">
+                            <thead>
                                 <tr>
                                     <th style="min-width:220px">Produto</th>
                                     <th style="min-width:90px">Estoque</th>

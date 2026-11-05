@@ -137,7 +137,7 @@
                 '<input type="hidden" name="product_id[]" value="' + esc(product.id) + '">' +
             '</td>' +
             '<td>' +
-                '<span class="badge ' + (stock <= 5 ? 'bg-warning text-dark' : 'bg-secondary') + '">' + stock + '</span>' +
+                '<span class="' + (stock <= 5 ? 'badge-soft-warning' : 'badge-soft-neutral') + '">' + stock + '</span>' +
             '</td>' +
             '<td>' +
                 '<input type="number" name="quantity[]"' +
@@ -154,7 +154,7 @@
             '</td>' +
             '<td class="text-end fw-semibold line-total-cell"></td>' +
             '<td class="text-center">' +
-                '<button type="button" class="btn btn-sm btn-outline-danger btn-remove" title="Remover">' +
+                '<button type="button" class="btn btn-sm btn-icon btn-soft-danger btn-remove" title="Remover" aria-label="Remover produto">' +
                     '<i class="fas fa-trash"></i>' +
                 '</button>' +
             '</td>';

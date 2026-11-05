@@ -1,19 +1,19 @@
 {% comment %}
-Botões do formulário de pedido, repetidos no topo e no rodapé. form="order-form"
-liga ao formulário os botões que ficam fora dele (os do topo).
+Botões do formulário de pedido, só no rodapé do formulário. form="order-form"
+liga ao formulário os botões, caso fiquem fora dele.
 - Cancelar: sai sem salvar (não tem relação com o status "Cancelado").
 - Salvar em rascunho: grava "Em digitação", sem baixar o estoque.
 - Salvar e enviar: grava "Pendente", confere e baixa o estoque.
 O primeiro botão de envio é o padrão do Enter, por isso o rascunho vem antes.
 {% endcomment %}
-<div class="cadastros-actions flex-wrap {{ classe }}">
-    <a href="{{ url_cancelar }}" class="btn btn-danger btn-cancelar-pedido">
-        <i class="fas fa-xmark me-1"></i> Cancelar
+<div class="form-actions {{ classe }}">
+    <a href="{{ url_cancelar }}" class="btn btn-outline-secondary btn-cancelar-pedido">
+        <i class="fas fa-xmark"></i> Cancelar
     </a>
-    <button type="submit" form="order-form" name="acao" value="rascunho" class="btn btn-warning btnLoading">
-        <i class="fas fa-floppy-disk me-1"></i> Salvar em rascunho
+    <button type="submit" form="order-form" name="acao" value="rascunho" class="btn btn-outline-primary btnLoading">
+        <i class="fas fa-floppy-disk"></i> Salvar em rascunho
     </button>
-    <button type="submit" form="order-form" name="acao" value="enviar" class="btn btn-success btnLoading">
-        <i class="fas fa-paper-plane me-1"></i> Salvar e enviar
+    <button type="submit" form="order-form" name="acao" value="enviar" class="btn btn-primary btnLoading">
+        <i class="fas fa-paper-plane"></i> Salvar e enviar
     </button>
 </div>

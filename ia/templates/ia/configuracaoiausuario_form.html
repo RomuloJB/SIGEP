@@ -16,12 +16,12 @@
         </p>
     </div>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-novo" href="{% url 'ia:usuario-list' %}">
-            <i class="fas fa-arrow-left me-1"></i> Voltar
+        <a class="btn btn-outline-secondary" href="{% url 'ia:usuario-list' %}">
+            <i class="fas fa-arrow-left"></i> Voltar
         </a>
         {% if object.pk %}
         {% url 'ia:usuario-padrao' object.usuario.pk as url_padrao %}
-        {% include 'cadastros/form-excluir.html' with url=url_padrao titulo="Voltar ao padrão" tipo="a configuração de IA própria de" nome=object.usuario.username classe="btn btn-outline-danger btn-novo" rotulo="Voltar ao padrão" %}
+        {% include 'cadastros/form-excluir.html' with url=url_padrao titulo="Voltar ao padrão" tipo="a configuração de IA própria de" nome=object.usuario.username classe="btn btn-outline-danger" rotulo="Voltar ao padrão" icone="fa-rotate-left" %}
         {% endif %}
     </div>
 </div>
@@ -34,8 +34,8 @@
             {{ form|crispy }}
 
             <div class="cadastros-actions mt-4">
-                <button type="submit" class="btn btn-success btnLoading">
-                    Salvar
+                <button type="submit" class="btn btn-primary btnLoading">
+                    <i class="fas fa-floppy-disk"></i> Salvar
                 </button>
             </div>
         </form>
