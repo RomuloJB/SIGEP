@@ -25,7 +25,7 @@ import logging
 
 from . import pedidos, relatorios
 from .models import Company, Client, Order, OrderStatus, Product, ProductOrder
-from .forms import ClientForm, CompanyForm
+from .forms import ClientForm, CompanyForm, OrderForm, ProductForm
 from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter, SalesReportFilter
 
 # Importar o LoginRequiredMixin para proteger as views
@@ -314,7 +314,7 @@ class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
 class ProductCreate(GroupRequiredMixin, ActiveCompanyRequiredMixin, CreateView):
     group_required = ['Manager']
     model = Product
-    fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit"]
+    form_class = ProductForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Cadastro de Produto", "botao": "Criar Produto"}
@@ -326,7 +326,7 @@ class ProductCreate(GroupRequiredMixin, ActiveCompanyRequiredMixin, CreateView):
 class ProductUpdate(GroupRequiredMixin, ActiveCompanyRequiredMixin, UpdateView):
     group_required = ['Manager']
     model = Product
-    fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit"]
+    form_class = ProductForm
     template_name = "cadastros/form.html"
     success_url = reverse_lazy("product-list")
     extra_context = {"title": "Editar dados do Produto", "botao": "Atualizar Produto"}
@@ -385,7 +385,7 @@ class PedidoFormMixin:
     (RN05/RN08). Sem "acao" (ex.: Enter num campo), grava como rascunho.
     """
     model = Order
-    fields = ["type", "client", "payment_method", "address", "city", "uf"]
+    form_class = OrderForm
     template_name = "cadastros/order_form.html"
 
     def enviando(self):
@@ -563,7 +563,7 @@ class OrderDuplicate(PedidosVisiveisMixin, OrderCreate):
         return get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
 
     def get_initial(self):
-        return model_to_dict(self.original, fields=self.fields)
+        return model_to_dict(self.original, fields=OrderForm.Meta.fields)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

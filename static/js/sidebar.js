@@ -26,7 +26,6 @@
         botaoRecolher.setAttribute('aria-expanded', String(!recolhida()));
         botaoRecolher.setAttribute('aria-label', acao);
         botaoRecolher.title = acao;
-        botaoTopo.setAttribute('aria-expanded', String(celular.matches ? gavetaAberta() : !recolhida()));
         // Sem texto na tela, o nome de cada opção aparece como dica ao parar o mouse
         sidebar.querySelectorAll('[data-rotulo]').forEach(function (link) {
             if (mostrarDicas) {
@@ -69,13 +68,7 @@
         if (devolverFoco) botaoTopo.focus();
     }
 
-    botaoTopo.addEventListener('click', function () {
-        if (celular.matches) {
-            abrirGaveta();
-        } else {
-            alternarRecolhida();
-        }
-    });
+    botaoTopo.addEventListener('click', abrirGaveta);
     botaoRecolher.addEventListener('click', alternarRecolhida);
     botaoFechar.addEventListener('click', function () { fecharGaveta(true); });
     fundo.addEventListener('click', function () { fecharGaveta(true); });

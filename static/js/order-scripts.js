@@ -12,6 +12,26 @@
     const orderForm   = document.getElementById("order-form");
 
     if (!selectEl || !orderForm) return;
+
+    // Parcelas: o campo só aparece nos métodos de boleto; nos outros volta para 1
+    const metodoPagamento = document.getElementById("id_payment_method");
+    const campoParcelas   = document.getElementById("campo-parcelas");
+    const inputParcelas   = document.getElementById("id_installments");
+    const metodosBoleto   = campoParcelas.dataset.metodosBoleto.split(",");
+
+    function atualizarParcelas() {
+        const boleto = metodosBoleto.includes(metodoPagamento.value);
+        campoParcelas.classList.toggle("d-none", !boleto);
+        if (!boleto) inputParcelas.value = 1;
+    }
+
+    metodoPagamento.addEventListener("change", function () {
+        atualizarParcelas();
+        // O form-validation.js tira a marcação de erro do campo que acabou de sumir
+        inputParcelas.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    atualizarParcelas();
+
     if (typeof TomSelect === "undefined") {
         console.error("order-scripts: Tom Select não foi carregado.");
         return;

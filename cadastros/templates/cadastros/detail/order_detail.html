@@ -95,6 +95,12 @@
                             <th>Método de pagamento</th>
                             <td>{{ object.get_payment_method_display }}</td>
                         </tr>
+                        {% if object.pago_em_boleto %}
+                        <tr>
+                            <th>Parcelas</th>
+                            <td>{{ object.installments }}x</td>
+                        </tr>
+                        {% endif %}
                         <tr>
                             <th>Valor total (pedido)</th>
                             <td class="fw-semibold">R$ {{ object.total_value|floatformat:2 }}</td>

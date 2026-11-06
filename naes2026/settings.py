@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'cadastros.apps.CadastrosConfig',
     'usuarios.apps.UsuariosConfig',
     'ia.apps.IaConfig',
+    'telegram.apps.TelegramConfig',
     'erros.apps.ErrosConfig',
 ]
 
@@ -226,6 +227,19 @@ STATICFILES_DIRS = [ BASE_DIR / "static" ]
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Endereço público do site, sem barra no fim: monta os links que saem do sistema (ex.: botões do bot)
+SITE_URL = os.getenv("SITE_URL", "").rstrip("/")
+
+# Telegram: segredos só no .env. Limites por usuário e retenção ficam na ConfiguracaoTelegram.
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_USERNAME = os.getenv("TELEGRAM_BOT_USERNAME", "")
+TELEGRAM_BOT_WEBHOOK_URL = os.getenv("TELEGRAM_BOT_WEBHOOK_URL", "")
+TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+TELEGRAM_TIMEOUT_S = 10
+TELEGRAM_CODIGO_VALIDADE_MIN = 15
+TELEGRAM_MAX_CONEXOES = 10
+TELEGRAM_RETRY_MAX_S = 5
 
 # Sem DEBUG, o Django não escreve os erros (tracebacks dos 500) no terminal.
 # Mandando para o stderr, eles aparecem nos logs do Google Cloud.

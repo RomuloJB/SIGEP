@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('cadastros.urls')),
     path('', include('usuarios.urls')),
     path('ia/', include('ia.urls', namespace='ia')),
+    path('telegram/', include('telegram.urls', namespace='telegram')),
 ]
 
 if settings.DEBUG:

@@ -10,7 +10,7 @@ from .masks import (
     PHONE_DIGITS, PHONE_FORMAT,
     format_cnpj, format_cpf, format_cpf_cnpj, format_phone, only_digits,
 )
-from .models import Client, Company
+from .models import MAX_PARCELAS, METODOS_BOLETO, Client, Company, Order, Product
 
 
 class MaskedDigitsField(forms.CharField):
@@ -149,6 +149,69 @@ class ClientForm(forms.ModelForm):
                 Column("uf", css_class="col-12 col-md-2"),
             ),
         )
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ["name", "description", "sku", "color", "unit_value", "stock", "measure_unit"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Agrupa campos curtos na mesma linha (grid do Bootstrap; empilha no celular)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Row(
+                Column("name", css_class="col-12 col-md-8"),
+                Column("sku", css_class="col-12 col-md-4"),
+            ),
+            "description",
+            Row(
+                Column("color", css_class="col-12 col-md-3"),
+                Column("measure_unit", css_class="col-12 col-md-3"),
+                Column("unit_value", css_class="col-12 col-md-3"),
+                Column("stock", css_class="col-12 col-md-3"),
+            ),
+        )
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ["type", "client", "payment_method", "installments", "address", "city", "uf"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["installments"].widget.attrs.update({"min": 1, "max": MAX_PARCELAS})
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True  # o order_form.html já tem o csrf_token
+        self.helper.layout = Layout(
+            Row(
+                Column("type", css_class="col-12 col-md-3"),
+                Column("client", css_class="col-12 col-md"),
+                Column("payment_method", css_class="col-12 col-md-3"),
+                # O order-scripts.js mostra este campo só nos métodos de boleto
+                Column(
+                    "installments", css_class="col-12 col-md-2", css_id="campo-parcelas",
+                    data_metodos_boleto=",".join(METODOS_BOLETO),
+                ),
+            ),
+            Row(
+                Column("address", css_class="col-12 col-md-7"),
+                Column("city", css_class="col-12 col-md-3"),
+                Column("uf", css_class="col-12 col-md-2"),
+            ),
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Fora do boleto vale sempre 1 parcela, mesmo que tenha chegado outro valor
+        if cleaned_data.get("payment_method") not in METODOS_BOLETO:
+            self.errors.pop("installments", None)
+            cleaned_data["installments"] = 1
+        return cleaned_data
 
 
 class UserSearchMultipleField(forms.ModelMultipleChoiceField):

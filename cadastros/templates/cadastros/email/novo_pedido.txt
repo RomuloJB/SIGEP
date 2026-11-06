@@ -3,7 +3,7 @@
 Pedido: #{{ pedido.pk }}
 Cliente: {{ pedido.client.name }}
 Representante: {{ pedido.created_by.get_full_name|default:pedido.created_by.username }}
-Pagamento: {{ pedido.get_payment_method_display }}
+Pagamento: {{ pedido.get_payment_method_display }}{% if pedido.pago_em_boleto %} em {{ pedido.installments }}x{% endif %}
 
 Itens:
 {% for item in itens %}- {{ item.quantity }} x {{ item.product.name }} — R$ {{ item.total_value|floatformat:2 }}

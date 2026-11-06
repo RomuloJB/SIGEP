@@ -43,6 +43,7 @@ sigep/        → app "casca", sem models/views ativos (histórico, ver Seção 
 license/      → app "casca", models comentados (planejamento de licenciamento/SaaS,
                 não implementado — ver Seção 9)
 ia/           → app de IA: chamada a modelos (Gemini), cota mensal, auditoria
+telegram/     → bot do Telegram: vínculo com o usuário, cliente da API (cliente.py), log e limites
 erros/        → páginas de erro (400/403/404/500/CSRF) e página estática do App Engine
 static/       → JS/CSS globais (masks.js, order-scripts.js, dashboard-charts.js…)
 ```

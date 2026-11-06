@@ -10888,7 +10888,6 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  width: var(--sidebar-largura);
   margin: 0;
 }
 .sb-topnav .navbar-brand img {
@@ -10976,13 +10975,12 @@ body {
   }
 }
 
-/* Celular/tablet: menu à esquerda e marca sem a largura fixa da sidebar */
+/* Celular/tablet: botão do menu à esquerda da marca */
 @media (max-width: 991.98px) {
   .sb-topnav #sidebarToggle {
     margin-left: 0.25rem;
   }
   .sb-topnav .navbar-brand {
-    width: auto;
     flex-shrink: 0;
     padding-left: 0.25rem;
     margin-right: 0.5rem;

@@ -29,7 +29,7 @@
         </div>
         {% endif %}
 
-        {# Erros de formulário (non_field_errors) são renderizados pelo {{ form|crispy }} abaixo #}
+        {# Erros de formulário (non_field_errors) são renderizados pelo {% crispy form %} abaixo #}
         <form action="" method="POST" id="order-form" class="needs-validation" novalidate>
             {% csrf_token %}
 
@@ -39,7 +39,7 @@
                     <h2 class="card-title"><i class="fas fa-file-invoice"></i> Dados do pedido</h2>
                 </div>
                 <div class="card-body">
-                    {{ form|crispy }}
+                    {% crispy form %}
                 </div>
             </div>
 

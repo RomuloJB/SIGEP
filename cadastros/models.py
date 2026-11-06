@@ -1,3 +1,4 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .masks import format_cnpj, format_cpf_cnpj
@@ -89,6 +90,11 @@ class PaymentMethod(models.TextChoices):
     CREDIARIO =  "crediario", "8 - Crediário"
 
 
+# Só o boleto é parcelado; nos outros métodos o pedido fica sempre com 1 parcela
+METODOS_BOLETO = (PaymentMethod.BOLETO, PaymentMethod.BOLETO15, PaymentMethod.BOLETO7)
+MAX_PARCELAS = 12
+
+
 class Product(BaseClass):
     name = models.CharField(max_length=100, verbose_name="nome", help_text="Nome que aparece nos pedidos. Exemplo: Caderno universitário 96 folhas")
     description = models.CharField(max_length=255, null=True, blank=True, verbose_name="descrição", help_text="Detalhes opcionais do produto. Exemplo: Capa dura, espiral, 10 matérias")
@@ -127,6 +133,7 @@ class Order(BaseClass):
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='orders', verbose_name="empresa")
     client = models.ForeignKey(Client, on_delete=models.PROTECT, related_name='orders', verbose_name="cliente", help_text="Cliente que está fazendo o pedido.")
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.PIX, verbose_name="método de pagamento", help_text="Como o cliente vai pagar. Exemplo: Boleto(30)")
+    installments = models.PositiveSmallIntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(MAX_PARCELAS)], verbose_name="parcelas", help_text="Em quantos boletos o pedido será pago. Exemplo: 3")
     total_value = models.DecimalField(default=0.00, max_digits=10, decimal_places=2, verbose_name="valor total", help_text="Soma dos itens já com os descontos; calculado pelo sistema.")
     address = models.CharField(max_length=255, null=True, blank=True, verbose_name="endereço", help_text="Endereço de entrega, se for diferente do cadastro. Exemplo: Av. Brasil, 500, sala 3")
     city = models.CharField(max_length=100, null=True, blank=True, verbose_name="cidade", help_text="Cidade de entrega. Exemplo: Curitiba")
@@ -134,6 +141,10 @@ class Order(BaseClass):
 
     def __str__(self):
         return "{} | {} -> {} = {}".format(self.id, self.client, self.created_by, self.total_value)
+
+    @property
+    def pago_em_boleto(self):
+        return self.payment_method in METODOS_BOLETO
     
     class Meta:
         verbose_name = "Pedido"
