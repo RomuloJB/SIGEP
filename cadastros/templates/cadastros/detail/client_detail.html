@@ -8,20 +8,20 @@
 {% endblock breadcrumb %}
 
 {% block cadastros_content %}
-<div class="list-header mb-4">
+<div class="page-header">
     <div>
-        <h1 class="list-title">Cliente #{{ object.pk }}</h1>
-        <div class="list-subtitle">{{ object.name }}</div>
+        <h1 class="page-title"><i class="fas fa-user"></i> Cliente #{{ object.pk }}</h1>
+        <p class="page-subtitle">{{ object.name }}</p>
     </div>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-novo" href="{% url 'client-list' %}">
-            <i class="fas fa-arrow-left me-1"></i> Voltar
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'client-list' %}">
+            <i class="fas fa-arrow-left"></i> Voltar
         </a>
-        <a class="btn btn-outline-primary btn-novo" href="{% url 'client-update' object.pk %}">
-            <i class="fas fa-pen-to-square me-1"></i> Editar
+        <a class="btn btn-outline-primary" href="{% url 'client-update' object.pk %}">
+            <i class="fas fa-pen-to-square"></i> Editar
         </a>
         {% url 'client-delete' object.pk as url_excluir %}
-        {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir cliente" tipo="o cliente" nome=object.name classe="btn btn-outline-danger btn-novo" %}
+        {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir cliente" tipo="o cliente" nome=object.name classe="btn btn-outline-danger" %}
     </div>
 </div>
 
@@ -29,7 +29,7 @@
     <div class="col-lg-6">
         <div class="card list-card h-100">
             <div class="card-header">
-                <i class="fas fa-user me-1"></i> Dados do cliente
+                <h2 class="card-title"><i class="fas fa-user"></i> Dados do cliente</h2>
             </div>
             <div class="card-body p-0">
                 <table class="table mb-0">
@@ -67,16 +67,16 @@
     <div class="col-lg-6">
         <div class="card list-card h-100">
             <div class="card-header">
-                <i class="fas fa-chart-simple me-1"></i> Resumo de pedidos
+                <h2 class="card-title"><i class="fas fa-chart-simple"></i> Resumo de pedidos</h2>
             </div>
             <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between">
                     <span>Total de pedidos</span>
-                    <strong class="fs-5">{{ object.order_set.count }}</strong>
+                    <strong class="fs-5">{{ object.orders.all|length }}</strong>
                 </div>
-                <div class="list-subtitle mt-2">
+                <p class="page-subtitle">
                     Considera todos os pedidos associados a este cliente.
-                </div>
+                </p>
             </div>
         </div>
     </div>
@@ -84,10 +84,10 @@
 
 <div class="card list-card mb-4">
     <div class="card-header">
-        <i class="fas fa-list me-1"></i> Pedidos do cliente
+        <h2 class="card-title"><i class="fas fa-list"></i> Pedidos do cliente</h2>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0 table-lista">
             <thead>
                 <tr>
                     <th>Pedido</th>
@@ -99,10 +99,10 @@
                 </tr>
             </thead>
             <tbody>
-                {% for order in object.order_set.all %}
+                {% for order in object.orders.all %}
                 <tr>
                     <td>
-                        <a href="{% url 'order-detail' order.pk %}" class="fw-semibold text-decoration-none">
+                        <a href="{% url 'order-detail' order.pk %}">
                             Pedido #{{ order.pk }}
                         </a>
                     </td>

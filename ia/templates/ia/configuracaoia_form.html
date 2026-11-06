@@ -7,16 +7,16 @@
 {% endblock breadcrumb %}
 
 {% block cadastros_content %}
-<div class="cadastros-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+<div class="page-header">
     <div>
-        <h1 class="cadastros-title">{{ title }}</h1>
-        <p class="cadastros-subtitle">Modelo, limites e preços usados em todas as chamadas à IA. A chave de API fica só no arquivo .env.</p>
+        <h1 class="page-title"><i class="fas fa-gear"></i> {{ title }}</h1>
+        <p class="page-subtitle">Modelo, limites e preços usados em todas as chamadas à IA. A chave de API fica só no arquivo .env.</p>
     </div>
     {# Testa a configuração já salva, não o que está digitado no formulário #}
-    <form method="post" action="{% url 'ia:testar-conexao' %}">
+    <form class="page-actions" method="post" action="{% url 'ia:testar-conexao' %}">
         {% csrf_token %}
         <button type="submit" class="btn btn-outline-primary btnLoading">
-            <i class="fas fa-plug me-1"></i> Testar conexão
+            <i class="fas fa-plug"></i> Testar conexão
         </button>
     </form>
 </div>
@@ -34,8 +34,9 @@
 
             <div class="cadastros-actions mt-4">
                 <span class="small text-muted me-auto">Última alteração: {{ object.atualizado_em|date:"d/m/Y H:i" }}</span>
-                <button type="submit" class="btn btn-success btnLoading">
-                    Salvar configuração
+                {% include 'cadastros/botao-voltar.html' %}
+                <button type="submit" class="btn btn-primary btnLoading">
+                    <i class="fas fa-floppy-disk"></i> Salvar configuração
                 </button>
             </div>
         </form>

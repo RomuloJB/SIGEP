@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 from urllib.parse import urlparse, parse_qsl
 from dotenv import load_dotenv
 
@@ -23,17 +24,32 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECRET_KEY e DEBUG vêm do .env, que também sobe no deploy. Em produção o
-# app.yaml define DEBUG=False, e isso prevalece: o load_dotenv não sobrescreve
-# variáveis que já existem no ambiente.
+# SECRET_KEY vem do .env, que também sobe no deploy.
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY não configurada")
 
-# Desligado quando a variável falta; para desenvolver, coloque DEBUG=True no .env
-DEBUG = os.getenv("DEBUG", "False") == "True"
+# No App Engine o runtime define essas variáveis; elas identificam o ambiente de produção.
+EM_PRODUCAO = any(os.getenv(chave) for chave in ("GAE_ENV", "GAE_APPLICATION", "GAE_RUNTIME"))
 
-ALLOWED_HOSTS = ['*']
+EM_TESTES = len(sys.argv) > 1 and sys.argv[1] == "test"
+
+# DEBUG só liga quando o projeto roda no Windows (desenvolvimento) e fora do App Engine.
+# No App Engine (ou em Linux/macOS) é sempre False, e nos testes também. No Windows,
+# DEBUG=False no .env permite testar o comportamento de produção.
+DEBUG = (not EM_PRODUCAO) and (not EM_TESTES) and os.name == "nt" and os.getenv("DEBUG", "True") == "True"
+
+if DEBUG:
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+    CSRF_TRUSTED_ORIGINS = []
+else:
+    # Domínios extras (ex.: domínio próprio) vão em ALLOWED_HOSTS no .env, separados por vírgula.
+    ALLOWED_HOSTS = [".appspot.com"] + [
+        host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
+    ]
+    CSRF_TRUSTED_ORIGINS = ["https://*.appspot.com"] + [
+        "https://" + host.strip().lstrip(".") for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
+    ]
 
 
 # Application definition
@@ -56,6 +72,7 @@ INSTALLED_APPS = [
     'cadastros.apps.CadastrosConfig',
     'usuarios.apps.UsuariosConfig',
     'ia.apps.IaConfig',
+    'erros.apps.ErrosConfig',
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
@@ -64,6 +81,9 @@ CRISPY_TEMPLATE_PACK = 'bootstrap5'
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "login"
 LOGIN_URL = "login"
+
+# Página própria para falha de CSRF (formulário vencido), no lugar da padrão do Django
+CSRF_FAILURE_VIEW = "erros.views.erro_csrf"
 
 # E-mail (credenciais no .env): redefinição de senha e aviso aos gerentes (RF07).
 # Sem EMAIL_HOST, o e-mail é impresso no terminal do runserver.
@@ -90,6 +110,10 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 30
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
+    X_FRAME_OPTIONS = "DENY"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -101,10 +125,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Debug toolbar só no desenvolvimento
+# Debug toolbar só no desenvolvimento (DEBUG) e só para quem acessa por localhost
 if DEBUG:
     INSTALLED_APPS.append('debug_toolbar')
     MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": lambda request: request.get_host().split(":")[0] in ("localhost", "127.0.0.1"),
+    }
 
 # Config dos IPs que poderão visualizar os dados do debug
 INTERNAL_IPS = [

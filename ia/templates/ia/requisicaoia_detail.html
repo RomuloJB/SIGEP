@@ -7,14 +7,14 @@
 {% endblock breadcrumb %}
 
 {% block cadastros_content %}
-<div class="list-header mb-4">
+<div class="page-header">
     <div>
-        <h1 class="list-title">Requisição #{{ object.pk }}</h1>
-        <div class="list-subtitle">{{ object.finalidade }} — {{ object.criado_em|date:"d/m/Y H:i:s" }}</div>
+        <h1 class="page-title"><i class="fas fa-wand-magic-sparkles"></i> Requisição #{{ object.pk }}</h1>
+        <p class="page-subtitle">{{ object.finalidade }} · {{ object.criado_em|date:"d/m/Y H:i:s" }}</p>
     </div>
-    <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-novo" href="{% url 'ia:requisicao-list' %}">
-            <i class="fas fa-arrow-left me-1"></i> Voltar
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'ia:requisicao-list' %}">
+            <i class="fas fa-arrow-left"></i> Voltar
         </a>
     </div>
 </div>
@@ -22,14 +22,14 @@
 <div class="row g-4 mb-4">
     <div class="col-lg-6">
         <div class="card list-card h-100">
-            <div class="card-header"><i class="fas fa-circle-info me-1"></i> Chamada</div>
+            <div class="card-header"><h2 class="card-title"><i class="fas fa-circle-info"></i> Chamada</h2></div>
             <div class="card-body p-0">
                 <table class="table mb-0">
                     <tbody>
                         <tr>
                             <th class="w-50">Situação</th>
                             <td>
-                                <span class="badge {% if object.situacao == 'sucesso' %}bg-success{% else %}bg-danger{% endif %}">
+                                <span class="{% if object.situacao == 'sucesso' %}badge-soft-success{% else %}badge-soft-danger{% endif %}">
                                     {{ object.get_situacao_display }}
                                 </span>
                             </td>
@@ -51,7 +51,7 @@
 
     <div class="col-lg-6">
         <div class="card list-card h-100">
-            <div class="card-header"><i class="fas fa-coins me-1"></i> Tokens e arquivo</div>
+            <div class="card-header"><h2 class="card-title"><i class="fas fa-coins"></i> Tokens e arquivo</h2></div>
             <div class="card-body p-0">
                 <table class="table mb-0">
                     <tbody>
@@ -71,7 +71,7 @@
 
 {% if object.erro %}
 <div class="card list-card mb-4">
-    <div class="card-header text-danger"><i class="fas fa-triangle-exclamation me-1"></i> Erro</div>
+    <div class="card-header"><h2 class="card-title text-danger"><i class="fas fa-triangle-exclamation"></i> Erro</h2></div>
     <div class="card-body">
         <pre class="mb-0 text-wrap">{{ object.erro }}</pre>
     </div>
@@ -79,7 +79,7 @@
 {% endif %}
 
 <div class="card list-card mb-4">
-    <div class="card-header"><i class="fas fa-comment-dots me-1"></i> Resposta</div>
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-comment-dots"></i> Resposta</h2></div>
     <div class="card-body">
         {% if object.resposta %}
         <pre class="mb-0 text-wrap">{{ object.resposta }}</pre>

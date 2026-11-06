@@ -1,0 +1,20 @@
+{% comment %}
+Card KPI (indicador). Fundo branco, ícone colorido num bloco suave.
+Uso:
+    {% include 'website/componentes/kpi-card.html' with label="Total vendido" valor=total_vendas moeda=True icone="fa-sack-dollar" cor="primary" %}
+- label: o que o número mede (curto, sem caixa alta).
+- valor: o número; com moeda=True sai como "R$ 1.250,00".
+- icone: classe Font Awesome sólida (fa-*).
+- cor: primary (padrão) | info | warning | danger | neutral.
+- ajuda (opcional): linha pequena abaixo do valor.
+{% endcomment %}
+<div class="card kpi-card kpi-{{ cor|default:'primary' }}">
+    <div class="card-body">
+        <div class="kpi-icon" aria-hidden="true"><i class="fas {{ icone }}"></i></div>
+        <div class="kpi-body">
+            <p class="kpi-label">{{ label }}</p>
+            <p class="kpi-value">{% if moeda %}R$ {{ valor|floatformat:2 }}{% else %}{{ valor }}{% endif %}</p>
+            {% if ajuda %}<p class="kpi-help">{{ ajuda }}</p>{% endif %}
+        </div>
+    </div>
+</div>

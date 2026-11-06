@@ -1,31 +1,33 @@
 {% load crispy_forms_tags %}
 
-{# Botão "Filtros" que abre um dropdown com o formulário de busca do django-filter. #}
+{# Botão de ícone "Filtros" (fundo claro) que abre um dropdown com o formulário de busca do django-filter. #}
+{# Fica no card-header da tabela: <div class="card-tools">{% include 'cadastros/form-filter.html' %}</div>. #}
+{# Quando o filtro vale para a página toda (sem tabela única), use rotulo="Filtros" no cabeçalho da página. #}
 {# data-bs-auto-close="outside": clicar dentro do formulário não fecha o dropdown. #}
 <div class="dropdown filter-dropdown">
-    <button class="btn btn-outline-primary filter-toggle dropdown-toggle {% if filter.form.errors %}show{% endif %}"
+    <button class="btn btn-soft-primary filter-toggle {% if not rotulo %}btn-icon{% endif %} {% if filter.form.errors %}show{% endif %}"
             type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside"
+            title="Filtros" aria-label="Filtros{% if active_filters %} ({{ active_filters }} ativos){% endif %}"
             aria-expanded="{% if filter.form.errors %}true{% else %}false{% endif %}">
-        <i class="fas fa-filter me-1"></i> Filtros
-        {% if active_filters %}<span class="badge rounded-pill bg-primary ms-1">{{ active_filters }}</span>{% endif %}
+        <i class="fas fa-filter"></i>{% if rotulo %} {{ rotulo }}{% endif %}
+        {% if active_filters %}<span class="filter-count">{{ active_filters }}</span>{% endif %}
     </button>
 
     <div class="dropdown-menu dropdown-menu-end filter-menu {% if filter.form.errors %}show{% endif %}">
+        <p class="filter-menu-title">Filtrar registros</p>
         {# method="get": a busca vai para a URL, e não fica escondida em um POST #}
         <form action="" method="get">
             {# Sem csrf_token: ele só é necessário em formulários POST #}
             <div class="filter-fields">
                 {{ filter.form|crispy }}
             </div>
-            {# Mantém a quantidade de itens por página escolhida ao filtrar #}
-            {% if request.GET.per_page %}<input type="hidden" name="per_page" value="{{ request.GET.per_page }}">{% endif %}
             <div class="filter-actions">
                 {# O botão "Limpar" volta para a mesma página, sem os parâmetros da busca #}
                 <a href="{{ request.path }}" class="btn btn-sm btn-outline-secondary">
                     <i class="fas fa-xmark"></i> Limpar
                 </a>
                 <button type="submit" class="btn btn-sm btn-primary">
-                    <i class="fas fa-search"></i> Filtrar
+                    <i class="fas fa-magnifying-glass"></i> Filtrar
                 </button>
             </div>
         </form>

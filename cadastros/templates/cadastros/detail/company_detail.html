@@ -3,133 +3,150 @@
 {% load masks %}
 
 {% block breadcrumb %}
-	<li class="breadcrumb-item"><a href="{% url 'company-list' %}">Empresas</a></li>
-	<li class="breadcrumb-item active" aria-current="page">Empresa #{{ object.pk }}</li>
+    <li class="breadcrumb-item"><a href="{% url 'company-list' %}">Empresas</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Empresa #{{ object.pk }}</li>
 {% endblock breadcrumb %}
 
-{% block page_content %}
-	<div class="d-flex align-items-center justify-content-between mb-3 mt-4">
-		<h2 class="mb-0">Empresa #{{ object.pk }}</h2>
-		<div class="d-flex gap-2">
-			<a class="btn btn-outline-secondary" href="{% url 'company-list' %}">Voltar</a>
-			<a class="btn btn-outline-primary" href="{% url 'company-update' object.pk %}">Editar</a>
-			{% url 'company-delete' object.pk as url_excluir %}
-			{% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir empresa" tipo="a empresa" nome=object.name classe="btn btn-outline-danger" digitar=True %}
-		</div>
-	</div>
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fas fa-building"></i> {{ object.name }}</h1>
+        <p class="page-subtitle">Empresa #{{ object.pk }} · CNPJ {{ object.cnpj|cnpj|default:"-" }}</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'company-list' %}">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+        <a class="btn btn-outline-primary" href="{% url 'company-update' object.pk %}">
+            <i class="fas fa-pen-to-square"></i> Editar
+        </a>
+        {% url 'company-delete' object.pk as url_excluir %}
+        {% include 'cadastros/form-excluir.html' with url=url_excluir titulo="Excluir empresa" tipo="a empresa" nome=object.name classe="btn btn-outline-danger" digitar=True %}
+    </div>
+</div>
 
-	<div class="row">
-		<div class="col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">Dados da empresa</div>
-				<div class="card-body p-0">
-					<table class="table mb-0">
-						<tbody>
-							<tr>
-								<th class="w-50">Nome</th>
-								<td>{{ object.name|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Apelido para sessão</th>
-								<td>{{ object.session_name|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Descrição</th>
-								<td>{{ object.description|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>CNPJ</th>
-								<td>{{ object.cnpj|cnpj|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Gerente</th>
-								<td>{{ object.manager|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Representantes</th>
-								<td>
-									{% for rep in object.sales_rep.all %}
-										<span class="badge bg-light text-dark me-1">{{ rep }}</span>
-									{% empty %}
-										-
-									{% endfor %}
-								</td>
-							</tr>
-							<tr>
-								<th>Criado por</th>
-								<td>{{ object.created_by|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Criado em</th>
-								<td>{{ object.created_at|default:"-" }}</td>
-							</tr>
-							<tr>
-								<th>Atualizado em</th>
-								<td>{{ object.updated_at|default:"-" }}</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card list-card h-100">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-building"></i> Dados da empresa</h2>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <tbody>
+                        <tr>
+                            <th class="w-50">Nome</th>
+                            <td>{{ object.name|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Apelido para sessão</th>
+                            <td>{{ object.session_name|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Descrição</th>
+                            <td>{{ object.description|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>CNPJ</th>
+                            <td>{{ object.cnpj|cnpj|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Gerentes</th>
+                            <td>
+                                {% for gerente in object.manager.all %}
+                                    <span class="badge-soft-neutral me-1">{{ gerente }}</span>
+                                {% empty %}
+                                    -
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Representantes</th>
+                            <td>
+                                {% for rep in object.sales_rep.all %}
+                                    <span class="badge-soft-neutral me-1">{{ rep }}</span>
+                                {% empty %}
+                                    -
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Criado por</th>
+                            <td>{{ object.created_by|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Criado em</th>
+                            <td>{{ object.created_at|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Atualizado em</th>
+                            <td>{{ object.updated_at|default:"-" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-		<div class="col-lg-6">
-			<div class="card mb-4">
-				<div class="card-header">Resumo da empresa</div>
-				<div class="card-body">
-					<div class="d-flex align-items-center justify-content-between">
-						<span>Total de produtos</span>
-						<strong>{{ object.product_set.count }}</strong>
-					</div>
-					<div class="d-flex align-items-center justify-content-between mt-2">
-						<span>Total de pedidos</span>
-						<strong>{{ object.order_set.count }}</strong>
-					</div>
-					<div class="d-flex align-items-center justify-content-between mt-2">
-						<span>Total de representantes</span>
-						<strong>{{ object.sales_rep.count }}</strong>
-					</div>
-					<div class="text-muted small mt-2">
-						Observação: os totais refletem os registros associados a esta empresa.
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="col-lg-6">
+        <div class="card list-card h-100">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fas fa-chart-simple"></i> Resumo da empresa</h2>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span>Total de produtos</span>
+                    <strong>{{ object.products.all|length }}</strong>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    <span>Total de pedidos</span>
+                    <strong>{{ object.orders.all|length }}</strong>
+                </div>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                    <span>Total de representantes</span>
+                    <strong>{{ object.sales_rep.all|length }}</strong>
+                </div>
+                <p class="page-subtitle">
+                    Os totais refletem os registros associados a esta empresa.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
 
-	<div class="card mb-4">
-		<div class="card-header">Pedidos da empresa</div>
-		<div class="card-body p-0">
-			<table class="table table-striped mb-0">
-				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Tipo</th>
-						<th>Cliente</th>
-						<th>Metodo</th>
-						<th class="text-end">Valor total</th>
-						<th>Criado em</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for order in object.order_set.all %}
-					<tr>
-						<td>
-							<a href="{% url 'order-detail' order.pk %}">Pedido #{{ order.pk }}</a>
-						</td>
-						<td>{{ order.get_type_display|default:"-" }}</td>
-						<td>{{ order.client.name|default:"-" }}</td>
-						<td>{{ order.get_payment_method_display|default:"-" }}</td>
-						<td class="text-end">R$ {{ order.total_value|default_if_none:0|floatformat:2 }}</td>
-						<td>{{ order.created_at|default:"-" }}</td>
-					</tr>
-					{% empty %}
-					<tr>
-						<td colspan="6" class="text-center text-muted py-4">Nenhum pedido cadastrado para esta empresa.</td>
-					</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-	</div>
-{% endblock %}
+<div class="card list-card mb-4">
+    <div class="card-header">
+        <h2 class="card-title"><i class="fas fa-list"></i> Pedidos da empresa</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 table-lista">
+            <thead>
+                <tr>
+                    <th>Pedido</th>
+                    <th>Tipo</th>
+                    <th>Cliente</th>
+                    <th>Método</th>
+                    <th class="text-end">Valor total</th>
+                    <th>Criado em</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in object.orders.all %}
+                <tr>
+                    <td><a href="{% url 'order-detail' order.pk %}">Pedido #{{ order.pk }}</a></td>
+                    <td>{{ order.get_type_display|default:"-" }}</td>
+                    <td>{{ order.client.name|default:"-" }}</td>
+                    <td>{{ order.get_payment_method_display|default:"-" }}</td>
+                    <td class="text-end">R$ {{ order.total_value|default_if_none:0|floatformat:2 }}</td>
+                    <td>{{ order.created_at|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="list-empty">Nenhum pedido cadastrado para esta empresa.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock cadastros_content %}

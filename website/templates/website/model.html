@@ -1,7 +1,7 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -10,11 +10,10 @@
         <meta name="author" content="" />
         <title>SIGEP</title>
         <link rel="icon" type="image/png" href="{% static 'assets/img/favicon-sigep.png' %}" />
-        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
-        <!-- CSS do DataTables com o tema Bootstrap 5 (busca e ordenação das listagens) -->
-        <link href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
         {% block extra_css %}{% endblock extra_css %}
         <link href="{% static 'css/styles.css' %}" rel="stylesheet" />
+        <!-- Base visual do SIGEP (tokens, cards, botões, listagens); sempre depois do styles.css -->
+        <link href="{% static 'css/sigep-ui.css' %}" rel="stylesheet" />
         <!-- Aplica a sidebar recolhida antes de desenhar a página, para ela não piscar expandida -->
         <script>
             try {
@@ -55,15 +54,15 @@
                         {% if request.user.is_authenticated %}
                             <li><span class="dropdown-item-text">Olá, {{ request.user.get_username }}</span></li>
                             <li><hr class="dropdown-divider" /></li>
-                            <li><a class="dropdown-item" href="{% url 'my-profile' %}">Meu perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'my-profile' %}"><i class="fas fa-user icon-view"></i> Meu perfil</a></li>
                             <li>
                                 <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}
-                                    <button class="dropdown-item" type="submit">Sair</button>
+                                    <button class="dropdown-item" type="submit"><i class="fas fa-right-from-bracket icon-delete"></i> Sair</button>
                                 </form>
                             </li>
                         {% else %}
-                            <li><a class="dropdown-item" href="{% url 'login' %}">Entrar</a></li>
+                            <li><a class="dropdown-item" href="{% url 'login' %}"><i class="fas fa-right-to-bracket icon-approve"></i> Entrar</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -77,55 +76,28 @@
                     {% block content %}
                     <div class="dashboard-shell">
                         <div class="dashboard-container">
-                            <div class="dashboard-header">
-                                <h1 class="dashboard-title">Dashboard</h1>
-                                <p class="dashboard-subtitle">Visão geral das vendas e pedidos do sistema. Os valores de vendas consideram só pedidos aprovados.</p>
+                            <div class="page-header">
+                                <div>
+                                    <h1 class="page-title"><i class="fas fa-gauge-high"></i> Dashboard</h1>
+                                    <p class="page-subtitle">Acompanhe as vendas e os pedidos da empresa. Os valores de vendas consideram só pedidos aprovados.</p>
+                                </div>
+                                <div class="page-actions">
+                                    <a class="btn btn-primary" href="{% url 'order-create' %}"><i class="fas fa-plus"></i> Novo pedido</a>
+                                </div>
                             </div>
 
                             <div class="row g-4 mb-4">
                                 <div class="col-xl-3 col-md-6">
-                                    <div class="card stat-card stat-card-accent">
-                                        <div class="card-body">
-                                            <p class="stat-label mb-0">Total em vendas</p>
-                                            <div class="stat-icon"><i class="fas fa-sack-dollar"></i></div>
-                                        </div>
-                                        <div class="card-footer">
-                                            <h2 class="stat-value">R$ {{ total_vendas|floatformat:2 }}</h2>
-                                        </div>
-                                    </div>
+                                    {% include 'website/componentes/kpi-card.html' with label="Total em vendas" valor=total_vendas moeda=True icone="fa-sack-dollar" cor="primary" %}
                                 </div>
                                 <div class="col-xl-3 col-md-6">
-                                    <div class="card stat-card stat-card-accent">
-                                        <div class="card-body">
-                                            <p class="stat-label mb-0">Vendas este mês</p>
-                                            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
-                                        </div>
-                                        <div class="card-footer">
-                                            <h2 class="stat-value">R$ {{ vendas_mes|floatformat:2 }}</h2>
-                                        </div>
-                                    </div>
+                                    {% include 'website/componentes/kpi-card.html' with label="Vendas este mês" valor=vendas_mes moeda=True icone="fa-calendar-check" cor="info" %}
                                 </div>
                                 <div class="col-xl-3 col-md-6">
-                                    <div class="card stat-card stat-card-accent">
-                                        <div class="card-body">
-                                            <p class="stat-label mb-0">Quantidade de vendas</p>
-                                            <div class="stat-icon"><i class="fas fa-dolly"></i></div>
-                                        </div>
-                                        <div class="card-footer">
-                                            <h2 class="stat-value">{{ qtd_vendas }}</h2>
-                                        </div>
-                                    </div>
+                                    {% include 'website/componentes/kpi-card.html' with label="Quantidade de vendas" valor=qtd_vendas icone="fa-dolly" cor="warning" %}
                                 </div>
                                 <div class="col-xl-3 col-md-6">
-                                    <div class="card stat-card stat-card-accent">
-                                        <div class="card-body">
-                                            <p class="stat-label mb-0">Quantidade de clientes</p>
-                                            <div class="stat-icon"><i class="fas fa-users"></i></div>
-                                        </div>
-                                        <div class="card-footer">
-                                            <h2 class="stat-value">{{ qtd_clientes }}</h2>
-                                        </div>
-                                    </div>
+                                    {% include 'website/componentes/kpi-card.html' with label="Quantidade de clientes" valor=qtd_clientes icone="fa-users" cor="neutral" %}
                                 </div>
                             </div>
 
@@ -134,8 +106,8 @@
                                 <div class="col-xl-6">
                                     <div class="card chart-card">
                                         <div class="card-header">
-                                            <i class="fas fa-chart-area me-1"></i>
-                                            Valor de vendas por mês (últimos 12 meses)
+                                            <h2 class="card-title"><i class="fas fa-chart-area"></i> Valor de vendas por mês</h2>
+                                            <span class="card-meta">Últimos 12 meses</span>
                                         </div>
                                         <div class="card-body">
                                             <div class="chart-area">
@@ -147,8 +119,8 @@
                                 <div class="col-xl-6">
                                     <div class="card chart-card">
                                         <div class="card-header">
-                                            <i class="fas fa-chart-bar me-1"></i>
-                                            Quantidade de vendas por mês (últimos 12 meses)
+                                            <h2 class="card-title"><i class="fas fa-chart-bar"></i> Quantidade de vendas por mês</h2>
+                                            <span class="card-meta">Últimos 12 meses</span>
                                         </div>
                                         <div class="card-body">
                                             <div class="chart-area">
@@ -172,47 +144,32 @@
                                 </div>
                             </div>
 
-                            <div class="card dashboard-table-card mb-4">
+                            <div class="card list-card mb-4">
                                 <div class="card-header">
-                                    <span><i class="fas fa-table me-1"></i> Últimos pedidos</span>
-                                    <a href="{% url 'order-list' %}" class="small text-decoration-none" style="color: var(--bs-gray-300);">Ver todos</a>
+                                    <h2 class="card-title"><i class="fas fa-receipt"></i> Últimos pedidos</h2>
+                                    <div class="card-tools">
+                                        <a href="{% url 'order-list' %}" class="btn btn-soft-neutral btn-sm"><i class="fas fa-list"></i> Ver todos</a>
+                                    </div>
                                 </div>
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover align-middle" id="datatablesSimple">
+                                    <table class="table table-hover align-middle mb-0 table-lista">
                                         <thead>
                                             <tr>
-                                                <th>ID Pedido</th>
+                                                <th>Pedido</th>
                                                 <th>Cliente</th>
                                                 <th>Data</th>
                                                 <th>Status</th>
                                                 <th class="text-end">Valor</th>
                                             </tr>
                                         </thead>
-                                        <tfoot>
-                                            <tr>
-                                                <th>ID Pedido</th>
-                                                <th>Cliente</th>
-                                                <th>Data</th>
-                                                <th>Status</th>
-                                                <th class="text-end">Valor</th>
-                                            </tr>
-                                        </tfoot>
                                         <tbody>
                                             {% for pedido in ultimos_pedidos %}
                                             <tr>
-                                                <td>
-                                                    <a href="{% url 'order-detail' pedido.pk %}" class="fw-semibold text-decoration-none">
-                                                        #{{ pedido.id }}
-                                                    </a>
-                                                </td>
+                                                <td data-sort="{{ pedido.pk|stringformat:'d' }}"><a href="{% url 'order-detail' pedido.pk %}">#{{ pedido.id }}</a></td>
                                                 <td>{{ pedido.client.name|default:"Excluído/Não associado" }}</td>
-                                                <td>{{ pedido.created_at|date:"d/m/Y" }}</td>
+                                                <td data-sort="{{ pedido.created_at|date:'Y-m-d H:i' }}">{{ pedido.created_at|date:"d/m/Y" }}</td>
                                                 <td>{% include 'cadastros/pedido-status.html' %}</td>
-                                                <td class="text-end fw-semibold">R$ {{ pedido.total_value|floatformat:2 }}</td>
-                                            </tr>
-                                            {% empty %}
-                                            <tr>
-                                                <td colspan="5" class="list-empty">Nenhum pedido realizado ainda.</td>
+                                                <td class="text-end fw-semibold" data-sort="{{ pedido.total_value|stringformat:'.2f' }}">R$ {{ pedido.total_value|floatformat:2 }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -238,7 +195,7 @@
             </div>
         </div>
         
-        <!-- jQuery (uma única vez, antes de tudo que depende dele: Bootbox e DataTables) -->
+        <!-- jQuery (uma única vez, antes de tudo que depende dele: Bootbox e máscaras) -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <!-- Bootbox: alertas e confirmações como modais do Bootstrap (depois de jQuery e do bundle do Bootstrap) -->
@@ -258,16 +215,12 @@
         <!-- Máscaras de CPF/CNPJ/telefone/CEP pelo nome do campo (depois do jQuery) -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
         <script src="{% static 'js/mascaras.js' %}"></script>
-        <!-- DataTables -->
-        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
-        <script src="{% static 'js/datatables-init.js' %}"></script>
+        <!-- Busca rápida e ordenação das tabelas de listagem (JS puro) -->
+        <script src="{% static 'js/tabela-lista.js' %}"></script>
 
         {% block scripts %}
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
         <script src="{% static 'js/dashboard-charts.js' %}"></script>
-        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
-        <script src="{% static 'js/datatables-simple-demo.js' %}"></script>
         {% endblock %}
         <script>
             (function () {

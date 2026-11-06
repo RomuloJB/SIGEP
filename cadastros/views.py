@@ -4,7 +4,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView, TemplateVie
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.urls import reverse, reverse_lazy
 from django_filters.views import FilterView
-from django.db.models import Count, Sum
+from django.db.models import Count, Prefetch, Sum
 from django.db.models.functions import TruncMonth
 from django.db import transaction
 from django.http import JsonResponse
@@ -23,7 +23,7 @@ from collections import Counter
 from decimal import Decimal, InvalidOperation
 import logging
 
-from . import pedidos
+from . import pedidos, relatorios
 from .models import Company, Client, Order, OrderStatus, Product, ProductOrder
 from .forms import ClientForm, CompanyForm
 from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter, SalesReportFilter
@@ -169,23 +169,9 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
 # FilterView faz o papel da ListView e ainda aplica o filterset_class por cima do get_queryset
 class PaginatedFilterView(FilterView):
     paginate_by = 10
-    paginate_by_options = (10, 20, 40)
-
-    def get_paginate_by(self, queryset):
-        per_page = self.request.GET.get("per_page", self.paginate_by)
-        try:
-            per_page = int(per_page)
-        except (TypeError, ValueError):
-            return self.paginate_by
-
-        if per_page in self.paginate_by_options:
-            return per_page
-
-        return self.paginate_by
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["per_page_options"] = self.paginate_by_options
         # Quantos filtros estão preenchidos, para o badge do botão "Filtros"
         form = self.filterset.form
         if form.is_valid():
@@ -269,7 +255,10 @@ class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
     template_name = "cadastros/detail/company_detail.html"
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().select_related("created_by").prefetch_related(
+            "manager", "sales_rep", "products",
+            Prefetch("orders", queryset=Order.objects.select_related("client")),
+        )
         if self.request.user.is_superuser:
             return qs
         return qs.filter(manager=self.request.user).distinct()
@@ -309,15 +298,16 @@ class ClientList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     template_name = "cadastros/list/client_list.html"
     ordering = ['name']
     filterset_class = ClientFilter
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["total_clients"] = self.get_queryset().count()
-        return context
 
 class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Client
     template_name = "cadastros/detail/client_detail.html"
+
+    def get_queryset(self):
+        # Os pedidos do cliente mostram a empresa de cada um: uma consulta só, sem repetir por linha
+        return super().get_queryset().prefetch_related(
+            Prefetch("orders", queryset=Order.objects.select_related("company"))
+        )
 
 
 # Product
@@ -353,15 +343,16 @@ class ProductList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     template_name = "cadastros/list/product_list.html"
     ordering = ['name']
     filterset_class = ProductFilter
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["total_products"] = self.get_queryset().count()
-        return context
 
 class ProductDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Product
     template_name = "cadastros/detail/product_detail.html"
+
+    def get_queryset(self):
+        # Cada item mostra o pedido e o cliente dele: tudo em uma consulta só
+        return super().get_queryset().select_related("company", "created_by").prefetch_related(
+            Prefetch("product_orders", queryset=ProductOrder.objects.select_related("order__client"))
+        )
 
 
 # ─── API: retorna dados de um produto por pk ───────────────────────────────────
@@ -434,14 +425,19 @@ class PedidoFormMixin:
         quantities = self.request.POST.getlist("quantity[]")
         discounts = self.request.POST.getlist("discount[]")
 
+        # Um SELECT ... FOR UPDATE só para todos os produtos do pedido (em vez de um por item)
+        ids_validos = {int(pid) for pid in product_ids if pid.isdigit()}
+        produtos = Product.objects.select_for_update().filter(
+            pk__in=ids_validos, company=self.active_company
+        ).in_bulk()
+
         items = []
         errors = []
         vistos = set()
 
         for pid, qty_str, disc_str in zip(product_ids, quantities, discounts):
-            try:
-                product = Product.objects.select_for_update().get(pk=int(pid), company=self.active_company)
-            except (Product.DoesNotExist, ValueError):
+            product = produtos.get(int(pid)) if pid.isdigit() else None
+            if product is None:
                 errors.append(f"Produto inválido (id={pid}).")
                 continue
 
@@ -507,8 +503,8 @@ class PedidoFormMixin:
 
         # Rascunho editado: os itens são regravados (rascunho não tem estoque baixado)
         self.object.product_orders.all().delete()
-        for product, qty, discount, line_total in items:
-            ProductOrder.objects.create(
+        ProductOrder.objects.bulk_create([
+            ProductOrder(
                 order=self.object,
                 product=product,
                 quantity=qty,
@@ -516,6 +512,8 @@ class PedidoFormMixin:
                 discount=discount,
                 total_value=line_total,
             )
+            for product, qty, discount, line_total in items
+        ])
 
         if self.enviando():
             # O estoque já foi conferido com os produtos travados: aqui ele é baixado
@@ -682,11 +680,6 @@ class OrderList(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilte
         # A tabela mostra o cliente de cada pedido
         return super().get_queryset().select_related("client")
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["total_orders"] = self.get_queryset().count()
-        return context
-
 class OrderDetail(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
     model = Order
     template_name = "cadastros/detail/order_detail.html"
@@ -701,15 +694,10 @@ class OrderDetail(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        product_orders = (
-            self.object.product_orders.select_related("product")
-            .all()
-            .order_by("id")
-        )
+        product_orders = list(self.object.product_orders.select_related("product").order_by("id"))
         context["product_orders"] = product_orders
-        context["product_orders_total"] = (
-            product_orders.aggregate(total=Sum("total_value")).get("total") or 0
-        )
+        # Soma em Python: os itens já estão carregados, sem uma consulta de agregação a mais
+        context["product_orders_total"] = sum((item.total_value for item in product_orders), Decimal("0"))
         # Botões de mudança de status que este usuário pode usar neste pedido
         context["acoes_status"] = pedidos.acoes_disponiveis(self.object, self.ve_todos_os_pedidos())
         context["em_digitacao"] = self.object.status == OrderStatus.EM_DIGITACAO
@@ -776,6 +764,37 @@ class SalesReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFil
         return context
 
 
+class ManagementReport(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilterView):
+    """
+    Painel gerencial: indicadores e gráficos (funil de status, vendas por forma de
+    pagamento, UF, produto, cliente e representante, estoque crítico) no período
+    do filtro. Os cálculos ficam em cadastros/relatorios.py. Segue a RN02: o
+    representante vê só os próprios pedidos e não vê o gráfico por representante.
+    """
+    model = Order
+    template_name = "cadastros/management_report.html"
+    ordering = ['-id']
+    filterset_class = SalesReportFilter
+
+    def get_paginate_by(self, queryset):
+        return None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        pedidos = self.object_list
+        vendas = pedidos.filter(status=OrderStatus.APROVADO)
+        ve_todos = self.ve_todos_os_pedidos()
+        dados = relatorios.dados_gerenciais(pedidos, vendas, self.active_company, ve_todos)
+
+        context.update(dados["resumo"])
+        context["descontos"] = dados["descontos"]
+        context["sem_venda"] = dados["sem_venda"]
+        context["graficos"] = dados["graficos"]
+        context["limite_estoque_baixo"] = relatorios.LIMITE_ESTOQUE_BAIXO
+        context["ve_todos_os_pedidos"] = ve_todos
+        return context
+
+
 # ─── ProductOrder ──────────────────────────────────────────────────────────────
 
 # Os itens só mudam pelo formulário do pedido (rascunho), que acerta total e
@@ -793,11 +812,6 @@ class ProductOrderList(ItensVisiveisMixin, ActiveCompanyRequiredMixin, Paginated
     def get_queryset(self):
         # A tabela mostra o pedido, o cliente do pedido e o produto de cada item
         return super().get_queryset().select_related("order__client", "product")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["total_items"] = self.get_queryset().count()
-        return context
 
 
 class ProductOrderDetail(ItensVisiveisMixin, ActiveCompanyRequiredMixin, DetailView):

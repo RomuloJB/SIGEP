@@ -114,9 +114,11 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
 
     def ve_todos_os_pedidos(self):
         # RN02: gerente da empresa ativa (ou superusuário) vê todos os pedidos dela;
-        # representante vê só os que ele criou.
-        user = self.request.user
-        return user.is_superuser or self.active_company.manager.filter(pk=user.pk).exists()
+        # representante vê só os que ele criou. Calculado uma vez por requisição.
+        if not hasattr(self, "_ve_todos_os_pedidos"):
+            user = self.request.user
+            self._ve_todos_os_pedidos = user.is_superuser or self.active_company.manager.filter(pk=user.pk).exists()
+        return self._ve_todos_os_pedidos
 
     def pedidos_visiveis(self):
         from cadastros.models import Order
@@ -255,17 +257,6 @@ class UserListView(SuperuserRequiredMixin, ListView):
     context_object_name = "users"
     queryset = User.objects.select_related("profile").prefetch_related("groups").order_by("username")
     paginate_by = 10
-    paginate_by_options = (10, 20, 40)
-
-    def get_paginate_by(self, queryset):
-        # Mesmo ?per_page=10|20|40 das listagens de cadastros (cadastros/paginacao.html)
-        per_page = self.request.GET.get("per_page", "")
-        return int(per_page) if per_page.isdigit() and int(per_page) in self.paginate_by_options else self.paginate_by
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["per_page_options"] = self.paginate_by_options
-        return context
 
 
 class UserCreateView(SuperuserRequiredMixin, FormErrorMessagesMixin, SuccessMessageMixin, CreateView):

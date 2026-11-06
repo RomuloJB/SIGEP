@@ -1,0 +1,11 @@
+{% comment %}
+Botão "Voltar" dos formulários, ao lado do Salvar. Volta para a página anterior do
+navegador (history.back). Se a página foi aberta direto (sem histórico), vai para
+`fallback` (padrão: início). Uso:
+    {% include 'cadastros/botao-voltar.html' %}
+    {% include 'cadastros/botao-voltar.html' with fallback=url_da_lista %}
+{% endcomment %}
+<button type="button" class="btn btn-outline-secondary btn-voltar" data-fallback="{{ fallback|default:'/' }}"
+        onclick="if (history.length > 1) { history.back(); } else { location.href = this.dataset.fallback; }">
+    <i class="fas fa-arrow-left"></i> Voltar
+</button>

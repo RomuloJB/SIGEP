@@ -42,6 +42,8 @@ cadastros/    → núcleo do sistema: Company, Client, Product, Order, ProductOr
 sigep/        → app "casca", sem models/views ativos (histórico, ver Seção 9)
 license/      → app "casca", models comentados (planejamento de licenciamento/SaaS,
                 não implementado — ver Seção 9)
+ia/           → app de IA: chamada a modelos (Gemini), cota mensal, auditoria
+erros/        → páginas de erro (400/403/404/500/CSRF) e página estática do App Engine
 static/       → JS/CSS globais (masks.js, order-scripts.js, dashboard-charts.js…)
 ```
 
@@ -124,7 +126,7 @@ implementar isso, é trabalho novo, não correção de bug.
   (`CreateView`/`UpdateView`/`DeleteView`/`ListView`/`DetailView`). Siga esse
   padrão em vez de introduzir function-based views novas, salvo necessidade clara.
 - **Listagens paginadas:** herdam de `PaginatedFilterView` (em `cadastros/views.py`,
-  baseada na `FilterView` do django-filter), que aceita `?per_page=10|20|40`.
+  baseada na `FilterView` do django-filter), com 10 itens por página.
   Cada listagem define `ordering` e um `filterset_class` de `cadastros/filters.py`;
   o template inclui `cadastros/form-filter.html` (abaixo do título) e
   `cadastros/paginacao.html` (após a tabela), que preserva os filtros na URL.
@@ -218,16 +220,16 @@ obrigatório usar.
 
 ## 12. Débitos técnicos / cuidados de segurança para o agente sinalizar (não corrigir silenciosamente)
 
-Estes pontos existem hoje no `settings.py` e são **decisões a confirmar com o
-responsável antes de alterar**, pois podem refletir configuração provisória de
-ambiente de desenvolvimento/TCC:
+Estes pontos foram tratados no `settings.py` (conferir antes de alterar):
 
-- `DEBUG = True` e `ALLOWED_HOSTS = ['*']` hardcoded.
-- `SECRET_KEY` hardcoded no repositório (não vem de variável de ambiente).
-- `django-debug-toolbar` ativo incondicionalmente no `MIDDLEWARE`.
-
-Se for pedido para "preparar para produção", esses são os pontos a revisar
-primeiro — mas não os altere como efeito colateral de uma tarefa não relacionada.
+- `DEBUG` só é `True` no Windows, fora do App Engine e fora dos testes; no App
+  Engine é sempre `False`. Com `DEBUG=False` no `.env` dá para testar o modo de
+  produção no Windows.
+- `ALLOWED_HOSTS` e `CSRF_TRUSTED_ORIGINS` ficam restritos em produção (`.appspot.com`
+  mais o que estiver em `ALLOWED_HOSTS` no `.env`, separado por vírgula).
+- `SECRET_KEY` vem do `.env`.
+- `django-debug-toolbar` só entra com `DEBUG=True` e acesso por localhost.
+- As páginas de erro (400/403/404/500 e CSRF) ficam no app `erros`.
 
 ## 13. Diretrizes gerais para o agente
 
