@@ -1,0 +1,62 @@
+{% extends "cadastros/form.html" %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Log do Telegram</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fab fa-telegram"></i> Log do Telegram</h1>
+            <p class="page-subtitle">Tudo o que entrou e saiu do bot, com o resultado de cada mensagem.</p>
+        </div>
+    </div>
+
+    <div class="card list-card">
+        <div class="card-header">
+            <div class="card-heading">
+                <h2 class="card-title"><i class="fas fa-list"></i> Lista de mensagens</h2>
+                <span class="card-meta">{{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }}</span>
+            </div>
+            <div class="card-tools">
+                {% include 'cadastros/form-filter.html' %}
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 table-lista">
+                <thead>
+                    <tr>
+                        <th>Data/hora</th>
+                        <th>Direção</th>
+                        <th>Tipo</th>
+                        <th>Usuário</th>
+                        <th>Texto</th>
+                        <th>Situação</th>
+                        <th class="text-end" data-orderable="false" data-searchable="false">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for mensagem in mensagemtelegram_list %}
+                    <tr>
+                        <td>{{ mensagem.criado_em|date:'d/m/Y H:i:s' }}</td>
+                        <td>{{ mensagem.get_direcao_display }}</td>
+                        <td>{{ mensagem.metodo_api|default:mensagem.tipo|default:"—" }}</td>
+                        <td>{{ mensagem.usuario|default:"—" }}</td>
+                        <td>{{ mensagem.texto|truncatechars:60|default:"—" }}</td>
+                        <td>{% include 'telegram/mensagem-situacao.html' %}</td>
+                        <td class="text-nowrap text-end">
+                            <a class="btn btn-ghost btn-icon btn-sm" href="{% url 'telegram:mensagem-detail' mensagem.pk %}" title="Detalhes" aria-label="Detalhes da mensagem">
+                                <i class="fas fa-eye icon-view"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'cadastros/paginacao.html' %}
+    </div>
+{% endblock cadastros_content %}

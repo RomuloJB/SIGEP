@@ -1,0 +1,92 @@
+{% extends "cadastros/form.html" %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active">Remetentes do Telegram</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="fab fa-telegram"></i> Remetentes do Telegram</h1>
+            <p class="page-subtitle">Quem já falou com o bot, quantas mensagens foram descartadas e quem está bloqueado agora.</p>
+        </div>
+    </div>
+
+    <div class="card list-card">
+        <div class="card-header">
+            <div class="card-heading">
+                <h2 class="card-title"><i class="fas fa-list"></i> Lista de remetentes</h2>
+                <span class="card-meta">{{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }}</span>
+            </div>
+            <div class="card-tools">
+                {% include 'cadastros/form-filter.html' %}
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 table-lista">
+                <thead>
+                    <tr>
+                        <th>Remetente</th>
+                        <th>Situação</th>
+                        <th class="text-end" title="Mensagens no minuto atual">Msg./min</th>
+                        <th class="text-end" title="Arquivos no minuto atual">Arq./min</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Descartadas</th>
+                        <th>Última vez</th>
+                        <th class="text-end" data-orderable="false" data-searchable="false">Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for remetente in limitetelegram_list %}
+                    <tr>
+                        <td>
+                            {% if remetente.usuario_site %}
+                            {{ remetente.usuario_site }}{% if remetente.nome_telegram %} <span class="text-muted">({{ remetente.nome_telegram }})</span>{% endif %}
+                            {% else %}
+                            <span class="text-muted">Não conectado</span>
+                            {% endif %}
+                            <div class="small text-muted">{{ remetente.telegram_id|stringformat:'d' }}</div>
+                        </td>
+                        <td class="text-nowrap">
+                            {% if remetente.bloqueado %}
+                            <span class="badge-soft-danger">Bloqueado até {{ remetente.bloqueado_ate|date:'d/m H:i' }}</span>
+                            {% else %}
+                            <span class="badge-soft-success">Livre</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">{{ remetente.mensagens }}</td>
+                        <td class="text-end">{{ remetente.arquivos }}</td>
+                        <td class="text-end">{{ remetente.total }}</td>
+                        <td class="text-end">{{ remetente.descartadas }}</td>
+                        <td class="text-nowrap">{{ remetente.ultima_vez|date:'d/m/Y H:i' }}</td>
+                        <td class="text-nowrap text-end">
+                            {% if remetente.bloqueado %}
+                            <div class="dropdown">
+                                <button class="btn btn-ghost btn-icon btn-sm" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport" data-bs-strategy="fixed" aria-expanded="false" aria-label="Ações do remetente {{ remetente.telegram_id|stringformat:'d' }}">
+                                    <i class="fas fa-ellipsis-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        {# Confirmado pelo Bootbox (static/js/confirmar-acao.js) antes do POST #}
+                                        <form method="post" action="{% url 'telegram:remetente-liberar' remetente.pk %}" class="form-confirmar"
+                                              data-titulo="Liberar remetente" data-mensagem="Encerrar agora o bloqueio deste remetente?"
+                                              data-botao="Liberar" data-classe="btn-primary">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item"><i class="fas fa-lock-open icon-approve"></i> Liberar</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include 'cadastros/paginacao.html' %}
+    </div>
+{% endblock cadastros_content %}

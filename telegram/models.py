@@ -268,6 +268,10 @@ class LimiteTelegram(models.Model):
     def __str__(self):
         return "Limite de {}".format(self.telegram_id)
 
+    @property
+    def bloqueado(self):
+        return self.bloqueado_ate is not None and self.bloqueado_ate > timezone.now()
+
     class Meta:
         verbose_name = "Limite do Telegram"
         verbose_name_plural = "Limites do Telegram"

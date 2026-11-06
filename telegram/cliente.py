@@ -42,13 +42,25 @@ def mascarar(texto):
     return texto
 
 
+def _rotulo(texto):
+    return texto[:LIMITE_ROTULO - 1] + "…" if len(texto) > LIMITE_ROTULO else texto
+
+
 def botao(texto, callback_data):
     """Monta um botão inline. Dados acima do limite são erro de programação: levanta ValueError."""
     if len(callback_data.encode("utf-8")) > LIMITE_CALLBACK_BYTES:
         raise ValueError("callback_data acima de {} bytes: {!r}".format(LIMITE_CALLBACK_BYTES, callback_data))
-    if len(texto) > LIMITE_ROTULO:
-        texto = texto[:LIMITE_ROTULO - 1] + "…"
-    return {"text": texto, "callback_data": callback_data}
+    return {"text": _rotulo(texto), "callback_data": callback_data}
+
+
+def botao_link(texto, url):
+    """Monta um botão inline que abre um endereço."""
+    return {"text": _rotulo(texto), "url": url}
+
+
+def contexto_do_log(telegram_id, vinculo=None, tipo="comando"):
+    """Contexto de uma chamada feita em nome desta pessoa."""
+    return {"usuario": vinculo.usuario if vinculo else None, "telegram_id": telegram_id, "tipo": tipo}
 
 
 def _marcacao(teclado):

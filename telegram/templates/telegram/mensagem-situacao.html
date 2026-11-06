@@ -1,0 +1,7 @@
+{% comment %}
+Selo da situação de uma mensagem do log. Uso, com `mensagem` no contexto:
+    {% include 'telegram/mensagem-situacao.html' %}
+{% endcomment %}
+<span class="{% if mensagem.situacao == 'erro' or mensagem.situacao == 'falhou' %}badge-soft-danger{% elif mensagem.situacao == 'recebida' %}badge-soft-warning{% elif mensagem.situacao == 'ignorada' %}badge-soft-neutral{% else %}badge-soft-success{% endif %}">
+    {{ mensagem.get_situacao_display }}
+</span>

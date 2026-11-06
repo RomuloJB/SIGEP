@@ -1,0 +1,54 @@
+{% extends "cadastros/form.html" %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Telegram</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fab fa-telegram"></i> Telegram</h1>
+        <p class="page-subtitle">Conecte o seu usuário ao bot do SIGEP.</p>
+    </div>
+</div>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        {% if vinculo %}
+        <p class="mb-1"><strong>Conta:</strong> {{ vinculo.nome|default:"Sem nome" }}{% if vinculo.username %} (@{{ vinculo.username }}){% endif %}</p>
+        <p><strong>Conectado em:</strong> {{ vinculo.vinculado_em|date:"d/m/Y H:i" }}</p>
+        <div class="cadastros-actions mt-4">
+            {# Confirmado pelo Bootbox (static/js/confirmar-acao.js) antes do POST #}
+            <form method="post" action="{% url 'telegram:desconectar' %}" class="form-confirmar d-inline"
+                  data-titulo="Desconectar Telegram" data-mensagem="Desconectar este Telegram do seu usuário?"
+                  data-botao="Desconectar" data-classe="btn-danger">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="fas fa-link-slash"></i> Desconectar
+                </button>
+            </form>
+        </div>
+        {% elif link_do_bot %}
+        <p>Abra o link abaixo e toque em <strong>Iniciar</strong> na conversa com o bot. Depois, atualize esta página.</p>
+        <div class="alert alert-warning">
+            <i class="fas fa-clock"></i> O link vale por {{ validade_minutos }} minutos e só pode ser usado uma vez.
+        </div>
+        <div class="cadastros-actions mt-4">
+            <a class="btn btn-primary" href="{{ link_do_bot }}" target="_blank" rel="noopener">
+                <i class="fab fa-telegram"></i> Abrir no Telegram
+            </a>
+        </div>
+        {% else %}
+        <p>Conecte o seu usuário para usar o SIGEP pelo Telegram.</p>
+        <div class="cadastros-actions mt-4">
+            <form method="post" action="{% url 'telegram:conectar' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btnLoading">
+                    <i class="fab fa-telegram"></i> Conectar Telegram
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock cadastros_content %}

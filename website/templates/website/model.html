@@ -55,6 +55,7 @@
                             <li><span class="dropdown-item-text">Olá, {{ request.user.get_username }}</span></li>
                             <li><hr class="dropdown-divider" /></li>
                             <li><a class="dropdown-item" href="{% url 'my-profile' %}"><i class="fas fa-user icon-view"></i> Meu perfil</a></li>
+                            <li><a class="dropdown-item" href="{% url 'telegram:conexao' %}"><i class="fab fa-telegram icon-view"></i> Telegram</a></li>
                             <li>
                                 <form method="post" action="{% url 'logout' %}">
                                     {% csrf_token %}

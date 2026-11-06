@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.db import DatabaseError
 from django.test import SimpleTestCase, TestCase, override_settings
 
-from telegram.cliente import ClienteFalso, ClienteTelegram, botao, obter_cliente
+from telegram.cliente import ClienteFalso, ClienteTelegram, botao, botao_link, obter_cliente
 from telegram.models import MensagemTelegram
 
 TOKEN = "123456:TOKEN-secreto_do_bot"
@@ -363,6 +363,12 @@ class BotaoTestCase(SimpleTestCase):
 
     def test_rotulo_no_limite_fica_inteiro(self):
         self.assertEqual(botao("x" * 40, "ok:1")["text"], "x" * 40)
+
+    def test_botao_de_link(self):
+        self.assertEqual(botao_link("Abrir", "https://exemplo.com/"), {"text": "Abrir", "url": "https://exemplo.com/"})
+
+    def test_botao_de_link_corta_o_rotulo(self):
+        self.assertEqual(len(botao_link("x" * 100, "https://exemplo.com/")["text"]), 40)
 
 
 class ClienteFalsoTestCase(SimpleTestCase):

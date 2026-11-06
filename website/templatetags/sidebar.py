@@ -31,6 +31,9 @@ ADMINISTRACAO = ("Administração", [
     item("Requisições de IA", "ia:requisicao-list", "list-checks", ("ia:requisicao-",)),
     item("Configuração da IA", "ia:configuracao", "settings"),
     item("IA por usuário", "ia:usuario-list", "user-cog", ("ia:usuario-",)),
+    item("Log do Telegram", "telegram:mensagem-list", "list-checks", ("telegram:mensagem-",)),
+    item("Remetentes do Telegram", "telegram:remetente-list", "users-round", ("telegram:remetente-",)),
+    item("Configuração do Telegram", "telegram:configuracao", "settings"),
 ])
 VISITANTE = ("Acesso", [
     item("Entrar", "login", "log-in"),

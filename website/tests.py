@@ -10,7 +10,10 @@ from website.templatetags.sidebar import iniciais
 OPCOES_REPRESENTANTE = [
     "Dashboard", "Clientes", "Produtos", "Pedidos", "Relatório de vendas", "Painel gerencial", "Sobre", "Meu consumo de IA",
 ]
-OPCOES_ADMINISTRACAO = ["Gerenciar Usuários", "Requisições de IA", "Configuração da IA", "IA por usuário"]
+OPCOES_ADMINISTRACAO = [
+    "Gerenciar Usuários", "Requisições de IA", "Configuração da IA", "IA por usuário",
+    "Log do Telegram", "Remetentes do Telegram", "Configuração do Telegram",
+]
 
 
 class SidebarTests(TestCase):

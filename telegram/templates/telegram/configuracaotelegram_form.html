@@ -1,0 +1,37 @@
+{% extends "cadastros/form.html" %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Configuração do Telegram</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fas fa-gear"></i> {{ title }}</h1>
+        <p class="page-subtitle">Limites de uso do bot e prazos do log. O token e o segredo do webhook ficam só no arquivo .env.</p>
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <i class="fas fa-circle-info me-1"></i> As mudanças valem em até 30 segundos, sem deploy. O texto embaixo de cada campo explica o que o número faz.
+</div>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
+            {% csrf_token %}
+
+            {% crispy form %}
+
+            <div class="cadastros-actions mt-4">
+                <span class="small text-muted me-auto">Última alteração: {{ object.atualizado_em|date:"d/m/Y H:i" }}</span>
+                {% include 'cadastros/botao-voltar.html' %}
+                <button type="submit" class="btn btn-primary btnLoading">
+                    <i class="fas fa-floppy-disk"></i> Salvar configuração
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock cadastros_content %}

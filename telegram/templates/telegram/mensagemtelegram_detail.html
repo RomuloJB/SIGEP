@@ -1,0 +1,71 @@
+{% extends "cadastros/form.html" %}
+{% load l10n %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'telegram:mensagem-list' %}">Log do Telegram</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Mensagem #{{ object.pk }}</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fab fa-telegram"></i> Mensagem #{{ object.pk }}</h1>
+        <p class="page-subtitle">{{ object.get_direcao_display }} · {{ object.criado_em|date:"d/m/Y H:i:s" }}</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'telegram:mensagem-list' %}">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-circle-info"></i> Mensagem</h2></div>
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <tbody>
+                <tr><th class="w-50">Situação</th><td>{% include 'telegram/mensagem-situacao.html' with mensagem=object %}</td></tr>
+                <tr><th>Usuário</th><td>{{ object.usuario|default:"—" }}</td></tr>
+                <tr><th>Tipo</th><td>{{ object.tipo|default:"—" }}</td></tr>
+                <tr><th>Método da API</th><td>{{ object.metodo_api|default:"—" }}</td></tr>
+                <tr><th>Id no Telegram</th><td>{{ object.telegram_id|default_if_none:"—"|unlocalize }}</td></tr>
+                <tr><th>Id da conversa</th><td>{{ object.chat_id|default_if_none:"—"|unlocalize }}</td></tr>
+                <tr><th>Id do update</th><td>{{ object.update_id|default_if_none:"—"|unlocalize }}</td></tr>
+                <tr><th>Status HTTP</th><td>{{ object.status_http|default:"—" }}</td></tr>
+                <tr><th>Duração</th><td>{% if object.duracao_ms is not None %}{{ object.duracao_ms }} ms{% else %}—{% endif %}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if object.erro %}
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title text-danger"><i class="fas fa-triangle-exclamation"></i> Erro</h2></div>
+    <div class="card-body">
+        <pre class="mb-0 text-wrap">{{ object.erro }}</pre>
+    </div>
+</div>
+{% endif %}
+
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-comment-dots"></i> Texto</h2></div>
+    <div class="card-body">
+        {% if object.texto %}
+        <pre class="mb-0 text-wrap">{{ object.texto }}</pre>
+        {% else %}
+        <span class="text-muted">Sem texto.</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-code"></i> JSON</h2></div>
+    <div class="card-body">
+        {% if conteudo_json %}
+        <pre class="mb-0">{{ conteudo_json }}</pre>
+        {% else %}
+        <span class="text-muted">Sem JSON: ele só é guardado para quem está conectado e é apagado depois do prazo de retenção.</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock cadastros_content %}

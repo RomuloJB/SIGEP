@@ -39,17 +39,17 @@ EM_TESTES = len(sys.argv) > 1 and sys.argv[1] == "test"
 # DEBUG=False no .env permite testar o comportamento de produção.
 DEBUG = (not EM_PRODUCAO) and (not EM_TESTES) and os.name == "nt" and os.getenv("DEBUG", "True") == "True"
 
+# Domínios extras (ex.: domínio próprio, ou o do ngrok no teste do bot) vão em ALLOWED_HOSTS
+# no .env, separados por vírgula.
+HOSTS_EXTRAS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()]
+ORIGENS_EXTRAS = ["https://" + host.lstrip(".") for host in HOSTS_EXTRAS]
+
 if DEBUG:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
-    CSRF_TRUSTED_ORIGINS = []
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"] + HOSTS_EXTRAS
+    CSRF_TRUSTED_ORIGINS = ORIGENS_EXTRAS
 else:
-    # Domínios extras (ex.: domínio próprio) vão em ALLOWED_HOSTS no .env, separados por vírgula.
-    ALLOWED_HOSTS = [".appspot.com"] + [
-        host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
-    ]
-    CSRF_TRUSTED_ORIGINS = ["https://*.appspot.com"] + [
-        "https://" + host.strip().lstrip(".") for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
-    ]
+    ALLOWED_HOSTS = [".appspot.com"] + HOSTS_EXTRAS
+    CSRF_TRUSTED_ORIGINS = ["https://*.appspot.com"] + ORIGENS_EXTRAS
 
 
 # Application definition
@@ -240,6 +240,9 @@ TELEGRAM_TIMEOUT_S = 10
 TELEGRAM_CODIGO_VALIDADE_MIN = 15
 TELEGRAM_MAX_CONEXOES = 10
 TELEGRAM_RETRY_MAX_S = 5
+TELEGRAM_REPROCESSAR_APOS_S = 120
+TELEGRAM_AVISO_ERRO_MIN = 10
+TELEGRAM_USO_INTERVALO_S = 60
 
 # Sem DEBUG, o Django não escreve os erros (tracebacks dos 500) no terminal.
 # Mandando para o stderr, eles aparecem nos logs do Google Cloud.
