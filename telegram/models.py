@@ -39,6 +39,11 @@ class VinculoTelegram(models.Model):
     ultimo_uso = models.DateTimeField(
         null=True, blank=True, verbose_name="último uso", help_text="Última vez que a pessoa usou o bot.",
     )
+    empresa = models.ForeignKey(
+        "cadastros.Company", on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
+        verbose_name="empresa no bot",
+        help_text="Empresa usada nos comandos do bot, escolhida com /empresa. Com uma empresa só, ela é escolhida sozinha.",
+    )
 
     def __str__(self):
         return "{} ({})".format(self.usuario, self.username or self.telegram_id)
@@ -204,6 +209,12 @@ class ConfiguracaoTelegram(models.Model):
     desconhecido_aviso_horas = models.PositiveSmallIntegerField(
         default=12, validators=[MinValueValidator(1)], verbose_name="intervalo do aviso (horas)",
         help_text="De quanto em quanto tempo quem não está conectado recebe o aviso para conectar o usuário.",
+    )
+
+    # Conversa
+    espera_minutos = models.PositiveSmallIntegerField(
+        default=15, validators=[MinValueValidator(1)], verbose_name="prazo da pergunta (minutos)",
+        help_text="Por quanto tempo o bot espera a resposta de uma pergunta. Depois disso, o texto não vale mais como resposta.",
     )
 
     # Retenção do log

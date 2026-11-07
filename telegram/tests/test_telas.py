@@ -190,7 +190,8 @@ class TelasTelegramTestCase(TestCase):
         return {
             "mensagens_por_minuto": 20, "arquivos_por_minuto": 4, "bloqueio_minutos": 5,
             "desconhecido_mensagens_por_minuto": 5, "desconhecido_bloqueio_minutos": 60,
-            "desconhecido_aviso_horas": 12, "reter_conteudo_dias": 30, "reter_mensagens_dias": 60, **alterados,
+            "desconhecido_aviso_horas": 12, "espera_minutos": 15, "reter_conteudo_dias": 30,
+            "reter_mensagens_dias": 60, **alterados,
         }
 
     def test_configuracao_explica_cada_numero(self):

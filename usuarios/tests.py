@@ -93,6 +93,33 @@ class SelectCompanyTests(TestCase):
         self.client.get(reverse("activate-company", args=[company.pk]))
         self.assertEqual(self.client.session["company_name"], "Comprido")
 
+    def test_ativar_com_next_volta_para_a_pagina_pedida(self):
+        company = self._empresa("Única")
+        destino = reverse("order-detail", args=[7])
+
+        response = self.client.get(reverse("activate-company", args=[company.pk]), {"next": destino})
+
+        self.assertRedirects(response, destino, fetch_redirect_response=False)
+        self.assertEqual(self.client.session["active_company_id"], company.id)
+
+    def test_ativar_com_next_de_outro_site_vai_para_o_dashboard(self):
+        company = self._empresa("Única")
+
+        for destino in ("https://outro-site.com/", "//outro-site.com/"):
+            with self.subTest(destino=destino):
+                response = self.client.get(reverse("activate-company", args=[company.pk]), {"next": destino})
+                self.assertRedirects(response, reverse("index"), fetch_redirect_response=False)
+
+    def test_nao_ativa_empresa_de_outro_usuario(self):
+        outro = User.objects.create_user("outro", "o@exemplo.com", "Senha@12345")
+        alheia = Company.objects.create(name="Alheia", cnpj="12345678000199", created_by=outro)
+        alheia.manager.add(outro)
+
+        response = self.client.get(reverse("activate-company", args=[alheia.pk]))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertNotIn("active_company_id", self.client.session)
+
 
 class UserManagementTests(TestCase):
     def setUp(self):

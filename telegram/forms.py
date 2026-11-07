@@ -34,6 +34,10 @@ class ConfiguracaoTelegramForm(forms.ModelForm):
                 ),
             ),
             Fieldset(
+                "Conversa",
+                Row(Column("espera_minutos", css_class="col-12 col-md-4")),
+            ),
+            Fieldset(
                 "Retenção do log",
                 Row(
                     Column("reter_conteudo_dias", css_class="col-12 col-md-6"),

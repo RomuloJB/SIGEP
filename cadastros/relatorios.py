@@ -10,10 +10,9 @@ from decimal import Decimal
 
 from django.db.models import Count, Sum
 
+from .consultas import LIMITE_ESTOQUE_BAIXO, produtos_com_estoque_baixo
 from .models import OrderStatus, PaymentMethod, Product, ProductOrder
 
-# Abaixo disso o produto aparece no gráfico de estoque crítico
-LIMITE_ESTOQUE_BAIXO = 10
 TOP_N = 10
 
 
@@ -124,7 +123,7 @@ def descontos(itens):
 
 def estoque_critico(empresa):
     """Produtos da empresa com pouco estoque, do menor para o maior."""
-    produtos = Product.objects.filter(company=empresa, stock__lte=LIMITE_ESTOQUE_BAIXO).order_by("stock", "name")[:TOP_N]
+    produtos = produtos_com_estoque_baixo(empresa)[:TOP_N]
     return _serie(produtos.values("name", "stock"), "name", "stock")
 
 

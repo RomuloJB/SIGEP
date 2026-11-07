@@ -3,8 +3,9 @@ from django.views import View
 from django.views.generic import ListView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.db.models import Q
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib import messages
+from cadastros import consultas
 from cadastros.models import Company, User_Profile
 from cadastros.forms import PhoneField, CPFField
 
@@ -26,10 +27,12 @@ class BaseLoginMixin(FormErrorMessagesMixin, LoginRequiredMixin):
     login_url = reverse_lazy('login')
 
 
-def activate_company(request, company):
-    """Grava a empresa escolhida na sessão e manda para o dashboard."""
+def activate_company(request, company, proxima=None):
+    """Grava a empresa escolhida na sessão e manda para `proxima` (só endereço deste site) ou para o dashboard."""
     request.session['active_company_id'] = company.id
     request.session['company_name'] = company.display_name
+    if proxima and url_has_allowed_host_and_scheme(proxima, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(proxima)
     return redirect('index')
 
 
@@ -50,11 +53,7 @@ class SelectCompanyView(BaseLoginMixin, ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
-            return Company.objects.all()
-        return Company.objects.filter(
-            Q(manager=self.request.user) | Q(sales_rep=self.request.user)
-        ).distinct()
+        return consultas.empresas_do_usuario(self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -66,19 +65,11 @@ class SelectCompanyView(BaseLoginMixin, ListView):
 class ActivateCompanyView(BaseLoginMixin, View):
     """
     Ativa a empresa selecionada pelo usuário salvando seu ID e nome na sessão.
+    Com ?next=, volta para essa página (ex.: o link "Abrir no site" do bot do Telegram).
     """
     def get(self, request, pk):
-        if request.user.is_superuser:
-            company = get_object_or_404(Company, pk=pk)
-        else:
-            company = get_object_or_404(
-                Company.objects.filter(
-                    Q(manager=request.user) | Q(sales_rep=request.user)
-                ).distinct(),
-                pk=pk
-            )
-            
-        return activate_company(request, company)
+        company = get_object_or_404(consultas.empresas_do_usuario(request.user), pk=pk)
+        return activate_company(request, company, request.GET.get("next"))
 
 class ActiveCompanyRequiredMixin(BaseLoginMixin):
     """
@@ -98,12 +89,7 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
         if not active_company_id:
             return redirect('select-company')
         try:
-            if request.user.is_superuser:
-                self.active_company = Company.objects.get(pk=active_company_id)
-            else:
-                self.active_company = Company.objects.filter(
-                    Q(manager=request.user) | Q(sales_rep=request.user)
-                ).distinct().get(pk=active_company_id)
+            self.active_company = consultas.empresas_do_usuario(request.user).get(pk=active_company_id)
         except Company.DoesNotExist:
             if 'active_company_id' in request.session:
                 del request.session['active_company_id']
@@ -116,16 +102,11 @@ class ActiveCompanyRequiredMixin(BaseLoginMixin):
         # RN02: gerente da empresa ativa (ou superusuário) vê todos os pedidos dela;
         # representante vê só os que ele criou. Calculado uma vez por requisição.
         if not hasattr(self, "_ve_todos_os_pedidos"):
-            user = self.request.user
-            self._ve_todos_os_pedidos = user.is_superuser or self.active_company.manager.filter(pk=user.pk).exists()
+            self._ve_todos_os_pedidos = consultas.ve_todos_os_pedidos(self.request.user, self.active_company)
         return self._ve_todos_os_pedidos
 
     def pedidos_visiveis(self):
-        from cadastros.models import Order
-        pedidos = Order.objects.filter(company=self.active_company)
-        if self.ve_todos_os_pedidos():
-            return pedidos
-        return pedidos.filter(created_by=self.request.user)
+        return consultas.pedidos_visiveis(self.request.user, self.active_company, self.ve_todos_os_pedidos())
 
     def get_queryset(self):
         queryset = super().get_queryset()

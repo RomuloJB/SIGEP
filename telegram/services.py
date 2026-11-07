@@ -6,14 +6,39 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
+from cadastros import consultas
+
 from .models import CodigoVinculoTelegram, VinculoTelegram
 
 
 def vinculo_valido(telegram_id):
     """Devolve o vínculo da pessoa, ou None. Usuário desativado no site não tem acesso pelo bot."""
-    return VinculoTelegram.objects.select_related("usuario").filter(
+    return VinculoTelegram.objects.select_related("usuario", "empresa").filter(
         telegram_id=telegram_id, usuario__is_active=True,
     ).first()
+
+
+def empresa_do_vinculo(vinculo):
+    """
+    Empresa usada nos comandos, conferida a cada vez: o usuário pode ter saído dela no site.
+    Com uma empresa só, ela é escolhida sem perguntar. Devolve None quando é preciso escolher.
+    """
+    empresas = consultas.empresas_do_usuario(vinculo.usuario)
+    if vinculo.empresa_id and empresas.filter(pk=vinculo.empresa_id).exists():
+        return vinculo.empresa
+    primeiras = list(empresas[:2])
+    if len(primeiras) == 1:
+        return escolher_empresa(vinculo, primeiras[0].pk)
+    return None
+
+
+def escolher_empresa(vinculo, empresa_id):
+    """Grava a empresa do bot, se o usuário tiver acesso a ela. Devolve a empresa, ou None."""
+    empresa = consultas.empresas_do_usuario(vinculo.usuario).filter(pk=empresa_id).first()
+    if empresa is not None:
+        VinculoTelegram.objects.filter(pk=vinculo.pk).update(empresa=empresa)
+        vinculo.empresa = empresa
+    return empresa
 
 
 def conectar(token, telegram_id, chat_id, username="", nome=""):

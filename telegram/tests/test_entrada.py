@@ -1,11 +1,11 @@
-from datetime import timedelta
+from datetime import date, timedelta
 from unittest import mock
 
 from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from telegram import acoes, comandos, conversa, limites, recebimento, roteador
+from telegram import acoes, comandos, conversa, entradas, limites, recebimento, roteador, telas
 from telegram.models import (
     CodigoVinculoTelegram, ConfiguracaoTelegram, EsperaTelegram, LimiteTelegram, MensagemTelegram, VinculoTelegram,
 )
@@ -212,12 +212,12 @@ class RoteadorTestCase(BotTestCase):
 
     def test_botao_vai_para_a_acao_registrada(self):
         vinculo = self.vincular(self.ana, TELEGRAM_ANA)
-        acao = mock.Mock()
+        acao = mock.Mock(return_value=None)
 
         with mock.patch.dict(acoes.ACOES, {"ok": acao}):
             recebimento.receber(clique("ok:45", update_id=1))
 
-        callback, argumento, recebido = acao.call_args.args
+        recebido, argumento, callback = acao.call_args.args
         self.assertEqual(callback["data"], "ok:45")
         self.assertEqual(argumento, "45")
         self.assertEqual(recebido, vinculo)
@@ -238,7 +238,8 @@ class RoteadorTestCase(BotTestCase):
         resposta = self.clicar("nao-existe:1")
 
         self.assertEqual(resposta["metodo"], "answerCallbackQuery")
-        self.assertEqual(resposta["text"], acoes.BOTAO_SEM_USO)
+        self.assertEqual(resposta["text"], acoes.BOTAO_ANTIGO)
+        self.assertTrue(resposta["show_alert"])
 
     def test_botao_de_quem_nao_esta_conectado_nao_roda_a_acao(self):
         acao = mock.Mock()
@@ -310,7 +311,7 @@ class RoteadorTestCase(BotTestCase):
         self.assertEqual(self.enviar(**FOTO)["text"], roteador.ARQUIVO_SEM_USO)
         self.assertEqual(self.enviar(**DOCUMENTO)["text"], roteador.ARQUIVO_SEM_USO)
 
-    def test_arquivo_vem_antes_da_espera(self):
+    def test_arquivo_vem_antes_da_espera_e_cancela_a_espera(self):
         self.esperar(self.vincular(self.ana, TELEGRAM_ANA))
 
         with mock.patch("telegram.roteador.conversa.receber_texto") as receber_texto:
@@ -318,19 +319,22 @@ class RoteadorTestCase(BotTestCase):
 
         receber_texto.assert_not_called()
         self.assertEqual(resposta["text"], roteador.ARQUIVO_SEM_USO)
-        self.assertTrue(EsperaTelegram.objects.exists())
+        self.assertFalse(EsperaTelegram.objects.exists())
 
     def test_texto_com_espera_ativa_vira_a_resposta(self):
-        espera = self.esperar(self.vincular(self.ana, TELEGRAM_ANA))
-        responder = mock.Mock()
+        vinculo = self.vincular(self.ana, TELEGRAM_ANA)
+        self.esperar(vinculo)
+        responder = mock.Mock(return_value=telas.Tela("Data anotada."))
+        campo = conversa.CampoTexto("Qual a data?", entradas.interpretar_data, responder)
 
-        with mock.patch.dict(conversa.RESPOSTAS, {"data": responder}):
-            self.enviar("31/12/2026")
+        with mock.patch.dict(conversa.CAMPOS_TEXTO, {"data": campo}):
+            resposta = self.enviar("31/12/2026")
 
-        mensagem, recebida = responder.call_args.args
-        self.assertEqual(mensagem["text"], "31/12/2026")
-        self.assertEqual(recebida, espera)
-        self.assertEqual(self.cliente.mensagens, [])
+        recebido, valor = responder.call_args.args
+        self.assertEqual(recebido, vinculo)
+        self.assertEqual(valor, date(2026, 12, 31))
+        self.assertEqual(resposta["text"], "Data anotada.")
+        self.assertFalse(EsperaTelegram.objects.exists())
 
     def test_espera_sem_tratador_nao_prende_a_pessoa(self):
         self.esperar(self.vincular(self.ana, TELEGRAM_ANA), campo="antigo")
