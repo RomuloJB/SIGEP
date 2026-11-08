@@ -18,6 +18,7 @@ COMANDOS_DO_MENU = (
     ("pedido", "Ver um pedido pelo número. Exemplo: /pedido 128"),
     ("estoque", "Consultar produtos e estoque. Exemplo: /estoque caderno"),
     ("empresa", "Trocar a empresa usada nos comandos"),
+    ("pendentes", "Documentos importados esperando a sua revisão"),
     ("ajuda", "O que o bot faz e a lista de comandos"),
     ("cancelar", "Cancelar a pergunta em andamento"),
     ("desconectar", "Desligar este Telegram do seu usuário"),
@@ -158,6 +159,11 @@ def empresa(mensagem, argumento, vinculo):
     _mostrar(mensagem, vinculo, lambda: telas.empresas(vinculo))
 
 
+@_so_conectado
+def pendentes(mensagem, argumento, vinculo):
+    _mostrar(mensagem, vinculo, lambda: telas.pendentes(vinculo.usuario))
+
+
 COMANDOS = {
     "/start": start,
     "/ajuda": ajuda,
@@ -167,6 +173,7 @@ COMANDOS = {
     "/pedido": pedido,
     "/estoque": estoque,
     "/empresa": empresa,
+    "/pendentes": pendentes,
 }
 
 

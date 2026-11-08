@@ -18,3 +18,4 @@ class Command(BaseCommand):
         self.stdout.write("- {} contadores apagados (parados há mais de {} dias)".format(
             resultado["contadores_apagados"], CONTADOR_PARADO_DIAS))
         self.stdout.write("- {} códigos de vínculo vencidos apagados".format(resultado["codigos_apagados"]))
+        self.stdout.write("- {} registros de álbum apagados".format(resultado["albuns_apagados"]))

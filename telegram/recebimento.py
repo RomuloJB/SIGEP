@@ -110,11 +110,12 @@ def receber(update):
     remetente, mensagem = origem
     vinculo = services.vinculo_valido(remetente["id"])
 
-    # A mensagem de um botão é a do bot, por isso arquivo e comando olham só o que a pessoa enviou
+    # A mensagem de um botão é a do bot, por isso arquivo e comando olham só o que a pessoa enviou.
+    # A foto de um álbum não conta como arquivo: o álbum inteiro vira uma importação só.
     enviada = update.get("message", {})
+    arquivo = roteador.tem_arquivo(enviada) and not enviada.get("media_group_id")
     veredito = limites.verificar(
-        remetente["id"], conectado=vinculo is not None,
-        arquivo=roteador.tem_arquivo(enviada), comando=roteador.eh_comando(enviada),
+        remetente["id"], conectado=vinculo is not None, arquivo=arquivo, comando=roteador.eh_comando(enviada),
     )
     if veredito.aviso:
         obter_cliente().enviar(

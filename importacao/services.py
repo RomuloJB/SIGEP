@@ -29,13 +29,15 @@ from .tarefas import enfileirar, tarefa
 logger = logging.getLogger(__name__)
 
 # Enviado depois do commit. Argumentos: importacao, situacao_anterior ("" na criação),
-# por (usuário, ou None quando é o sistema) e canal ("site", "telegram" ou "sistema").
+# por (usuário, ou None quando é o sistema) e canal: "site", "telegram", "leitura" (o resultado
+# da leitura pela IA) ou "sistema" (manutenção e fila).
 importacao_alterada = Signal()
 
 S = Importacao.Situacao
 FINALIDADE = "importacao_ler"
 TAREFA_LER = "importacao.ler"
 CANAL_SISTEMA = "sistema"
+CANAL_LEITURA = "leitura"
 TAMANHO_LOTE = 1000
 
 MSG_SEM_TIPOS = "Ainda não há nenhum tipo de documento para importar."
@@ -338,7 +340,7 @@ def _encerrar_leitura(importacao, situacao, **campos):
             return
         for nome in ("extracao", "arquivo_hash", "arquivo_tamanho", "arquivo_mime", "versao_prompt"):
             setattr(atual, nome, getattr(importacao, nome))
-        _mudar(atual, situacao, None, CANAL_SISTEMA, **campos)
+        _mudar(atual, situacao, None, CANAL_LEITURA, **campos)
     importacao.refresh_from_db()
 
 

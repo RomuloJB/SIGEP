@@ -10,11 +10,13 @@ from decimal import Decimal
 from django.utils import timezone
 
 TERMO_MAX = 30
+TEXTO_MAX = 200
 
 DICA_DATA = "Não entendi a data. Use dd/mm/aaaa, dd/mm, hoje, ontem, anteontem ou amanhã. Exemplo: 03/10/2026"
 DICA_VALOR = "Não entendi o valor. Use vírgula nos centavos. Exemplo: 1.234,56"
 DICA_QUANTIDADE = "Não entendi a quantidade. Use um número inteiro a partir de 1. Exemplo: 3"
 DICA_NUMERO = "Não entendi o número. Exemplo: 128"
+DICA_TEXTO = "Não entendi. Digite um texto de até {} caracteres.".format(TEXTO_MAX)
 DICA_TERMO = "Digite pelo menos 2 letras ou 3 números, com até {} caracteres. Exemplo: caderno".format(TERMO_MAX)
 
 DIAS = {"hoje": 0, "ontem": -1, "anteontem": -2, "amanha": 1}
@@ -80,6 +82,14 @@ def interpretar_numero(texto):
     if not casou or int(casou[1]) < 1:
         raise EntradaInvalida(DICA_NUMERO)
     return int(casou[1])
+
+
+def interpretar_texto(texto):
+    """Texto livre (ex.: um nome): sem espaços sobrando, não vazio e com até TEXTO_MAX caracteres."""
+    limpo = " ".join(texto.split())
+    if not limpo or len(limpo) > TEXTO_MAX:
+        raise EntradaInvalida(DICA_TEXTO)
+    return limpo
 
 
 def interpretar_termo(texto):

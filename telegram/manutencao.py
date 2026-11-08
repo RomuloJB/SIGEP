@@ -7,12 +7,13 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from .models import CodigoVinculoTelegram, ConfiguracaoTelegram, LimiteTelegram, MensagemTelegram
+from .models import AlbumTelegram, CodigoVinculoTelegram, ConfiguracaoTelegram, LimiteTelegram, MensagemTelegram
 
 logger = logging.getLogger(__name__)
 
 TAMANHO_LOTE = 1000
 CONTADOR_PARADO_DIAS = 7
+ALBUM_DIAS = 1  # as fotos de um álbum chegam juntas: depois de um dia, ninguém mais precisa do registro
 
 
 def _em_lotes(queryset, acao, tamanho_lote):
@@ -44,6 +45,7 @@ def limpar(tamanho_lote=TAMANHO_LOTE):
         ultima_vez__lt=agora - timedelta(days=CONTADOR_PARADO_DIAS),
     ).exclude(bloqueado_ate__gt=agora)
     codigos = CodigoVinculoTelegram.objects.filter(expira_em__lt=agora)
+    albuns = AlbumTelegram.objects.filter(criado_em__lt=agora - timedelta(days=ALBUM_DIAS))
 
     resultado = {
         # As mensagens vêm antes: não adianta limpar o JSON de quem vai ser apagado
@@ -51,6 +53,7 @@ def limpar(tamanho_lote=TAMANHO_LOTE):
         "conteudos_apagados": _em_lotes(conteudos, lambda lote: lote.update(conteudo=None), tamanho_lote),
         "contadores_apagados": _em_lotes(contadores, _apagar, tamanho_lote),
         "codigos_apagados": _em_lotes(codigos, _apagar, tamanho_lote),
+        "albuns_apagados": _em_lotes(albuns, _apagar, tamanho_lote),
     }
     logger.info("Limpeza do Telegram: %s", resultado)
     return resultado

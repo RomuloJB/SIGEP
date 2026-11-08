@@ -1,10 +1,7 @@
 """Decide quem atende cada update. Não tem regra de negócio: só encaminha."""
-from . import acoes, comandos, conversa, limites, services
+from . import acoes, comandos, conversa, importacoes, limites, services
 from .cliente import contexto_do_log, obter_cliente
 from .models import MensagemTelegram
-
-ARQUIVO_SEM_USO = "Recebi o arquivo, mas ainda não sei o que fazer com ele."
-
 
 def tem_arquivo(mensagem):
     return "photo" in mensagem or "document" in mensagem
@@ -40,10 +37,11 @@ def _rotear(update, vinculo, registro):
         _avisar_conexao(mensagem)
         return
 
-    resposta = comandos.AJUDA
     if tem_arquivo(mensagem):
-        resposta = ARQUIVO_SEM_USO
-    elif texto and not comando:
+        importacoes.receber_arquivo(mensagem, vinculo, registro)
+        return
+    resposta = comandos.AJUDA
+    if texto and not comando:
         espera = conversa.espera_ativa(vinculo)
         if espera:
             conversa.receber_texto(mensagem, espera)

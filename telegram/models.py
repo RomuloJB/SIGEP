@@ -316,3 +316,51 @@ class EsperaTelegram(models.Model):
     class Meta:
         verbose_name = "Espera do Telegram"
         verbose_name_plural = "Esperas do Telegram"
+
+
+class ImportacaoTelegram(models.Model):
+    """Liga uma importação à conversa: o arquivo no Telegram e a mensagem do cartão, que é editada a cada mudança."""
+    importacao = models.OneToOneField(
+        "importacao.Importacao", on_delete=models.CASCADE, related_name="telegram", verbose_name="importação",
+        help_text="Importação que este cartão mostra.",
+    )
+    chat_id = models.BigIntegerField(verbose_name="id da conversa", help_text="Conversa onde está o cartão.")
+    mensagem_usuario_id = models.BigIntegerField(
+        null=True, blank=True, verbose_name="mensagem da pessoa", help_text="Mensagem com o arquivo enviado.",
+    )
+    mensagem_bot_id = models.BigIntegerField(
+        null=True, blank=True, verbose_name="mensagem do cartão", help_text="Mensagem do bot editada a cada mudança da importação.",
+    )
+    file_id = models.CharField(
+        max_length=255, blank=True, verbose_name="file_id",
+        help_text="Identificador do arquivo no Telegram, para baixar de novo numa nova tentativa. Vazio se veio do site.",
+    )
+    file_unique_id = models.CharField(max_length=100, blank=True, verbose_name="file_unique_id", help_text="Identificador fixo do arquivo no Telegram.")
+    media_group_id = models.CharField(max_length=64, blank=True, verbose_name="álbum", help_text="Álbum de fotos de onde o arquivo veio, se houver.")
+
+    def __str__(self):
+        return "Cartão da importação #{}".format(self.importacao_id)
+
+    class Meta:
+        verbose_name = "Importação pelo Telegram"
+        verbose_name_plural = "Importações pelo Telegram"
+
+
+class AlbumTelegram(models.Model):
+    """Um álbum (várias fotos de uma vez) vira uma importação só e um aviso único."""
+    chat_id = models.BigIntegerField(verbose_name="id da conversa", help_text="Conversa onde o álbum chegou.")
+    media_group_id = models.CharField(max_length=64, verbose_name="álbum", help_text="Identificador do álbum no Telegram.")
+    avisado = models.BooleanField(
+        default=False, verbose_name="avisado", help_text="Se a pessoa já foi avisada de que só a primeira foto é lida.",
+    )
+    criado_em = models.DateTimeField(auto_now_add=True, verbose_name="criado em", help_text="Quando a primeira foto chegou.")
+
+    def __str__(self):
+        return "Álbum {} na conversa {}".format(self.media_group_id, self.chat_id)
+
+    class Meta:
+        verbose_name = "Álbum do Telegram"
+        verbose_name_plural = "Álbuns do Telegram"
+        constraints = [
+            models.UniqueConstraint(fields=["chat_id", "media_group_id"], name="tg_album_unico"),
+        ]

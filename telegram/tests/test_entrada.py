@@ -5,7 +5,8 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from telegram import acoes, comandos, conversa, entradas, limites, recebimento, roteador, telas
+from importacao.services import MSG_SEM_TIPOS
+from telegram import acoes, arquivos, comandos, conversa, entradas, limites, recebimento, roteador, telas
 from telegram.models import (
     CodigoVinculoTelegram, ConfiguracaoTelegram, EsperaTelegram, LimiteTelegram, MensagemTelegram, VinculoTelegram,
 )
@@ -305,11 +306,12 @@ class RoteadorTestCase(BotTestCase):
     def test_comando_desconhecido_de_quem_nao_esta_conectado_recebe_o_aviso(self):
         self.assertEqual(self.enviar("/nao-existe")["text"], comandos.COMO_CONECTAR)
 
-    def test_foto_e_documento_ainda_nao_tem_uso(self):
+    def test_arquivo_vai_para_a_importacao(self):
+        # Sem nenhum importador no projeto, a foto recebe o aviso; o documento sem tipo é recusado antes
         self.vincular(self.ana, TELEGRAM_ANA)
 
-        self.assertEqual(self.enviar(**FOTO)["text"], roteador.ARQUIVO_SEM_USO)
-        self.assertEqual(self.enviar(**DOCUMENTO)["text"], roteador.ARQUIVO_SEM_USO)
+        self.assertEqual(self.enviar(**FOTO)["text"], MSG_SEM_TIPOS)
+        self.assertEqual(self.enviar(**DOCUMENTO)["text"], arquivos.TIPO_RECUSADO)
 
     def test_arquivo_vem_antes_da_espera_e_cancela_a_espera(self):
         self.esperar(self.vincular(self.ana, TELEGRAM_ANA))
@@ -318,7 +320,7 @@ class RoteadorTestCase(BotTestCase):
             resposta = self.enviar(caption="legenda", **FOTO)
 
         receber_texto.assert_not_called()
-        self.assertEqual(resposta["text"], roteador.ARQUIVO_SEM_USO)
+        self.assertEqual(resposta["text"], MSG_SEM_TIPOS)
         self.assertFalse(EsperaTelegram.objects.exists())
 
     def test_texto_com_espera_ativa_vira_a_resposta(self):
@@ -426,7 +428,7 @@ class LimitesConectadoTestCase(BotTestCase):
 
     def test_acima_de_4_arquivos_recusa_os_extras_com_um_aviso_so(self):
         for _ in range(4):
-            self.assertEqual(self.enviar(**FOTO)["text"], roteador.ARQUIVO_SEM_USO)
+            self.assertEqual(self.enviar(**FOTO)["text"], MSG_SEM_TIPOS)
 
         self.assertEqual(self.enviar(**FOTO)["text"], limites.AVISO_ARQUIVOS)
         respostas = len(self.cliente.mensagens)
@@ -447,7 +449,7 @@ class LimitesConectadoTestCase(BotTestCase):
             self.enviar(**FOTO)
         self.encerrar_janela()
 
-        self.assertEqual(self.enviar(**FOTO)["text"], roteador.ARQUIVO_SEM_USO)
+        self.assertEqual(self.enviar(**FOTO)["text"], MSG_SEM_TIPOS)
         for _ in range(3):
             self.enviar(**FOTO)
         self.assertEqual(self.enviar(**FOTO)["text"], limites.AVISO_ARQUIVOS)

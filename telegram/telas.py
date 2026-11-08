@@ -5,6 +5,7 @@ Todo texto do banco passa por escape(), porque as mensagens usam parse_mode HTML
 """
 import re
 from dataclasses import dataclass
+from typing import Callable
 from html import escape
 from math import ceil
 from urllib.parse import quote
@@ -18,6 +19,8 @@ from django.utils.formats import number_format
 from cadastros import consultas
 from cadastros.masks import format_cpf_cnpj
 from cadastros.models import OrderStatus, Product
+from importacao.importadores import tipos_disponiveis
+from importacao.models import Importacao
 
 from . import services
 from .cliente import botao, botao_link
@@ -33,6 +36,7 @@ SEM_EMPRESA = "Seu usuário não está em nenhuma empresa. Fale com o administra
 class Tela:
     texto: str
     teclado: list | None = None
+    ao_enviar: Callable | None = None  # chamada com a mensagem enviada, quando a tela vai como mensagem nova
 
 
 @dataclass(frozen=True)
@@ -87,7 +91,7 @@ def lista_paginada(queryset, pagina, rotulo, opcao, navegar, voltar=None):
     Um botão por item do queryset, POR_PAGINA por página, com Anterior/Próxima e Voltar.
     rotulo(item) é o texto do botão; opcao(item, página) e navegar(página) dão o callback_data.
     """
-    total = queryset.count()
+    total = len(queryset) if isinstance(queryset, list) else queryset.count()
     total_paginas = max(1, ceil(total / POR_PAGINA))
     numero = min(max(1, pagina), total_paginas)
     itens = list(queryset[(numero - 1) * POR_PAGINA:numero * POR_PAGINA])
@@ -286,3 +290,119 @@ def produto(vinculo, produto_id, pagina=1, termo=""):
         teclado.append([no_site])
     teclado.append([botao("⬅️ Voltar", "es:{}:{}".format(pagina, cortar_bytes(termo, TERMO_NO_BOTAO_BYTES)))])
     return Tela("\n".join(linhas), teclado)
+
+
+# ─── Importação de documentos ─────────────────────────────────────────────────
+# Genérico: o texto vem do resumo() do importador e os botões, dos campos(). Nada aqui sabe o
+# que é um pedido ou um produto, e as ações só passam por importacao/services.py.
+
+LIMITE_CARTAO = 4000
+LENDO = "🔎 Lendo o documento..."
+SI = Importacao.Situacao
+
+
+def _juntar(linhas):
+    """Junta as linhas, já escapadas, sem passar do limite do Telegram e sem cortar uma linha no meio."""
+    texto = ""
+    for linha in linhas:
+        if len(texto) + len(linha) + 3 > LIMITE_CARTAO:
+            return texto + "\n…"
+        texto = linha if not texto else texto + "\n" + linha
+    return texto
+
+
+def _titulo_da_importacao(importacao):
+    return "🧾 <b>{}</b> · importação nº {}".format(escape(importacao.nome_do_tipo), importacao.pk)
+
+
+def botao_importacao_no_site(importacao, rota="importacao:revisar", rotulo="🌐 Editar no site"):
+    if not site_tem_https():
+        return None
+    return botao_link(rotulo, settings.SITE_URL + reverse(rota, args=[importacao.pk]))
+
+
+def _botoes_do_rascunho(importacao, importador):
+    teclado = [[botao("✅ Confirmar", "ok:{}".format(importacao.pk))]]
+    campos = [botao("✏️ " + campo.rotulo, "ic:{}:{}".format(importacao.pk, campo.codigo)) for campo in importador.campos()]
+    teclado += [campos[inicio:inicio + 2] for inicio in range(0, len(campos), 2)]
+    no_site = botao_importacao_no_site(importacao)
+    if no_site:
+        teclado.append([no_site])
+    return teclado
+
+
+def desenhar(importacao, nota=""):
+    """O cartão da importação na situação atual. `nota` vai no topo (ex.: "🌐 Alterado no site.")."""
+    pk, situacao = importacao.pk, importacao.situacao
+    descartar = [botao("🗑 Descartar", "dc:{}".format(pk))]
+    tentar = [botao("🔁 Tentar de novo", "tn:{}".format(pk))]
+    linhas = [escape(nota, quote=False)] if nota else []
+    teclado = None
+
+    if situacao == SI.PROCESSANDO:
+        linhas.append(LENDO)
+    elif situacao == SI.AGUARDANDO_TIPO:
+        linhas.append("📎 <b>O que é este documento?</b> (importação nº {})".format(pk))
+        teclado = [[botao(nome, "it:{}:{}".format(pk, tipo))] for tipo, nome in tipos_disponiveis()] + [descartar]
+    elif situacao == SI.PRONTA:
+        importador = importacao.importador
+        linhas.append(_titulo_da_importacao(importacao))
+        if importador is None:
+            linhas.append("Este tipo de documento não está mais disponível.")
+            teclado = [descartar]
+        else:
+            linhas += ["{}: {}".format(escape(rotulo, quote=False), escape(str(valor), quote=False))
+                       for rotulo, valor in importador.resumo(importacao.dados)]
+            linhas += ["⚠️ " + escape(aviso, quote=False) for aviso in importacao.avisos]
+            teclado = _botoes_do_rascunho(importacao, importador) + [descartar]
+    elif situacao in (SI.FALHOU, SI.BLOQUEADA):
+        linhas += [_titulo_da_importacao(importacao),
+                   "⚠️ " + escape(importacao.mensagem_erro or "Não consegui ler o documento.", quote=False)]
+        teclado = [tentar, descartar]
+    elif situacao == SI.NAO_RECONHECIDA:
+        linhas += [_titulo_da_importacao(importacao),
+                   "🤔 Não reconheci este documento: " + escape(importacao.mensagem_erro or "não é do tipo esperado.", quote=False)]
+        teclado = [tentar, descartar]
+    elif situacao == SI.CONFIRMADA:
+        linhas += [_titulo_da_importacao(importacao), "✅ <b>Cadastrado!</b>"]
+        if importacao.objeto is not None:
+            linhas.append(escape(str(importacao.objeto), quote=False))
+        no_site = botao_importacao_no_site(importacao, "importacao:detalhe", "🌐 Ver no site")
+        teclado = [[no_site]] if no_site else None
+    elif situacao == SI.DESCARTADA:
+        linhas.append("🗑 Importação nº {} descartada.".format(pk))
+    else:  # expirada
+        linhas.append("⏱️ A importação nº {} expirou sem ser confirmada.".format(pk))
+    return Tela(_juntar(linhas), teclado)
+
+
+def opcoes_do_campo(importacao, campo, usuario, pagina=1):
+    """Lista paginada das opções de um campo "escolha", com Voltar para o cartão."""
+    lista = lista_paginada(
+        list(campo.opcoes(usuario)), pagina,
+        rotulo=lambda opcao: str(opcao[1]),
+        opcao=lambda opcao, _: "io:{}:{}:{}".format(importacao.pk, campo.codigo, opcao[0]),
+        navegar=lambda numero: "il:{}:{}:{}".format(importacao.pk, campo.codigo, numero),
+        voltar="iv:{}".format(importacao.pk),
+    )
+    texto = "{}\n✏️ Escolha: <b>{}</b>{}".format(_titulo_da_importacao(importacao), escape(campo.rotulo), _rodape(lista))
+    if not lista.total:
+        texto += "\n\nNenhuma opção disponível."
+    return Tela(texto, lista.teclado)
+
+
+def pendentes(usuario, pagina=1):
+    """As importações para revisar, com um botão para reabrir cada cartão no fim do chat."""
+    para_revisar = Importacao.objects.filter(criado_por=usuario, situacao=SI.PRONTA).order_by("-criado_em")
+    lista = lista_paginada(
+        para_revisar, pagina,
+        rotulo=lambda importacao: "#{} · {} · {}".format(importacao.pk, importacao.nome_do_tipo, data_curta(importacao.criado_em)),
+        opcao=lambda importacao, _: "ab:{}".format(importacao.pk),
+        navegar=lambda numero: "pd:{}".format(numero),
+    )
+    if not lista.total:
+        return Tela("📋 Nenhuma importação para revisar. 👍")
+    texto = "📋 <b>Para revisar</b>: {} importaç{}{}\n\nToque em uma para abrir o cartão.".format(
+        lista.total, "ão" if lista.total == 1 else "ões", _rodape(lista),
+    )
+    return Tela(texto, lista.teclado)

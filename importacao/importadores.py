@@ -105,6 +105,8 @@ class Importador:
         """
         Aplica a correção de um campo e devolve (dados, mensagem). Mudar um campo pode mudar
         outro (regra do domínio). Valor que não serve: levanta AjusteInvalido(mensagem).
+        O valor chega já interpretado pelo tipo do Campo: date ("data"), Decimal ("valor"),
+        int ("inteiro"), str ("texto") ou o id de uma das opcoes ("escolha").
         """
         raise AjusteInvalido("Este campo não pode ser corrigido.")
 
