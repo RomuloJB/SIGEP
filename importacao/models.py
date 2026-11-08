@@ -73,6 +73,11 @@ class Importacao(models.Model):
         blank=True, verbose_name="observação",
         help_text="Texto enviado junto com o arquivo (legenda no Telegram). Vai para a IA como dado.",
     )
+    escopo = models.JSONField(
+        default=dict, blank=True, verbose_name="escopo",
+        help_text="O que o canal sabia ao abrir a importação e o importador usa, ex.: {\"empresa\": 3}. "
+                  "O app importacao só guarda e repassa.",
+    )
     arquivo_nome = models.CharField(max_length=255, blank=True, verbose_name="nome do arquivo", help_text="Nome original do arquivo.")
     arquivo_mime = models.CharField(max_length=100, blank=True, verbose_name="tipo do arquivo", help_text="Tipo MIME, ex.: application/pdf.")
     arquivo_tamanho = models.PositiveIntegerField(null=True, blank=True, verbose_name="tamanho (bytes)", help_text="Tamanho do arquivo enviado.")

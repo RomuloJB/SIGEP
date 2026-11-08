@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -59,6 +60,15 @@ class ImportacaoDoUsuarioMixin(BaseLoginMixin):
         return super().get_queryset().filter(criado_por=self.request.user)
 
 
+def _escopo_da_sessao(request):
+    """
+    O que o importador precisa saber do site (ex.: a empresa ativa), copiado da sessão pelas
+    chaves de settings.IMPORTACAO_ESCOPO_DA_SESSAO ({nome no escopo: chave da sessão}).
+    """
+    chaves = getattr(settings, "IMPORTACAO_ESCOPO_DA_SESSAO", {})
+    return {nome: request.session[chave] for nome, chave in chaves.items() if request.session.get(chave) is not None}
+
+
 def _guardar_e_ler(importacao, arquivo):
     services.guardar_arquivo(importacao, arquivo.read(), arquivo.content_type)
     if importacao.situacao == S.PROCESSANDO:
@@ -92,7 +102,7 @@ class NovaImportacaoView(BaseLoginMixin, FormView):
         arquivo = form.cleaned_data["arquivo"]
         try:
             importacao = services.iniciar_importacao(
-                self.request.user, CANAL, tipo=form.cleaned_data.get("tipo", ""),
+                self.request.user, CANAL, tipo=form.cleaned_data.get("tipo", ""), escopo=_escopo_da_sessao(self.request),
                 observacao=form.cleaned_data["observacao"], arquivo_nome=arquivo.name,
                 arquivo_mime=arquivo.content_type, arquivo_tamanho=arquivo.size,
             )
@@ -137,16 +147,19 @@ class ImportacaoRevisar(ImportacaoDoUsuarioMixin, DetailView):
             return redirect("importacao:detalhe", self.object.pk)
         return super().dispatch(request, *args, **kwargs)
 
+    def montar_form(self, data=None):
+        inicial = self.importador.dados_para_form(self.object.dados)
+        return self.importador.form(self.request.user, self.object.escopo, data=data, initial=inicial)
+
     def get(self, request, *args, **kwargs):
-        form = self.importador.form(request.user, initial=self.importador.dados_para_form(self.object.dados))
-        return self.render_to_response(self.get_context_data(form=form))
+        return self.render_to_response(self.get_context_data(form=self.montar_form()))
 
     def post(self, request, *args, **kwargs):
         dados_form = request.POST if self.importador.form_class else None
         try:
             services.confirmar_importacao(self.object, request.user, CANAL, dados_form=dados_form)
         except ImportacaoInvalida as erro:
-            form = erro.form or self.importador.form(request.user, data=request.POST)
+            form = erro.form or self.montar_form(data=request.POST)
             if form is None or not form.errors:
                 messages.error(request, "O registro não pôde ser criado: {}".format(erro.erros))
             return self.render_to_response(self.get_context_data(form=form))

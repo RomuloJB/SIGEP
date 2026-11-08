@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.test import override_settings
 
+from cadastros.models import Company
 from ia.cota import CotaExcedida
 from ia.models import ConfiguracaoIA
 from importacao import services as importacao_services
@@ -23,16 +24,16 @@ class ImportadorComCor(ImportadorTeste):
     """O importador de teste do app importacao, com um campo de escolha a mais."""
 
     def campos(self):
-        return super().campos() + [Campo("cor", "Cor", "escolha", opcoes=lambda usuario: list(CORES.items()))]
+        return super().campos() + [Campo("cor", "Cor", "escolha", opcoes=lambda usuario, escopo: list(CORES.items()))]
 
     def resumo(self, dados):
         return super().resumo(dados) + [("Cor", CORES.get(dados.get("cor"), "—"))]
 
-    def ajustar(self, dados, codigo, valor, usuario):
+    def ajustar(self, dados, codigo, valor, usuario, escopo):
         if codigo == "cor":
             dados["cor"] = valor
             return dados, "Cor escolhida."
-        return super().ajustar(dados, codigo, valor, usuario)
+        return super().ajustar(dados, codigo, valor, usuario, escopo)
 
 
 def foto(grande="foto-grande", **campos):
@@ -106,6 +107,38 @@ class ImportacaoPeloBotTestCase(BotTestCase):
         ])
         vinculo = ImportacaoTelegram.objects.get()
         self.assertEqual((vinculo.file_id, vinculo.mensagem_bot_id, vinculo.chat_id), ("foto-grande", 1, TELEGRAM_ANA))
+
+    def empresa(self, nome, *representantes):
+        empresa = Company.objects.create(name=nome, cnpj="00000000000191", created_by=self.bia)
+        empresa.sales_rep.add(*representantes)
+        return empresa
+
+    def test_sem_empresa_no_bot_o_escopo_vai_vazio(self):
+        self.mandar(**foto())
+
+        self.assertEqual(Importacao.objects.get().escopo, {})
+
+    def test_a_empresa_do_bot_vai_para_o_escopo(self):
+        unica = self.empresa("Única", self.ana)
+
+        self.mandar(**foto())
+
+        self.assertEqual(Importacao.objects.get().escopo, {"empresa": unica.pk})
+
+    def test_com_varias_empresas_e_nenhuma_escolhida_pede_a_empresa_antes(self):
+        primeira, segunda = self.empresa("Alfa", self.ana), self.empresa("Beta", self.ana)
+
+        self.mandar(**foto())
+
+        self.assertFalse(Importacao.objects.exists())
+        pergunta = self.cliente.mensagens[-1]
+        self.assertTrue(pergunta["text"].startswith(importacoes.AVISO_EMPRESA))
+        self.assertEqual(botoes(pergunta), ["em:{}".format(primeira.pk), "em:{}".format(segunda.pk)])
+
+        self.tocar("em:{}".format(segunda.pk))
+        self.assertIn("envie o documento de novo", self.chamadas("editMessageText")[-1]["text"])
+        self.mandar(**foto())
+        self.assertEqual(Importacao.objects.get().escopo, {"empresa": segunda.pk})
 
     def test_documento_de_tipo_errado_e_recusado_sem_abrir_importacao(self):
         self.mandar(document={"file_id": "d", "file_unique_id": "d", "mime_type": "text/plain", "file_size": 10})

@@ -1,5 +1,6 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.urls import reverse
 
 from .masks import format_cnpj, format_cpf_cnpj
 
@@ -141,6 +142,9 @@ class Order(BaseClass):
 
     def __str__(self):
         return "{} | {} -> {} = {}".format(self.id, self.client, self.created_by, self.total_value)
+
+    def get_absolute_url(self):
+        return reverse("order-detail", args=[self.pk])
 
     @property
     def pago_em_boleto(self):

@@ -2,13 +2,14 @@ from unittest import mock
 
 from django.contrib.auth.models import Group, User
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.urls import reverse
 
 from ia.models import ConfiguracaoIA, ConfiguracaoIAUsuario
 from importacao.importadores import REGISTRO
 from importacao.models import Importacao
 
-from .base import TIPO, ImportacaoTestCase, OutroImportador, png, resposta
+from .base import TIPO, ImportacaoTestCase, ImportadorComEscopo, OutroImportador, png, resposta
 
 S = Importacao.Situacao
 
@@ -90,6 +91,24 @@ class TelasTestCase(ImportacaoTestCase):
         resposta_http = self.enviar()
 
         self.assertContains(resposta_http, "A leitura por IA está desligada para a sua conta.")
+        self.assertFalse(Importacao.objects.exists())
+
+    @override_settings(IMPORTACAO_ESCOPO_DA_SESSAO={"empresa": "active_company_id", "equipe": "equipe_da_sessao"})
+    def test_escopo_vem_da_sessao_pelas_chaves_do_settings(self):
+        sessao = self.client.session
+        sessao["active_company_id"] = 7
+        sessao["outra_chave"] = "não vai"
+        sessao.save()
+
+        self.enviar()
+
+        self.assertEqual(Importacao.objects.get().escopo, {"empresa": 7})  # "equipe" não está na sessão
+
+    def test_escopo_que_o_importador_recusa_aparece_no_form(self):
+        with mock.patch.dict(REGISTRO, {ImportadorComEscopo.tipo: ImportadorComEscopo()}, clear=True):
+            resposta_http = self.enviar()
+
+        self.assertContains(resposta_http, "Escolha a equipe antes de importar.")
         self.assertFalse(Importacao.objects.exists())
 
     def test_com_varios_tipos_a_pessoa_escolhe(self):

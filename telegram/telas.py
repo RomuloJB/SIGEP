@@ -138,7 +138,8 @@ def empresas(vinculo, pagina=1):
 def empresa_escolhida(empresa):
     return Tela(
         "✅ Pronto! Agora os comandos usam a empresa <b>{}</b>.\n\n"
-        "Mande o comando de novo: /aprovacoes, /pedido ou /estoque.".format(escape(empresa.display_name))
+        "Mande o comando de novo (/aprovacoes, /pedido ou /estoque) ou envie o documento de novo.".format(
+            escape(empresa.display_name))
     )
 
 
@@ -379,7 +380,7 @@ def desenhar(importacao, nota=""):
 def opcoes_do_campo(importacao, campo, usuario, pagina=1):
     """Lista paginada das opções de um campo "escolha", com Voltar para o cartão."""
     lista = lista_paginada(
-        list(campo.opcoes(usuario)), pagina,
+        list(campo.opcoes(usuario, importacao.escopo)), pagina,
         rotulo=lambda opcao: str(opcao[1]),
         opcao=lambda opcao, _: "io:{}:{}:{}".format(importacao.pk, campo.codigo, opcao[0]),
         navegar=lambda numero: "il:{}:{}:{}".format(importacao.pk, campo.codigo, numero),

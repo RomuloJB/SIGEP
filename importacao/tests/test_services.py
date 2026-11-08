@@ -14,7 +14,7 @@ from importacao import services
 from importacao.importadores import REGISTRO, AjusteInvalido, ImportacaoInvalida
 from importacao.models import ArquivoTemporario, ConfiguracaoImportacao, Importacao, TransicaoInvalida
 
-from .base import TIPO, ImportacaoTestCase, NotaTesteSemItens, OutroImportador, png, resposta
+from .base import TIPO, ImportacaoTestCase, ImportadorComEscopo, NotaTesteSemItens, OutroImportador, png, resposta
 
 S = Importacao.Situacao
 CHAMAR_IA = "importacao.services.chamar_ia"
@@ -423,6 +423,75 @@ class RevisarTestCase(ImportacaoTestCase):
         self.assertFalse(services.marcar_falha(pronta, "fila fora do ar"))
         lendo.refresh_from_db()
         self.assertEqual((lendo.situacao, lendo.mensagem_erro), (S.FALHOU, "fila fora do ar"))
+
+
+class EscopoTestCase(ImportacaoTestCase):
+    """O escopo é do canal: o importacao guarda e repassa, e o importador diz se ainda vale."""
+    importadores = (ImportadorComEscopo,)
+
+    def setUp(self):
+        super().setUp()
+        patch = mock.patch(CHAMAR_IA, return_value=resposta(nome="Equipe de vendas"))
+        self.chamar_ia = patch.start()
+        self.addCleanup(patch.stop)
+
+    def iniciar(self, escopo):
+        return services.iniciar_importacao(self.ana, Importacao.Origem.SITE, escopo=escopo)
+
+    def test_sem_escopo_o_importador_recusa_ao_abrir(self):
+        with self.assertRaisesMessage(services.ImportacaoRecusada, "Escolha a equipe antes de importar."):
+            self.iniciar({})
+        self.assertFalse(Importacao.objects.exists())
+
+    def test_escopo_e_guardado_e_vai_para_o_contexto_o_rascunho_e_a_confirmacao(self):
+        importacao = self.iniciar({"equipe": "vendas"})
+        services.processar_importacao(importacao, png(), "image/png")
+        importacao.refresh_from_db()
+
+        self.assertEqual(importacao.escopo, {"equipe": "vendas"})
+        self.assertEqual(importacao.dados["equipe"], "vendas")
+        pedido = self.chamar_ia.call_args.kwargs["montar_pedido"](ConfiguracaoIA.obter())
+        self.assertIn("Equipe: vendas", pedido.texto)
+
+        services.confirmar_importacao(importacao, self.ana, "site")
+        self.assertTrue(Group.objects.filter(name="Equipe de vendas (vendas)").exists())
+
+    def test_escopo_que_deixou_de_valer_falha_a_leitura_sem_chamar_a_ia(self):
+        importacao = self.criar(tipo=ImportadorComEscopo.tipo, escopo={"equipe": "saiu"})
+
+        services.processar_importacao(importacao, png(), "image/png")
+
+        importacao.refresh_from_db()
+        self.assertEqual(importacao.situacao, S.FALHOU)
+        self.assertEqual(importacao.mensagem_erro, "Você não está mais nesta equipe.")
+        self.chamar_ia.assert_not_called()
+
+    def test_escopo_que_deixou_de_valer_bloqueia_corrigir_confirmar_e_ler_de_novo(self):
+        pronta = self.criar(tipo=ImportadorComEscopo.tipo, situacao=S.PRONTA, escopo={"equipe": "saiu"}, dados={"nome": "x"})
+        falhou = self.criar(tipo=ImportadorComEscopo.tipo, situacao=S.FALHOU, escopo={"equipe": "saiu"})
+
+        with self.assertRaisesMessage(services.AcaoInvalida, "Você não está mais nesta equipe."):
+            services.atualizar_dados(pronta, "nome", "Outro", self.ana, "site")
+        with self.assertRaisesMessage(services.AcaoInvalida, "Você não está mais nesta equipe."):
+            services.confirmar_importacao(pronta, self.ana, "site")
+        with self.assertRaisesMessage(services.ImportacaoRecusada, "Você não está mais nesta equipe."):
+            services.preparar_nova_tentativa(falhou, self.ana, "site")
+        # Só o grupo que a confirmação criaria: o "Manager" já vem do post_migrate do app usuarios
+        self.assertFalse(Group.objects.filter(name__startswith="x").exists())
+
+    def test_escolher_o_tipo_confere_o_escopo_do_importador_escolhido(self):
+        aguardando = self.criar(tipo="", situacao=S.AGUARDANDO_TIPO, escopo={})
+
+        with self.assertRaisesMessage(services.AcaoInvalida, "Escolha a equipe antes de importar."):
+            services.escolher_tipo(aguardando, ImportadorComEscopo.tipo, self.ana, "site")
+
+    def test_leitura_de_outro_escopo_nao_e_reaproveitada(self):
+        primeira = self.iniciar({"equipe": "vendas"})
+        services.processar_importacao(primeira, png(), "image/png")
+        segunda = self.iniciar({"equipe": "compras"})
+        services.processar_importacao(segunda, png(), "image/png")
+
+        self.assertEqual(self.chamar_ia.call_count, 2)
 
 
 class ManutencaoTestCase(ImportacaoTestCase):

@@ -48,10 +48,10 @@ class ImportadorTeste(Importador):
     versao_prompt = "2026-11.1"
     form_class = GrupoForm
 
-    def contexto(self, usuario):
+    def contexto(self, usuario, escopo):
         return "Quem envia: {}".format(usuario.username)
 
-    def normalizar(self, extracao, usuario):
+    def normalizar(self, extracao, usuario, escopo):
         if not extracao["documento_reconhecido"]:
             raise NaoReconhecido(extracao.get("motivo_nao_reconhecido") or "Não é uma nota.")
         avisos = [] if extracao.get("nome") else ["O nome não foi lido."]
@@ -63,7 +63,7 @@ class ImportadorTeste(Importador):
     def resumo(self, dados):
         return [("Nome", dados.get("nome") or "—"), ("Itens", str(len(dados.get("itens", []))))]
 
-    def ajustar(self, dados, codigo, valor, usuario):
+    def ajustar(self, dados, codigo, valor, usuario, escopo):
         if codigo != "nome" or not valor.strip():
             raise AjusteInvalido("Digite um nome.")
         dados["nome"] = valor.strip()
@@ -72,7 +72,7 @@ class ImportadorTeste(Importador):
     def dados_para_form(self, dados):
         return {"nome": dados.get("nome", "")}
 
-    def confirmar(self, dados, usuario, dados_form=None):
+    def confirmar(self, dados, usuario, escopo, dados_form=None):
         form = GrupoForm(data=dados_form if dados_form is not None else self.dados_para_form(dados))
         if not form.is_valid():
             raise ImportacaoInvalida(form.errors, form=form)
@@ -82,6 +82,33 @@ class ImportadorTeste(Importador):
 class OutroImportador(ImportadorTeste):
     tipo = "teste.outro"
     nome = "Outro documento"
+
+
+class ImportadorComEscopo(ImportadorTeste):
+    """Exige uma "equipe" no escopo, como o importador de pedidos exige a empresa."""
+    tipo = "teste.escopo"
+    nome = "Grupo de uma equipe"
+
+    def conferir_escopo(self, usuario, escopo):
+        if not escopo.get("equipe"):
+            return "Escolha a equipe antes de importar."
+        if escopo["equipe"] == "saiu":
+            return "Você não está mais nesta equipe."
+        return ""
+
+    def contexto(self, usuario, escopo):
+        return "Equipe: {}".format(escopo["equipe"])
+
+    def normalizar(self, extracao, usuario, escopo):
+        dados, avisos = super().normalizar(extracao, usuario, escopo)
+        dados["equipe"] = escopo["equipe"]
+        return dados, avisos
+
+    def confirmar(self, dados, usuario, escopo, dados_form=None):
+        grupo = super().confirmar(dados, usuario, escopo, dados_form)
+        grupo.name = "{} ({})".format(grupo.name, escopo["equipe"])
+        grupo.save()
+        return grupo
 
 
 def png(cor="white"):

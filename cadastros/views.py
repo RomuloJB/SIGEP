@@ -16,14 +16,12 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.functional import cached_property
 from django.forms.models import model_to_dict
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
+from django.http import HttpResponseRedirect
 from collections import Counter
 
-from decimal import Decimal, InvalidOperation
-import logging
+from decimal import Decimal
 
-from . import pedidos, relatorios
+from . import pedidos, relatorios, services
 from .models import Company, Client, Order, OrderStatus, Product, ProductOrder
 from .forms import ClientForm, CompanyForm, OrderForm, ProductForm
 from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, ProductOrderFilter, SalesReportFilter
@@ -34,8 +32,6 @@ from usuarios.views import ActiveCompanyRequiredMixin, FormErrorMessagesMixin
 
 # Define a permissão de um certo grupo para certas ações
 from braces.views import GroupRequiredMixin
-
-logger = logging.getLogger(__name__)
 
 
 #BaseLogin
@@ -124,28 +120,9 @@ class PedidosVisiveisMixin:
 
 
 def notificar_gerentes_pedido_enviado(request, pedido):
-    """RF07: avisa por e-mail os gerentes da empresa que um pedido aguarda aprovação."""
-    # Quem enviou não recebe o próprio aviso
-    destinatarios = list(
-        pedido.company.manager.exclude(pk=request.user.pk)
-        .exclude(email="")
-        .values_list("email", flat=True)
-    )
-    if not destinatarios:
-        return
-
-    contexto = {
-        "pedido": pedido,
-        "itens": pedido.product_orders.select_related("product"),
-        "url": request.build_absolute_uri(reverse("order-detail", args=[pedido.pk])),
-    }
-    assunto = "Pedido #{} aguardando aprovação — {}".format(pedido.pk, pedido.client.name)
-    corpo = render_to_string("cadastros/email/novo_pedido.txt", contexto)
-    try:
-        send_mail(assunto, corpo, None, destinatarios)
-    except Exception:
-        # O pedido já foi gravado: falha no SMTP fica no log, não vira erro 500
-        logger.exception("Falha ao enviar o e-mail do pedido #%s aos gerentes", pedido.pk)
+    """RF07: avisa por e-mail os gerentes da empresa que um pedido aguarda aprovação (cadastros/services.py)."""
+    url = request.build_absolute_uri(pedido.get_absolute_url())
+    services.notificar_gerentes_pedido_enviado(pedido, request.user, url)
 
 
 # View que lista as ccompanhias para o usuário que pertence ao sales_rep veja e ative ela na sessão
@@ -417,66 +394,13 @@ class PedidoFormMixin:
         ]
 
     def itens_validados(self):
-        """
-        Lê os itens do POST. O estoque só é conferido ao enviar: o rascunho não
-        reserva nada, e a conferência acontece quando ele passa para Pendente.
-        """
-        product_ids = self.request.POST.getlist("product_id[]")
-        quantities = self.request.POST.getlist("quantity[]")
-        discounts = self.request.POST.getlist("discount[]")
-
-        # Um SELECT ... FOR UPDATE só para todos os produtos do pedido (em vez de um por item)
-        ids_validos = {int(pid) for pid in product_ids if pid.isdigit()}
-        produtos = Product.objects.select_for_update().filter(
-            pk__in=ids_validos, company=self.active_company
-        ).in_bulk()
-
-        items = []
-        errors = []
-        vistos = set()
-
-        for pid, qty_str, disc_str in zip(product_ids, quantities, discounts):
-            product = produtos.get(int(pid)) if pid.isdigit() else None
-            if product is None:
-                errors.append(f"Produto inválido (id={pid}).")
-                continue
-
-            if product.pk in vistos:
-                errors.append(f"O produto '{product.name}' aparece mais de uma vez.")
-                continue
-            vistos.add(product.pk)
-
-            try:
-                qty = int(qty_str)
-                if qty <= 0:
-                    raise ValueError
-            except (ValueError, TypeError):
-                errors.append(f"Quantidade inválida para o produto '{product.name}'.")
-                continue
-
-            try:
-                discount = Decimal(disc_str) if disc_str else Decimal("0")
-                if discount < 0:
-                    raise InvalidOperation
-            except (InvalidOperation, TypeError):
-                errors.append(f"Desconto inválido para o produto '{product.name}'.")
-                continue
-
-            if self.enviando() and (product.stock or 0) < qty:
-                errors.append(
-                    f"Estoque insuficiente para '{product.name}': "
-                    f"disponível {product.stock}, solicitado {qty}."
-                )
-                continue
-
-            subtotal = product.unit_value * qty
-            if discount > subtotal:
-                errors.append(f"Desconto maior que o valor do item '{product.name}'.")
-                continue
-
-            items.append((product, qty, discount, subtotal - discount))
-
-        return items, errors
+        """Lê os itens do POST e confere pelo service (cadastros/services.py), com os produtos travados."""
+        linhas = zip(
+            self.request.POST.getlist("product_id[]"),
+            self.request.POST.getlist("quantity[]"),
+            self.request.POST.getlist("discount[]"),
+        )
+        return services.conferir_itens(self.active_company, linhas, self.enviando())
 
     def pode_salvar(self):
         return True
@@ -497,27 +421,14 @@ class PedidoFormMixin:
             form.add_error(None, "Adicione pelo menos um produto ao pedido.")
             return self.form_invalid(form)
 
-        form.instance.total_value = sum(line_total for _, _, _, line_total in items)
-        form.instance.status = OrderStatus.EM_DIGITACAO
-        response = super().form_valid(form)
-
-        # Rascunho editado: os itens são regravados (rascunho não tem estoque baixado)
-        self.object.product_orders.all().delete()
-        ProductOrder.objects.bulk_create([
-            ProductOrder(
-                order=self.object,
-                product=product,
-                quantity=qty,
-                unit_value=product.unit_value or 0,
-                discount=discount,
-                total_value=line_total,
-            )
-            for product, qty, discount, line_total in items
-        ])
+        # Quem grava o pedido é o service (o mesmo da importação), e não o form.save() do
+        # ModelFormMixin: por isso a empresa ativa entra aqui, como o ActiveCompanyRequiredMixin
+        # faria. O autor já veio do OrderCreate.
+        if not form.instance.company_id:
+            form.instance.company = self.active_company
+        self.object = services.salvar_pedido(form.instance, items, enviar=self.enviando())
 
         if self.enviando():
-            # O estoque já foi conferido com os produtos travados: aqui ele é baixado
-            pedidos.alterar_status(self.object, OrderStatus.PENDENTE)
             # Só depois do commit: se o pedido falhar, nenhum gerente é avisado
             pedido = self.object
             transaction.on_commit(lambda: notificar_gerentes_pedido_enviado(self.request, pedido))
@@ -525,7 +436,7 @@ class PedidoFormMixin:
         else:
             messages.success(self.request, "Pedido nº {} salvo em rascunho (Em digitação).".format(self.object.pk))
 
-        return response
+        return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse("order-detail", args=[self.object.pk])

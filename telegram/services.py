@@ -32,6 +32,18 @@ def empresa_do_vinculo(vinculo):
     return None
 
 
+def escopo_da_importacao(vinculo):
+    """
+    O escopo das importações pelo bot: {"empresa": id}, como a empresa ativa no site. None quando
+    a pessoa está em mais de uma empresa e ainda não escolheu a do bot; {} quando não está em
+    nenhuma (aí o importador que precisa da empresa recusa com a própria mensagem).
+    """
+    empresa = empresa_do_vinculo(vinculo)
+    if empresa is not None:
+        return {"empresa": empresa.pk}
+    return None if consultas.empresas_do_usuario(vinculo.usuario).exists() else {}
+
+
 def escolher_empresa(vinculo, empresa_id):
     """Grava a empresa do bot, se o usuário tiver acesso a ela. Devolve a empresa, ou None."""
     empresa = consultas.empresas_do_usuario(vinculo.usuario).filter(pk=empresa_id).first()

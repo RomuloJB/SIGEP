@@ -251,6 +251,11 @@ TELEGRAM_USO_INTERVALO_S = 60
 TAREFAS_BACKEND = os.getenv("TAREFAS_BACKEND", "imediata")
 TAREFAS_FILA = os.getenv("TAREFAS_FILA", "")
 
+# Importação de documentos: o que a tela do site copia da sessão para o escopo da importação,
+# como {nome no escopo: chave da sessão}. O importador de pedidos usa "empresa" (a empresa
+# ativa); no bot, quem preenche é telegram/importacoes.py, com a empresa do vínculo.
+IMPORTACAO_ESCOPO_DA_SESSAO = {"empresa": "active_company_id"}
+
 # Sem DEBUG, o Django não escreve os erros (tracebacks dos 500) no terminal.
 # Mandando para o stderr, eles aparecem nos logs do Google Cloud.
 if not DEBUG:

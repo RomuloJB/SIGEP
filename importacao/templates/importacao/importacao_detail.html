@@ -76,7 +76,7 @@
     <div class="card-body p-0">
         <table class="table mb-0">
             <tbody>
-                {% for rotulo, texto in resumo %}<tr><th class="w-50">{{ rotulo }}</th><td>{{ texto }}</td></tr>{% endfor %}
+                {% for rotulo, texto in resumo %}<tr><th class="w-50">{{ rotulo }}</th><td>{{ texto|linebreaksbr }}</td></tr>{% endfor %}
             </tbody>
         </table>
     </div>

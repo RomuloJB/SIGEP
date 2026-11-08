@@ -10,7 +10,7 @@ from .masks import (
     PHONE_DIGITS, PHONE_FORMAT,
     format_cnpj, format_cpf, format_cpf_cnpj, format_phone, only_digits,
 )
-from .models import MAX_PARCELAS, METODOS_BOLETO, Client, Company, Order, Product
+from .models import MAX_PARCELAS, METODOS_BOLETO, Client, Company, Order, PaymentMethod, Product
 
 
 class MaskedDigitsField(forms.CharField):
@@ -212,6 +212,96 @@ class OrderForm(forms.ModelForm):
             self.errors.pop("installments", None)
             cleaned_data["installments"] = 1
         return cleaned_data
+
+
+class PedidoImportadoForm(OrderForm):
+    """
+    Revisão de um pedido lido de um documento (cadastros/importacao.py): o cabeçalho do pedido,
+    o cliente novo (quando o cliente do documento ainda não está cadastrado) e a quantidade e o
+    desconto de cada item lido. O pedido importado é sempre de venda: o tipo não aparece.
+    `itens` é a lista do rascunho ({"produto_id", "rotulo", ...}); os produtos não mudam aqui.
+    """
+    # Campo do ClientForm -> campo deste form
+    CAMPOS_DO_CLIENTE = {
+        "name": "cliente_nome", "cnpj_cpf": "cliente_cnpj_cpf", "address": "cliente_endereco",
+        "city": "cliente_cidade", "uf": "cliente_uf",
+    }
+
+    cliente_nome = forms.CharField(label="Nome do cliente novo", max_length=100, required=False)
+    cliente_cnpj_cpf = CPFCNPJField(label="CNPJ/CPF do cliente novo", required=False)
+    cliente_endereco = forms.CharField(label="Endereço do cliente novo", max_length=100, required=False)
+    cliente_cidade = forms.CharField(label="Cidade do cliente novo", max_length=100, required=False)
+    cliente_uf = forms.CharField(label="UF do cliente novo", max_length=2, required=False, help_text="Exemplo: PR")
+
+    class Meta(OrderForm.Meta):
+        fields = ["client", "payment_method", "installments", "address", "city", "uf"]
+
+    def __init__(self, *args, empresa=None, itens=(), **kwargs):
+        super().__init__(*args, **kwargs)
+        self.empresa = empresa
+        self.itens = list(itens)
+        self.cliente_form = None
+        # O layout do OrderForm tem o tipo, que aqui não existe: os campos vão um embaixo do outro
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.disable_csrf = True
+
+        cliente = self.fields["client"]
+        cliente.queryset = Client.objects.filter(company=empresa) if empresa else Client.objects.none()
+        cliente.required = False
+        cliente.empty_label = "➕ Cliente novo (dados abaixo)"
+        cliente.help_text = "Escolha um cliente cadastrado ou deixe em “Cliente novo” para cadastrá-lo com os dados abaixo."
+        # O model tem Pix como padrão, então o select viria sem a opção vazia: aqui a forma
+        # que não foi lida fica em branco, para a pessoa escolher
+        self.fields["payment_method"].choices = [("", "---------")] + list(PaymentMethod.choices)
+
+        ids = [item["produto_id"] for item in self.itens]
+        estoque = dict(Product.objects.filter(company=empresa, pk__in=ids).values_list("pk", "stock")) if empresa else {}
+        for numero, item in enumerate(self.itens):
+            rotulo = item.get("rotulo", "")
+            self.fields["item_{}_quantidade".format(numero)] = forms.IntegerField(
+                label="Quantidade · {}".format(rotulo), min_value=0,
+                help_text="Estoque agora: {}. Zero tira o item do pedido.".format(estoque.get(item["produto_id"], 0)),
+            )
+            self.fields["item_{}_desconto".format(numero)] = forms.DecimalField(
+                label="Desconto (R$) · {}".format(rotulo), min_value=0, max_digits=10, decimal_places=2, required=False,
+                help_text="Desconto sobre o total do item. Exemplo: 5.00",
+            )
+
+    def clean_cliente_uf(self):
+        return (self.cleaned_data.get("cliente_uf") or "").strip().upper()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data.get("client"):
+            self._conferir_cliente_novo(cleaned_data)
+        return cleaned_data
+
+    def _conferir_cliente_novo(self, cleaned_data):
+        """Sem cliente escolhido, o cliente novo passa pelo ClientForm, o mesmo da tela de cadastro."""
+        dados = {campo: cleaned_data.get(nosso) or "" for campo, nosso in self.CAMPOS_DO_CLIENTE.items()}
+        self.cliente_form = ClientForm(data=dados)
+        if not self.cliente_form.is_valid():
+            for campo, mensagens in self.cliente_form.errors.items():
+                nosso = self.CAMPOS_DO_CLIENTE.get(campo)
+                if nosso and nosso not in self.errors:
+                    for mensagem in mensagens:
+                        self.add_error(nosso, mensagem)
+            return
+        repetido = Client.objects.filter(company=self.empresa, cnpj_cpf=self.cliente_form.cleaned_data["cnpj_cpf"]).first()
+        if repetido:
+            self.add_error("cliente_cnpj_cpf", 'O cliente "{}" já tem este CNPJ/CPF: escolha-o em Cliente.'.format(repetido.name))
+
+    def linhas(self):
+        """Os itens no formato do cadastros.services.conferir_itens. Quantidade zero tira o item."""
+        linhas = []
+        for numero, item in enumerate(self.itens):
+            quantidade = self.cleaned_data.get("item_{}_quantidade".format(numero))
+            if not quantidade:
+                continue
+            desconto = self.cleaned_data.get("item_{}_desconto".format(numero)) or 0
+            linhas.append((str(item["produto_id"]), str(quantidade), str(desconto)))
+        return linhas
 
 
 class UserSearchMultipleField(forms.ModelMultipleChoiceField):

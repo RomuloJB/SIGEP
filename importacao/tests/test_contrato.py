@@ -29,7 +29,7 @@ class CampoTestCase(SimpleTestCase):
     def test_escolha_precisa_de_opcoes(self):
         with self.assertRaises(ValueError):
             Campo("cat", "Categoria", "escolha")
-        Campo("cat", "Categoria", "escolha", opcoes=lambda usuario: [(1, "Mercado")])
+        Campo("cat", "Categoria", "escolha", opcoes=lambda usuario, escopo: [(1, "Mercado")])
 
 
 class RegistroTestCase(SimpleTestCase):

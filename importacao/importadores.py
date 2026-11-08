@@ -6,6 +6,11 @@ Importador e é marcada com @registrar. O app importacao descobre esses módulos
 iniciar o Django (ImportacaoConfig.ready) e nunca importa um app de domínio: só conhece os
 importadores pelo REGISTRO.
 
+Escopo: o que o canal sabia ao abrir a importação, guardado em Importacao.escopo e repassado a
+todos os métodos (ex.: {"empresa": 3}, a empresa ativa no site ou a empresa do bot). O app
+importacao não interpreta o escopo; o importador confere em conferir_escopo() se ele ainda vale
+para a pessoa, e o services.py chama essa conferência antes de ler, corrigir e confirmar.
+
 Regras para quem escreve um importador:
 - Ids só de listas enviadas no contexto(). Id fora da lista vira vazio + aviso.
 - Valores em dinheiro e datas chegam como texto e são convertidos no normalizar(). Se a
@@ -56,7 +61,7 @@ class Campo:
     codigo: str
     rotulo: str
     tipo: str
-    opcoes: Callable | None = None  # (usuario) -> [(id, nome)], só para "escolha"
+    opcoes: Callable | None = None  # (usuario, escopo) -> [(id, nome)], só para "escolha"
     obrigatorio: bool = False
 
     def __post_init__(self):
@@ -81,11 +86,18 @@ class Importador:
     versao_prompt = ""    # obrigatório: "AAAA-MM.N"; suba a cada mudança nas instruções
     form_class = None     # o form de cadastro do app, usado na revisão pelo site
 
-    def contexto(self, usuario):
+    def conferir_escopo(self, usuario, escopo):
+        """
+        O escopo ainda vale para a pessoa? Devolve "" quando sim, ou a mensagem de recusa (ex.:
+        "Escolha a empresa antes de importar."). Chamado ao abrir, ler, corrigir e confirmar.
+        """
+        return ""
+
+    def contexto(self, usuario, escopo):
         """Texto com os dados do banco que a IA precisa ver (ex.: lista de produtos com id e nome). Só o mínimo."""
         return ""
 
-    def normalizar(self, extracao, usuario):
+    def normalizar(self, extracao, usuario, escopo):
         """
         Obrigatório. Transforma a extracao (o JSON do esquema) no rascunho: devolve (dados, avisos).
         Converte textos em valores, confere os ids no banco e, se o documento não for do tipo
@@ -101,7 +113,7 @@ class Importador:
         """O que mostrar do rascunho: lista de (rótulo, texto)."""
         return []
 
-    def ajustar(self, dados, codigo, valor, usuario):
+    def ajustar(self, dados, codigo, valor, usuario, escopo):
         """
         Aplica a correção de um campo e devolve (dados, mensagem). Mudar um campo pode mudar
         outro (regra do domínio). Valor que não serve: levanta AjusteInvalido(mensagem).
@@ -114,17 +126,21 @@ class Importador:
         """O rascunho no formato do form do app (initial da tela Revisar)."""
         return dict(dados)
 
-    def form(self, usuario, data=None, initial=None):
-        """O form do app, para a tela Revisar. Sobrescreva se o form precisar de mais argumentos."""
+    def form(self, usuario, escopo, data=None, initial=None):
+        """
+        O form do app, para a tela Revisar. `initial` é sempre dados_para_form(dados), também no
+        POST: o form pode montar campos a partir do rascunho. Sobrescreva se precisar de mais argumentos.
+        """
         if self.form_class is None:
             return None
         return self.form_class(data=data, initial=initial)
 
-    def confirmar(self, dados, usuario, dados_form=None):
+    def confirmar(self, dados, usuario, escopo, dados_form=None):
         """
         Obrigatório. Cria o registro e devolve o objeto criado. Valida com o form do app e cria
         pelo services.py do app. dados_form vem da tela Revisar do site (o que a pessoa enviou
         no form); sem ele, use dados_para_form(dados). Inválido: levanta ImportacaoInvalida(erros, form).
+        Para o bot apontar o botão certo, as chaves de `erros` são os códigos dos campos().
         """
         raise NotImplementedError
 

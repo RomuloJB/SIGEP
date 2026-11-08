@@ -133,10 +133,11 @@ implementar isso, é trabalho novo, não correção de bug.
   o template inclui `cadastros/form-filter.html` (abaixo do título) e
   `cadastros/paginacao.html` (após a tabela), que preserva os filtros na URL.
   Reuse-os em vez de reimplementar paginação ou copiar o formulário de filtros.
-- **Cálculo de valores de pedido:** é feito no backend (`OrderCreate.form_valid`,
-  com `transaction.atomic` e `select_for_update` no produto para evitar
-  condição de corrida no estoque). Nunca confie em valores de total vindos do
-  formulário/JS sem recalcular no servidor.
+- **Cálculo de valores de pedido:** é feito no backend, em `cadastros/services.py`
+  (`conferir_itens` com `select_for_update` nos produtos e `salvar_pedido`), chamado
+  dentro de `transaction.atomic` pela tela de pedido (`PedidoFormMixin.form_valid`) e
+  pelo importador de pedidos (`cadastros/importacao.py`). Nunca confie em valores de
+  total vindos do formulário/JS sem recalcular no servidor.
 - **Estoque:** é decrementado dentro da mesma transação da criação do pedido.
   Qualquer alteração no fluxo de pedidos precisa preservar essa atomicidade.
 

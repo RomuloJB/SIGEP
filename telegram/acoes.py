@@ -181,7 +181,7 @@ def _escolher_opcao(vinculo, argumentos, callback):  # io:<importação>:<campo>
     importacao = _importacao(vinculo, numero, callback)
     campo = _campo(importacao, codigo)
     # Só vale uma opção da lista: um cliente modificado pode mandar qualquer id
-    opcao = next((opcao for opcao in campo.opcoes(vinculo.usuario) if str(opcao[0]) == escolhida), None)
+    opcao = next((opcao for opcao in campo.opcoes(vinculo.usuario, importacao.escopo) if str(opcao[0]) == escolhida), None)
     if opcao is None:
         raise telas.Recusa(BOTAO_ANTIGO)
     importacao, mensagem = _executar(

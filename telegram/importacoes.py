@@ -11,12 +11,13 @@ from importacao import services as importacao_services
 from importacao.models import Importacao
 from importacao.tarefas import enfileirar, tarefa
 
-from . import arquivos, telas
+from . import arquivos, services, telas
 from .cliente import contexto_do_log, obter_cliente
 from .models import AlbumTelegram, ImportacaoTelegram
 
 TAREFA_LER = "telegram.processar_importacao"
 AVISO_ALBUM = "📎 Recebi várias fotos de uma vez: vou ler só a primeira. Para importar as outras, envie uma de cada vez."
+AVISO_EMPRESA = "📎 Antes de importar, diga de qual empresa é o documento. Depois, envie o documento de novo."
 MSG_DOWNLOAD = "Não consegui baixar o arquivo do Telegram. Tente de novo."
 SI = Importacao.Situacao
 
@@ -47,9 +48,15 @@ def receber_arquivo(mensagem, vinculo, registro):
     if isinstance(midia, str):
         cliente.enviar(chat_id, escape(midia, quote=False), contexto=contexto)
         return
+    escopo = services.escopo_da_importacao(vinculo)
+    if escopo is None:
+        # Mais de uma empresa e nenhuma escolhida: o documento é de qual? Escolhe e manda de novo
+        tela = telas.empresas(vinculo)
+        cliente.enviar(chat_id, AVISO_EMPRESA + "\n\n" + tela.texto, tela.teclado, contexto=contexto)
+        return
     try:
         importacao = importacao_services.iniciar_importacao(
-            vinculo.usuario, Importacao.Origem.TELEGRAM, observacao=mensagem.get("caption", ""),
+            vinculo.usuario, Importacao.Origem.TELEGRAM, escopo=escopo, observacao=mensagem.get("caption", ""),
             arquivo_nome=midia["nome"], arquivo_mime=midia["mime"], arquivo_tamanho=midia["tamanho"],
         )
     except importacao_services.ImportacaoRecusada as erro:
