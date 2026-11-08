@@ -1,0 +1,106 @@
+{% extends "cadastros/form.html" %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'importacao:lista' %}">Importações</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Importação #{{ object.pk }}</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fas fa-file-import"></i> Importação #{{ object.pk }}</h1>
+        <p class="page-subtitle">{{ object.nome_do_tipo|capfirst }} · enviada em {{ object.criado_em|date:"d/m/Y H:i" }} pelo {{ object.get_origem_display|lower }}</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" href="{% url 'importacao:lista' %}"><i class="fas fa-arrow-left"></i> Voltar</a>
+        {% if object.pode_descartar %}
+        <form method="post" action="{% url 'importacao:descartar' object.pk %}" class="form-confirmar d-inline"
+              data-titulo="Descartar importação" data-mensagem="Descartar a importação nº {{ object.pk }}? Nada será cadastrado."
+              data-botao="Descartar" data-classe="btn-danger">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger"><i class="fas fa-trash"></i> Descartar</button>
+        </form>
+        {% endif %}
+        {% if object.situacao == 'pronta' %}
+        <a class="btn btn-primary" href="{% url 'importacao:revisar' object.pk %}"><i class="fas fa-check"></i> Revisar e confirmar</a>
+        {% endif %}
+        {% if url_do_registro %}
+        <a class="btn btn-primary" href="{{ url_do_registro }}"><i class="fas fa-eye"></i> Ver registro criado</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-circle-info"></i> Situação</h2></div>
+    <div class="card-body">
+        <p class="mb-2">{% include 'importacao/situacao.html' with importacao=object %}</p>
+
+        {% if object.situacao == 'processando' %}
+        <p class="mb-0 text-muted"><span class="spinner-border spinner-border-sm me-1" role="status"></span> Lendo o documento. Esta página se atualiza sozinha.</p>
+        {% elif object.situacao == 'aguardando_tipo' %}
+        <form method="post" action="{% url 'importacao:escolher-tipo' object.pk %}" class="mt-3">
+            {% csrf_token %}
+            {{ tipo_form|crispy }}
+            <button type="submit" class="btn btn-primary btnLoading"><i class="fas fa-paper-plane"></i> Ler o documento</button>
+        </form>
+        {% elif object.situacao == 'confirmada' %}
+        <p class="mb-0">Confirmada em {{ object.confirmada_em|date:"d/m/Y H:i" }}{% if object.objeto %}: {{ object.objeto }}{% endif %}.</p>
+        {% endif %}
+
+        {% if object.mensagem_erro %}
+        <div class="alert alert-warning mt-3 mb-0"><i class="fas fa-triangle-exclamation me-1"></i> {{ object.mensagem_erro }}</div>
+        {% endif %}
+
+        {% if arquivo_form %}
+        <form method="post" action="{% url 'importacao:tentar-de-novo' object.pk %}" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+            <p class="text-muted small mb-2">O arquivo não fica guardado: para ler de novo, envie-o outra vez.</p>
+            {{ arquivo_form|crispy }}
+            <button type="submit" class="btn btn-primary btnLoading"><i class="fas fa-rotate-right"></i> Tentar de novo</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if object.avisos %}
+<div class="alert alert-warning mb-4">
+    <h2 class="h6 mb-2"><i class="fas fa-triangle-exclamation me-1"></i> Confira com atenção</h2>
+    <ul class="mb-0">{% for aviso in object.avisos %}<li>{{ aviso }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+{% if resumo %}
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-file-lines"></i> O que foi lido</h2></div>
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <tbody>
+                {% for rotulo, texto in resumo %}<tr><th class="w-50">{{ rotulo }}</th><td>{{ texto }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-paperclip"></i> Arquivo</h2></div>
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <tbody>
+                <tr><th class="w-50">Nome</th><td>{{ object.arquivo_nome|default:"—" }}</td></tr>
+                <tr><th>Tipo</th><td>{{ object.arquivo_mime|default:"—" }}</td></tr>
+                <tr><th>Tamanho</th><td>{% if object.arquivo_tamanho %}{{ object.arquivo_tamanho|filesizeformat }}{% else %}—{% endif %}</td></tr>
+                <tr><th>Observação</th><td>{{ object.observacao|default:"—" }}</td></tr>
+                <tr><th>Leituras</th><td>{{ object.tentativas }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock cadastros_content %}
+
+{% block scripts %}
+{% if object.situacao == 'processando' %}
+<script>setTimeout(function () { location.reload(); }, 3000);</script>
+{% endif %}
+{% endblock scripts %}

@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .views import (
-    ConectarTelegramView, ConexaoTelegramView, ConfiguracaoTelegramUpdate, DesconectarTelegramView,
+    ConectarTelegramView, ConexaoTelegramView, ConfiguracaoTelegramUpdate, DesconectarTelegramView, ManutencaoView,
     MensagemTelegramDetail, MensagemTelegramList, RemetenteTelegramLiberar, RemetenteTelegramList, webhook,
 )
 
@@ -16,5 +16,7 @@ urlpatterns = [
     path("remetentes/", RemetenteTelegramList.as_view(), name="remetente-list"),
     path("remetentes/<int:pk>/liberar/", RemetenteTelegramLiberar.as_view(), name="remetente-liberar"),
     path("configuracao/", ConfiguracaoTelegramUpdate.as_view(), name="configuracao"),
+    # Chamadas por servidores (Telegram e cron): sem login e sem redirecionamento, que quebraria o POST
     path("webhook/", webhook, name="webhook"),
+    path("manutencao/", ManutencaoView.as_view(), name="manutencao"),
 ]

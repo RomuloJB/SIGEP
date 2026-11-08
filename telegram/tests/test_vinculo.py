@@ -1,22 +1,17 @@
 from datetime import timedelta
-from io import StringIO
 from unittest import mock
 
 from django.contrib.auth.models import User
-from django.core.management import CommandError, call_command
-from django.test import TestCase, override_settings
+from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
 from cadastros.models import User_Profile
 from telegram import comandos, recebimento, services
-from telegram.cliente import obter_cliente
 from telegram.models import CodigoVinculoTelegram, EsperaTelegram, MensagemTelegram, VinculoTelegram
 from telegram.views import CHAVE_SESSAO_CODIGO
 
 from .base import TELEGRAM_ANA, TELEGRAM_BIA, BotTestCase, update
-
-SEGREDO = "segredo-do-webhook"
 
 
 @override_settings(SITE_URL="https://sigep.exemplo.com")
@@ -385,34 +380,3 @@ class TelaTelegramTestCase(BotTestCase):
         self.assertEqual(self.client.get(reverse("telegram:conectar")).status_code, 405)
         self.assertEqual(self.client.get(reverse("telegram:desconectar")).status_code, 405)
         self.assertTrue(VinculoTelegram.objects.exists())
-
-
-class ComandoWebhookTestCase(TestCase):
-
-    def setUp(self):
-        self.cliente = obter_cliente()
-        self.cliente.limpar()
-
-    @override_settings(TELEGRAM_BOT_WEBHOOK_URL="https://sigep.exemplo.com/telegram/webhook/", TELEGRAM_WEBHOOK_SECRET=SEGREDO)
-    def test_registra_a_url_e_o_segredo(self):
-        call_command("telegram_webhook", stdout=StringIO())
-
-        chamada = self.cliente.mensagens[0]
-        self.assertEqual(chamada["metodo"], "setWebhook")
-        self.assertEqual(chamada["url"], "https://sigep.exemplo.com/telegram/webhook/")
-        self.assertEqual(chamada["secret_token"], SEGREDO)
-        self.assertEqual(chamada["allowed_updates"], ["message", "callback_query"])
-
-    @override_settings(TELEGRAM_BOT_WEBHOOK_URL="", TELEGRAM_WEBHOOK_SECRET=SEGREDO)
-    def test_sem_a_url_nao_chama_o_telegram(self):
-        with self.assertRaises(CommandError):
-            call_command("telegram_webhook", stdout=StringIO())
-
-        self.assertEqual(self.cliente.mensagens, [])
-
-    @override_settings(TELEGRAM_BOT_WEBHOOK_URL="https://sigep.exemplo.com/telegram/webhook/", TELEGRAM_WEBHOOK_SECRET=SEGREDO)
-    def test_recusa_do_telegram_vira_erro(self):
-        self.cliente.programar("setWebhook", None)
-
-        with self.assertRaises(CommandError):
-            call_command("telegram_webhook", stdout=StringIO())

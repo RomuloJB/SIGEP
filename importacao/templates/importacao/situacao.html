@@ -1,0 +1,7 @@
+{% comment %}
+Selo da situação de uma importação. Uso, com `importacao` no contexto:
+    {% include 'importacao/situacao.html' %}
+{% endcomment %}
+<span class="{% if importacao.situacao == 'pronta' %}badge-soft-warning{% elif importacao.situacao == 'confirmada' %}badge-soft-success{% elif importacao.situacao == 'processando' or importacao.situacao == 'aguardando_tipo' %}badge-soft-info{% elif importacao.situacao == 'falhou' or importacao.situacao == 'nao_reconhecida' or importacao.situacao == 'bloqueada' %}badge-soft-danger{% else %}badge-soft-neutral{% endif %}">
+    {{ importacao.get_situacao_display }}
+</span>

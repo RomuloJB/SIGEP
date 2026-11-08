@@ -6,6 +6,16 @@ handlers:
 - url: /static
   static_dir: static_gcloud/
   secure: always
+# O cron chama esta rota direto, sem seguir o redirecionamento do secure: always.
+# Ela é protegida pelo cabeçalho X-Appengine-Cron, que o App Engine tira das requisições de fora.
+- url: /telegram/manutencao/
+  script: auto
+  secure: optional
+# O Cloud Tasks entrega as tarefas da importação direto, sem seguir redirecionamento.
+# A rota é protegida pelo cabeçalho X-Tarefas-Segredo.
+- url: /importacao/tarefas/.*
+  script: auto
+  secure: optional
 - url: /.*
   script: auto
   secure: always

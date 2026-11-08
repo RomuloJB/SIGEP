@@ -1,0 +1,38 @@
+{% extends "cadastros/form.html" %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'importacao:lista' %}">Importações</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Nova importação</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fas fa-file-import"></i> Nova importação</h1>
+        <p class="page-subtitle">Envie a foto ou o PDF do documento. Nada é cadastrado antes de você revisar e confirmar.</p>
+    </div>
+</div>
+
+{% if not tem_tipos %}
+<div class="alert alert-info">
+    <i class="fas fa-circle-info me-1"></i> Ainda não há nenhum tipo de documento disponível para importar.
+</div>
+{% else %}
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form needs-validation" action="" method="POST" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="cadastros-actions mt-4">
+                {% url 'importacao:lista' as url_da_lista %}
+                {% include 'cadastros/botao-voltar.html' with fallback=url_da_lista %}
+                <button type="submit" class="btn btn-primary btnLoading">
+                    <i class="fas fa-paper-plane"></i> Enviar para leitura
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endblock cadastros_content %}

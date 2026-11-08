@@ -36,6 +36,14 @@ NAO_CONECTADO = "Este Telegram não está conectado a nenhum usuário."
 CANCELADO = "Pronto, cancelei a pergunta."
 NADA_PARA_CANCELAR = "Não há nada para cancelar."
 
+# Perfil do bot no Telegram, aplicado pelo comando telegram_definir_webhook. Texto puro, sem HTML.
+NOME_DO_BOT = "SIGEP"  # até 64 caracteres
+DESCRICAO_DO_BOT = (  # até 512: aparece na conversa vazia, antes do botão "Iniciar"
+    "Bot do SIGEP, o sistema de gestão de pedidos. " + SOBRE + "\n\n"
+    "Para usar, conecte o seu usuário pelo site: menu do usuário > Telegram > Conectar Telegram."
+)
+DESCRICAO_CURTA_DO_BOT = "Pedidos, aprovações e estoque do SIGEP pelo Telegram."  # até 120: perfil do bot
+
 
 def primeiro_nome(usuario):
     """O cadastro guarda o nome no perfil; usuários do createsuperuser não têm perfil."""

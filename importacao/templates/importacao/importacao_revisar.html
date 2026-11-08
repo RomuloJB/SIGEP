@@ -1,0 +1,58 @@
+{% extends "cadastros/form.html" %}
+{% load crispy_forms_tags %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'importacao:lista' %}">Importações</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'importacao:detalhe' object.pk %}">Importação #{{ object.pk }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Revisar</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="fas fa-file-import"></i> Revisar importação #{{ object.pk }}</h1>
+        <p class="page-subtitle">{{ object.nome_do_tipo|capfirst }}. Confira o que a IA leu e corrija antes de confirmar: só a confirmação cria o registro.</p>
+    </div>
+</div>
+
+{% if object.avisos %}
+<div class="alert alert-warning mb-4">
+    <h2 class="h6 mb-2"><i class="fas fa-triangle-exclamation me-1"></i> Confira com atenção</h2>
+    <ul class="mb-0">{% for aviso in object.avisos %}<li>{{ aviso }}</li>{% endfor %}</ul>
+</div>
+{% endif %}
+
+{% if resumo %}
+<div class="card list-card mb-4">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-file-lines"></i> O que foi lido</h2></div>
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <tbody>
+                {% for rotulo, texto in resumo %}<tr><th class="w-50">{{ rotulo }}</th><td>{{ texto }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{# Fora do form principal: forms não podem ficar um dentro do outro #}
+<form id="form-descartar" method="post" action="{% url 'importacao:descartar' object.pk %}" class="form-confirmar d-none"
+      data-titulo="Descartar importação" data-mensagem="Descartar a importação nº {{ object.pk }}? Nada será cadastrado."
+      data-botao="Descartar" data-classe="btn-danger">
+    {% csrf_token %}
+</form>
+
+<div class="card cadastros-card">
+    <div class="card-body">
+        <form class="cadastros-form needs-validation" action="" method="POST" novalidate>
+            {% csrf_token %}
+            {% if form %}{{ form|crispy }}{% endif %}
+            <div class="cadastros-actions mt-4">
+                <a class="btn btn-outline-secondary" href="{% url 'importacao:detalhe' object.pk %}"><i class="fas fa-arrow-left"></i> Voltar</a>
+                <button type="submit" form="form-descartar" class="btn btn-outline-danger"><i class="fas fa-trash"></i> Descartar</button>
+                <button type="submit" class="btn btn-primary btnLoading"><i class="fas fa-check"></i> Confirmar e cadastrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock cadastros_content %}

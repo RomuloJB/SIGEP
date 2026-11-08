@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'usuarios.apps.UsuariosConfig',
     'ia.apps.IaConfig',
     'telegram.apps.TelegramConfig',
+    'importacao.apps.ImportacaoConfig',
     'erros.apps.ErrosConfig',
 ]
 
@@ -243,6 +244,12 @@ TELEGRAM_RETRY_MAX_S = 5
 TELEGRAM_REPROCESSAR_APOS_S = 120
 TELEGRAM_AVISO_ERRO_MIN = 10
 TELEGRAM_USO_INTERVALO_S = 60
+
+# Fila de tarefas (importacao/tarefas.py): "imediata" roda depois do commit, no mesmo processo
+# (desenvolvimento); "cloud_tasks" agenda no Cloud Tasks (produção), na fila TAREFAS_FILA,
+# no formato projects/<projeto>/locations/<região>/queues/<fila>.
+TAREFAS_BACKEND = os.getenv("TAREFAS_BACKEND", "imediata")
+TAREFAS_FILA = os.getenv("TAREFAS_FILA", "")
 
 # Sem DEBUG, o Django não escreve os erros (tracebacks dos 500) no terminal.
 # Mandando para o stderr, eles aparecem nos logs do Google Cloud.

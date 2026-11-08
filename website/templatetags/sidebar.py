@@ -1,16 +1,27 @@
 from django import template
 from django.urls import reverse
 
+from importacao.models import Importacao
+
 register = template.Library()
 
 
-def item(rotulo, rota, icone, ativo_em=None):
+def item(rotulo, rota, icone, ativo_em=None, emblema=None):
     """
     Opção do menu. `icone` é o id em static/assets/icons/sidebar.svg. `ativo_em` são
     os começos de nome de rota que marcam a opção como atual; assim "client-" cobre
-    a listagem e também as telas de criar, editar e detalhe.
+    a listagem e também as telas de criar, editar e detalhe. `emblema` é a chave de
+    EMBLEMAS: o número aparece ao lado do rótulo quando for maior que zero.
     """
-    return {"rotulo": rotulo, "rota": rota, "icone": icone, "ativo_em": ativo_em or (rota,)}
+    return {"rotulo": rotulo, "rota": rota, "icone": icone, "ativo_em": ativo_em or (rota,), "emblema": emblema}
+
+
+# Contadores dos emblemas, calculados só para as opções que aparecem no menu
+EMBLEMAS = {
+    "importacoes_para_revisar": lambda user: Importacao.objects.filter(
+        criado_por=user, situacao=Importacao.Situacao.PRONTA,
+    ).count(),
+}
 
 
 INICIO = ("Início", [item("Dashboard", "index", "layout-dashboard")])
@@ -19,6 +30,7 @@ PAGINAS = [
     item("Clientes", "client-list", "users", ("client-",)),
     item("Produtos", "product-list", "package", ("product-",)),
     item("Pedidos", "order-list", "shopping-bag", ("order-", "productorder-")),
+    item("Importações", "importacao:lista", "file-up", ("importacao:lista", "importacao:nova", "importacao:detalhe", "importacao:revisar"), emblema="importacoes_para_revisar"),
 ]
 ADICIONAIS = ("Adicionais", [
     item("Relatório de vendas", "sales-report", "chart-no-axes-combined"),
@@ -34,6 +46,7 @@ ADMINISTRACAO = ("Administração", [
     item("Log do Telegram", "telegram:mensagem-list", "list-checks", ("telegram:mensagem-",)),
     item("Remetentes do Telegram", "telegram:remetente-list", "users-round", ("telegram:remetente-",)),
     item("Configuração do Telegram", "telegram:configuracao", "settings"),
+    item("Configuração da importação", "importacao:configuracao", "settings"),
 ])
 VISITANTE = ("Acesso", [
     item("Entrar", "login", "log-in"),
@@ -60,7 +73,12 @@ def menu_lateral(context):
         {
             "titulo": titulo,
             "itens": [
-                {**opcao, "url": reverse(opcao["rota"]), "ativo": rota_atual.startswith(opcao["ativo_em"])}
+                {
+                    **opcao,
+                    "url": reverse(opcao["rota"]),
+                    "ativo": rota_atual.startswith(opcao["ativo_em"]),
+                    "emblema": EMBLEMAS[opcao["emblema"]](request.user) if opcao["emblema"] else 0,
+                }
                 for opcao in opcoes
             ],
         }

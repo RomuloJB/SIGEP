@@ -1,0 +1,7 @@
+# Tarefas agendadas do App Engine. O "gcloud app deploy" sozinho NÃO publica este arquivo:
+#   gcloud app deploy cron.yaml
+cron:
+- description: "Limpeza diária do log do Telegram"
+  url: /telegram/manutencao/
+  schedule: every day 03:00
+  timezone: America/Sao_Paulo

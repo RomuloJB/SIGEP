@@ -44,6 +44,7 @@ license/      → app "casca", models comentados (planejamento de licenciamento/
                 não implementado — ver Seção 9)
 ia/           → app de IA: chamada a modelos (Gemini), cota mensal, auditoria
 telegram/     → bot do Telegram: vínculo com o usuário, cliente da API (cliente.py), log e limites
+importacao/   → foto/PDF lido pela IA vira rascunho; importadores de cada app em <app>/importacao.py
 erros/        → páginas de erro (400/403/404/500/CSRF) e página estática do App Engine
 static/       → JS/CSS globais (masks.js, order-scripts.js, dashboard-charts.js…)
 ```

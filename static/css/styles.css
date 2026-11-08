@@ -11241,6 +11241,20 @@ body {
 .app-sidebar__link.is-ativo .app-sidebar__icone {
   color: var(--sidebar-verde-claro);
 }
+/* Emblema com um número (ex.: importações para revisar) */
+.app-sidebar__emblema {
+  flex-shrink: 0;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: var(--sidebar-verde);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  text-align: center;
+}
 .app-sidebar__rotulo {
   flex: 1;
   min-width: 0;
@@ -11315,6 +11329,17 @@ body {
   }
   .sidebar-recolhida .app-sidebar__nav {
     padding: 0.75rem 0.5rem;
+  }
+  /* Recolhida, o emblema vira um selo no canto do ícone */
+  .sidebar-recolhida .app-sidebar__emblema {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 1rem;
+    height: 1rem;
+    padding: 0 0.25rem;
+    font-size: 0.6rem;
+    line-height: 1rem;
   }
   .sidebar-recolhida .app-sidebar__grupo + .app-sidebar__grupo {
     margin-top: 0.75rem;

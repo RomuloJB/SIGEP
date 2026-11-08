@@ -25,23 +25,37 @@ python manage.py test --keepdb
 # ===== Uma vez por máquina: preparar o ngrok (bot do Telegram) =====
 winget install ngrok.ngrok
 ngrok config add-authtoken SEU_TOKEN_DO_NGROK
+
 # Se o terminal disser que não conhece o ngrok, rode esta linha no terminal antes de usá-lo
 $env:Path += ";$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Ngrok.Ngrok_Microsoft.Winget.Source_8wekyb3d8bbwe"
 
 # ===== Para testar o bot pelo celular (dois terminais) =====
 # Terminal 1
 python manage.py runserver
+
 # Terminal 2: túnel público para o Telegram chegar ao seu computador
 ngrok http 8000
 
 # Só se o endereço do ngrok mudar: atualize ALLOWED_HOSTS, SITE_URL e
 # TELEGRAM_BOT_WEBHOOK_URL no .env, reinicie o runserver e registre o webhook de novo
-python manage.py telegram_webhook
+python manage.py telegram_definir_webhook
+
+# Conferir o que o Telegram tem registrado (URL, pendentes, último erro)
+python manage.py telegram_definir_webhook --info
+
+# Limpar o log do Telegram pelos prazos da configuração (no App Engine o cron.yaml faz isso todo dia)
+python manage.py telegram_limpar
+
+# Importação: expira rascunhos esquecidos, destrava leituras presas e apaga as encerradas antigas
+python manage.py importacao_manutencao
 
 # Antes do deploy gerar os arquivos estáticos com o comando abaixo
 python manage.py collectstatic
 
 # Comando para fazer o deploy no Google Cloud
 gcloud app deploy
+
+# Só quando o cron.yaml mudar (o deploy acima não publica o cron)
+gcloud app deploy cron.yaml
 PADRAOifPADRAO
 Y

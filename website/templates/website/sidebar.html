@@ -26,6 +26,7 @@ data-rotulo vira a dica (title) de cada link enquanto a sidebar está recolhida.
                     <a class="app-sidebar__link{% if item.ativo %} is-ativo{% endif %}" href="{{ item.url }}" data-rotulo="{{ item.rotulo }}"{% if item.ativo %} aria-current="page"{% endif %}>
                         <svg class="app-sidebar__icone" aria-hidden="true"><use href="{{ icones }}#{{ item.icone }}"></use></svg>
                         <span class="app-sidebar__rotulo">{{ item.rotulo }}</span>
+                        {% if item.emblema %}<span class="app-sidebar__emblema" title="{{ item.emblema }} para revisar">{{ item.emblema }}<span class="visually-hidden"> para revisar</span></span>{% endif %}
                     </a>
                 </li>
                 {% endfor %}

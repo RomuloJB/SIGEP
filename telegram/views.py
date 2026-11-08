@@ -1,11 +1,12 @@
 import hmac
 import json
+import os
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import OuterRef, Subquery
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views import View
@@ -17,13 +18,15 @@ from django.views.generic import DetailView, TemplateView, UpdateView
 from cadastros.views import PaginatedFilterView
 from usuarios.views import BaseLoginMixin, SuperuserRequiredMixin
 
-from . import limites, recebimento, services
+from . import limites, manutencao, recebimento, services
 from .filters import MensagemTelegramFilter, RemetenteTelegramFilter
 from .forms import ConfiguracaoTelegramForm
 from .models import CodigoVinculoTelegram, ConfiguracaoTelegram, LimiteTelegram, MensagemTelegram, VinculoTelegram
 
 CHAVE_SESSAO_CODIGO = "telegram_codigo"
 CABECALHO_SEGREDO = "X-Telegram-Bot-Api-Secret-Token"
+CABECALHO_CRON = "X-Appengine-Cron"
+CABECALHO_TAREFAS = "X-Tarefas-Segredo"  # o mesmo da manutenção do app ia
 
 
 # ─── Tela "Telegram" (qualquer usuário logado, só o próprio vínculo) ──────────
@@ -153,3 +156,28 @@ def webhook(request):
         return HttpResponseBadRequest("JSON inválido.")
     recebimento.receber(update)
     return HttpResponse()
+
+
+# ─── Manutenção (rota chamada pelo cron diário) ───────────────────────────────
+
+@sensitive_variables("esperado", "recebido")
+def _manutencao_autorizada(request):
+    """
+    Vale o cabeçalho X-Appengine-Cron só no App Engine, que o remove das requisições de fora;
+    em qualquer lugar, vale o X-Tarefas-Segredo igual ao TAREFAS_SEGREDO do .env.
+    """
+    if settings.EM_PRODUCAO and request.headers.get(CABECALHO_CRON) == "true":
+        return True
+    esperado = os.getenv("TAREFAS_SEGREDO", "")
+    recebido = request.headers.get(CABECALHO_TAREFAS, "")
+    return bool(esperado) and hmac.compare_digest(recebido.encode(), esperado.encode())
+
+
+class ManutencaoView(View):
+    """GET do cron diário (cron.yaml): aplica a retenção do log e apaga contadores e códigos vencidos."""
+    http_method_names = ["get"]
+
+    def get(self, request):
+        if not _manutencao_autorizada(request):
+            return HttpResponseForbidden("Acesso negado.")
+        return JsonResponse(manutencao.limpar())
