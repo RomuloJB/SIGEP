@@ -5,6 +5,7 @@ from django.test import override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from importacao.importadores import REGISTRO
 from importacao.services import MSG_SEM_TIPOS
 from telegram import acoes, arquivos, comandos, conversa, entradas, limites, recebimento, roteador, telas
 from telegram.models import (
@@ -13,6 +14,10 @@ from telegram.models import (
 from telegram.views import CABECALHO_SEGREDO
 
 from .base import TELEGRAM_ANA, TELEGRAM_BIA, BotTestCase, clique, pessoa, update
+
+# O projeto registra importadores de verdade (ex.: cadastros.pedido); estes testes
+# conferem o caminho do arquivo sem nenhum importador
+SEM_IMPORTADORES = mock.patch.dict(REGISTRO, {}, clear=True)
 
 SEGREDO = "segredo-do-webhook"
 TOKEN = "123456:TOKEN-secreto_do_bot"
@@ -306,6 +311,7 @@ class RoteadorTestCase(BotTestCase):
     def test_comando_desconhecido_de_quem_nao_esta_conectado_recebe_o_aviso(self):
         self.assertEqual(self.enviar("/nao-existe")["text"], comandos.COMO_CONECTAR)
 
+    @SEM_IMPORTADORES
     def test_arquivo_vai_para_a_importacao(self):
         # Sem nenhum importador no projeto, a foto recebe o aviso; o documento sem tipo é recusado antes
         self.vincular(self.ana, TELEGRAM_ANA)
@@ -313,6 +319,7 @@ class RoteadorTestCase(BotTestCase):
         self.assertEqual(self.enviar(**FOTO)["text"], MSG_SEM_TIPOS)
         self.assertEqual(self.enviar(**DOCUMENTO)["text"], arquivos.TIPO_RECUSADO)
 
+    @SEM_IMPORTADORES
     def test_arquivo_vem_antes_da_espera_e_cancela_a_espera(self):
         self.esperar(self.vincular(self.ana, TELEGRAM_ANA))
 
@@ -426,6 +433,7 @@ class LimitesConectadoTestCase(BotTestCase):
         self.assertEqual(self.enviar("oi")["text"], comandos.AJUDA)
         self.assertIsNone(self.limite().bloqueado_ate)
 
+    @SEM_IMPORTADORES
     def test_acima_de_4_arquivos_recusa_os_extras_com_um_aviso_so(self):
         for _ in range(4):
             self.assertEqual(self.enviar(**FOTO)["text"], MSG_SEM_TIPOS)
@@ -444,6 +452,7 @@ class LimitesConectadoTestCase(BotTestCase):
         self.assertEqual(self.enviar("oi")["text"], comandos.AJUDA)
         self.assertIsNone(self.limite().bloqueado_ate)
 
+    @SEM_IMPORTADORES
     def test_janela_nova_volta_a_aceitar_arquivos_e_a_avisar(self):
         for _ in range(5):
             self.enviar(**FOTO)
