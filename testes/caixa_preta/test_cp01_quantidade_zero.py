@@ -2,11 +2,15 @@ from django.urls import reverse
 from django.utils.html import escape
 
 from cadastros.models import Order, ProductOrder
-
 from cadastros.tests.base import CadastrosTestCase
 
 
 class PedidoQuantidadeInvalidaTestCase(CadastrosTestCase):
+    """
+    CP01 (TC-2): quantidade 0, abaixo do limite inferior. O representante da
+    Empresa A tenta criar um pedido do Produto Teste (R$ 10,00, estoque 10) com
+    quantidade 0: o pedido não é gravado e o estoque continua 10.
+    """
 
     def setUp(self):
         super().setUp()
