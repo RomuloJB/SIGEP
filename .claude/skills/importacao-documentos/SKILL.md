@@ -116,9 +116,9 @@ importador confere a cada passo se a pessoa ainda está na empresa (`_empresa()`
 - [ ] Fluxo com a IA simulada:
       `mock.patch("importacao.services.chamar_ia", return_value=mock.Mock(dados=<instância do esquema>))`
       e o registro com `mock.patch.dict(REGISTRO, {...}, clear=True)`. O bot usa o cliente falso
-      (`telegram/tests/base.py`, `BotTestCase`, `self.cliente.mensagens`), como em
-      `telegram/tests/test_importacao.py`. Nada de internet nem de tokens.
-- [ ] `.venv\Scripts\python.exe manage.py test cadastros importacao telegram --keepdb`. O banco de
+      (`testes/telegram/base.py`, `BotTestCase`, `self.cliente.mensagens`), como em
+      `testes/telegram/test_importacao.py`. Nada de internet nem de tokens.
+- [ ] `.venv\Scripts\python.exe manage.py test cadastros importacao testes --keepdb`. O banco de
       teste fica no Neon; se a conexão cair, rode de novo só a classe que falhou.
 - [ ] Mudou model? `makemigrations`, e quem aplica no Neon é o mantenedor.
 - [ ] Teste com documentos reais pelo bot. Depois, em "Requisições de IA" (`/ia/requisicoes/`),

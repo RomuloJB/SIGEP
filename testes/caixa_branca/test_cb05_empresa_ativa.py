@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from cadastros.models import Company
 
-from .base import CadastrosTestCase
+from cadastros.tests.base import CadastrosTestCase
 
 
 class EmpresaAtivaObrigatoriaTests(CadastrosTestCase):

@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from cadastros.models import Client, Company, Order, OrderStatus, Product, ProductOrder
 
-from .base import CadastrosTestCase
+from cadastros.tests.base import CadastrosTestCase
 
 
 class IsolamentoPorEmpresaTests(CadastrosTestCase):

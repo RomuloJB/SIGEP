@@ -3,7 +3,7 @@ from django.utils.html import escape
 
 from cadastros.models import Order, ProductOrder
 
-from .base import CadastrosTestCase
+from cadastros.tests.base import CadastrosTestCase
 
 
 class PedidoQuantidadeInvalidaTestCase(CadastrosTestCase):

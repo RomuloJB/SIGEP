@@ -4,7 +4,7 @@ from django.urls import reverse
 
 from cadastros.models import Company, Order, Product, ProductOrder
 
-from .base import CadastrosTestCase
+from cadastros.tests.base import CadastrosTestCase
 
 
 class ConferenciaDosItensDoPedidoTests(CadastrosTestCase):
