@@ -31,6 +31,7 @@ from importacao.importadores import (
 )
 
 from . import consultas, pedidos, services
+from .estados import UF
 from .forms import PedidoImportadoForm
 from .masks import format_cpf_cnpj, only_digits
 from .models import MAX_PARCELAS, METODOS_BOLETO, Client, PaymentMethod, Product
@@ -38,9 +39,7 @@ from .models import MAX_PARCELAS, METODOS_BOLETO, Client, PaymentMethod, Product
 LIMITE_LISTA = 200  # opções de cada lista no contexto da IA
 AVISOS_DA_IA = 5
 CLIENTE_NOVO = 0  # opção "Cliente novo" do campo Cliente
-UFS = frozenset(
-    "AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO".split()
-)
+UFS = frozenset(UF.values)
 CENTAVOS = Decimal("0.01")
 
 MSG_SEM_EMPRESA = "Escolha a empresa antes de importar."

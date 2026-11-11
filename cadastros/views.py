@@ -245,7 +245,7 @@ class CompanyDetail(GroupRequiredMixin, BaseLoginMixin, DetailView):
 class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/client_form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Cadastro de Cliente", "botao": "Criar Cliente"}
 
@@ -259,7 +259,7 @@ class ClientCreate(ActiveCompanyRequiredMixin, CreateView):
 class ClientUpdate(ActiveCompanyRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
-    template_name = "cadastros/form.html"
+    template_name = "cadastros/client_form.html"
     success_url = reverse_lazy("client-list")
     extra_context = {"title": "Editar dados do Cliente", "botao": "Atualizar Cliente"}
     

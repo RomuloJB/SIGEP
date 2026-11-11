@@ -2,6 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 
+from .estados import UF
 from .masks import format_cnpj, format_cpf_cnpj
 
 # Create your models here.
@@ -60,7 +61,7 @@ class Client(BaseClass):
     # O endereço dele é opcional
     address = models.CharField(max_length=100, null=True, blank=True, verbose_name="endereço", help_text="Rua e número. Exemplo: Rua das Flores, 120")
     city = models.CharField(max_length=100, null=True, blank=True, verbose_name="cidade", help_text="Exemplo: Curitiba")
-    uf = models.CharField(max_length=2, verbose_name="UF", help_text="Sigla do estado, com 2 letras. Exemplo: PR")
+    uf = models.CharField(max_length=2, choices=UF.choices, verbose_name="UF", help_text="Estado do cliente. Digite para buscar. Exemplo: Paraná")
     company = models.ForeignKey(Company, on_delete=models.PROTECT, related_name='clients', verbose_name="empresa")
 
     def __str__(self):

@@ -132,6 +132,16 @@ class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ["name", "cnpj_cpf", "address", "city", "uf"]
+        widgets = {
+            # Dropdown com busca (static/js/select-search.js): 7 estados visíveis e o resto
+            # pela barra de rolagem; digitar filtra pelo nome ou pela sigla
+            "uf": forms.Select(attrs={
+                "data-tom-select": "",
+                "data-placeholder": "Busque o estado…",
+                "data-opcoes-visiveis": "7",
+                "data-buscar-pelo-valor": "",
+            }),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -144,9 +154,10 @@ class ClientForm(forms.ModelForm):
                 Column("cnpj_cpf", css_class="col-12 col-md-4"),
             ),
             Row(
-                Column("address", css_class="col-12 col-md-7"),
-                Column("city", css_class="col-12 col-md-3"),
-                Column("uf", css_class="col-12 col-md-2"),
+                Column("address", css_class="col-12 col-md-5"),
+                Column("city", css_class="col-12 col-md-4"),
+                # Mais largo que a sigla: o dropdown mostra o nome do estado
+                Column("uf", css_class="col-12 col-md-3"),
             ),
         )
 

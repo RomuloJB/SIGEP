@@ -1,5 +1,6 @@
 import django_filters
 
+from .estados import UF
 from .masks import only_digits
 from .models import Company, Client, Order, OrderStatus, Product, ProductOrder, MeasureUnit
 
@@ -39,7 +40,7 @@ class ClientFilter(DigitsFilterMixin, django_filters.FilterSet):
     name = django_filters.CharFilter(lookup_expr='icontains', label='Nome contém')
     cnpj_cpf = django_filters.CharFilter(method='filter_digits', label='CNPJ/CPF contém')
     city = django_filters.CharFilter(lookup_expr='icontains', label='Cidade contém')
-    uf = django_filters.CharFilter(lookup_expr='iexact', label='UF')
+    uf = django_filters.ChoiceFilter(choices=UF.choices, label='UF')
     created_at = created_at_range()
 
     class Meta:

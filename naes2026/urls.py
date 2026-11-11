@@ -22,7 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # importar urls dos outros apps
     path('',include('website.urls')),
-    path('sigep/', include('sigep.urls')),
     path('', include('cadastros.urls')),
     path('', include('usuarios.urls')),
     path('ia/', include('ia.urls', namespace='ia')),
