@@ -1,13 +1,14 @@
 from django.urls import path
 
 from .views import (
-    ConfiguracaoIAUpdate, ConfiguracaoIAUsuarioPadrao, ConfiguracaoIAUsuarioUpdate, ManutencaoView, MeuConsumoView,
-    RequisicaoIADetail, RequisicaoIAList, TestarConexaoView, UsuarioIAList,
+    ConfiguracaoIAUpdate, ConfiguracaoIAUsuarioPadrao, ConfiguracaoIAUsuarioUpdate, GerenciarIAView, ManutencaoView,
+    MeuConsumoView, RequisicaoIADetail, RequisicaoIAList, TestarConexaoView, UsuarioIAList,
 )
 
 app_name = "ia"
 
 urlpatterns = [
+    path("gerenciar/", GerenciarIAView.as_view(), name="gerenciar"),
     path("requisicoes/", RequisicaoIAList.as_view(), name="requisicao-list"),
     path("requisicoes/<int:pk>/", RequisicaoIADetail.as_view(), name="requisicao-detail"),
     path("meu-consumo/", MeuConsumoView.as_view(), name="meu-consumo"),

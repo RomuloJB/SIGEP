@@ -34,6 +34,7 @@ class TelasIATestCase(TestCase):
 
     def urls_de_administracao(self):
         return [
+            reverse("ia:gerenciar"),
             reverse("ia:requisicao-list"),
             reverse("ia:requisicao-detail", args=[self.minha.pk]),
             reverse("ia:configuracao"),
@@ -62,6 +63,7 @@ class TelasIATestCase(TestCase):
         self.assertNotContains(resposta, "US$")
         # Menu: só o link de consumo, sem os de administração
         self.assertContains(resposta, reverse("ia:meu-consumo"))
+        self.assertNotContains(resposta, reverse("ia:gerenciar"))
         self.assertNotContains(resposta, reverse("ia:configuracao"))
 
     def test_anonimo_vai_para_o_login(self):
@@ -77,6 +79,17 @@ class TelasIATestCase(TestCase):
         for url in self.urls_de_administracao() + [reverse("ia:meu-consumo")]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_gerenciar_ia_leva_as_telas_de_administracao(self):
+        self.client.force_login(self.admin)
+
+        resposta = self.client.get(reverse("ia:gerenciar"))
+
+        for rota in ("ia:configuracao", "ia:usuario-list", "ia:requisicao-list"):
+            with self.subTest(rota=rota):
+                self.assertContains(resposta, 'href="{}"'.format(reverse(rota)))
+        # O menu lateral leva ao próprio hub
+        self.assertContains(resposta, 'href="{}"'.format(reverse("ia:gerenciar")))
 
         configuracao = self.client.get(reverse("ia:configuracao"))
         for texto in ("As mudanças valem na próxima chamada, sem deploy.", "Modelo", "Limites padrão por usuário",

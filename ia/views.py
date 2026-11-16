@@ -34,6 +34,12 @@ def inicio_do_mes(mes):
     return datetime.combine(mes, time.min, tzinfo=cota.FUSO)
 
 
+# ─── Gerenciar IA (só superusuário): cards para as telas abaixo ───────────────
+
+class GerenciarIAView(SuperuserRequiredMixin, BaseLoginMixin, TemplateView):
+    template_name = "ia/gerenciar.html"
+
+
 # ─── Requisições de IA (só superusuário) ──────────────────────────────────────
 
 class RequisicaoIAList(SuperuserRequiredMixin, BaseLoginMixin, PaginatedFilterView):

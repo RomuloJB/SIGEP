@@ -38,15 +38,17 @@ ADICIONAIS = ("Adicionais", [
     item("Sobre", "about", "info"),
     item("Meu consumo de IA", "ia:meu-consumo", "bot"),
 ])
+# As telas de IA e de Telegram ficam dentro das páginas "Gerenciar" (cards para cada uma);
+# a opção continua marcada enquanto o usuário navega por elas.
 ADMINISTRACAO = ("Administração", [
     item("Gerenciar Usuários", "user-list", "users-round", ("user-",)),
-    item("Requisições de IA", "ia:requisicao-list", "list-checks", ("ia:requisicao-",)),
-    item("Configuração da IA", "ia:configuracao", "settings"),
-    item("IA por usuário", "ia:usuario-list", "user-cog", ("ia:usuario-",)),
-    item("Log do Telegram", "telegram:mensagem-list", "list-checks", ("telegram:mensagem-",)),
-    item("Remetentes do Telegram", "telegram:remetente-list", "users-round", ("telegram:remetente-",)),
-    item("Configuração do Telegram", "telegram:configuracao", "settings"),
-    item("Configuração da importação", "importacao:configuracao", "settings"),
+    item("Gerenciar IA", "ia:gerenciar", "ia", (
+        "ia:gerenciar", "ia:configuracao", "ia:usuario-", "ia:requisicao-",
+    )),
+    item("Gerenciar Telegram", "telegram:gerenciar", "telegram", (
+        "telegram:gerenciar", "telegram:configuracao", "telegram:remetente-", "telegram:mensagem-",
+        "importacao:configuracao",
+    )),
 ])
 VISITANTE = ("Acesso", [
     item("Entrar", "login", "log-in"),

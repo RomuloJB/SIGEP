@@ -93,6 +93,7 @@ ele já fica na auditoria.
 - Modelo, temperatura, tokens, raciocínio, tentativas, timeout, limites e preços ficam na
   `ConfiguracaoIA` (tela "Configuração da IA", em `/ia/configuracao/`). As exceções por usuário
   (desligar a IA, limite próprio) ficam na `ConfiguracaoIAUsuario` (tela "IA por usuário").
+  No menu, as telas de administração da IA ficam todas em **Gerenciar IA** (`/ia/gerenciar/`).
   **Nunca escreva nome de modelo, temperatura ou cota no código.**
 - A chave fica só no `.env` (`GEMINI_API_KEY`), nunca no banco nem no `app.yaml`.
 - A cota é por usuário e por mês: `ConsumoIA` tem uma linha por (usuário, mês), com o mês no
@@ -118,6 +119,6 @@ ele já fica na auditoria.
       Nenhum teste usa a rede nem gasta tokens.
 - [ ] Nada de dado sensível no pedido: sem CPF/CNPJ, telefone ou senha. Os dados da empresa são
       buscados com o mesmo filtro de empresa ativa do `ActiveCompanyRequiredMixin`.
-- [ ] Auditoria conferida: em "Requisições de IA" (`/ia/requisicoes/`), a finalidade, a
+- [ ] Auditoria conferida: em Gerenciar IA › "Requisições de IA" (`/ia/requisicoes/`), a finalidade, a
       referência, a situação e os tokens saem certos.
 - [ ] `python manage.py test ia --keepdb` passa (o banco de teste fica no Neon).

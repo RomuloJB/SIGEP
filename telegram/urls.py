@@ -1,8 +1,9 @@
 from django.urls import path
 
 from .views import (
-    ConectarTelegramView, ConexaoTelegramView, ConfiguracaoTelegramUpdate, DesconectarTelegramView, ManutencaoView,
-    MensagemTelegramDetail, MensagemTelegramList, RemetenteTelegramLiberar, RemetenteTelegramList, webhook,
+    ConectarTelegramView, ConexaoTelegramView, ConfiguracaoTelegramUpdate, DesconectarTelegramView,
+    GerenciarTelegramView, ManutencaoView, MensagemTelegramDetail, MensagemTelegramList, RemetenteTelegramLiberar,
+    RemetenteTelegramList, webhook,
 )
 
 app_name = "telegram"
@@ -11,6 +12,7 @@ urlpatterns = [
     path("", ConexaoTelegramView.as_view(), name="conexao"),
     path("conectar/", ConectarTelegramView.as_view(), name="conectar"),
     path("desconectar/", DesconectarTelegramView.as_view(), name="desconectar"),
+    path("gerenciar/", GerenciarTelegramView.as_view(), name="gerenciar"),
     path("log/", MensagemTelegramList.as_view(), name="mensagem-list"),
     path("log/<int:pk>/", MensagemTelegramDetail.as_view(), name="mensagem-detail"),
     path("remetentes/", RemetenteTelegramList.as_view(), name="remetente-list"),

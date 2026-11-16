@@ -121,7 +121,7 @@ importador confere a cada passo se a pessoa ainda está na empresa (`_empresa()`
 - [ ] `.venv\Scripts\python.exe manage.py test cadastros importacao testes --keepdb`. O banco de
       teste fica no Neon; se a conexão cair, rode de novo só a classe que falhou.
 - [ ] Mudou model? `makemigrations`, e quem aplica no Neon é o mantenedor.
-- [ ] Teste com documentos reais pelo bot. Depois, em "Requisições de IA" (`/ia/requisicoes/`),
+- [ ] Teste com documentos reais pelo bot. Depois, em Gerenciar IA › "Requisições de IA" (`/ia/requisicoes/`),
       confira:
       - a finalidade `importacao_ler` e a origem (`telegram` ou `site`);
       - a referência, que é a importação;

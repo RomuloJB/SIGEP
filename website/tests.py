@@ -10,10 +10,7 @@ from website.templatetags.sidebar import iniciais
 OPCOES_REPRESENTANTE = [
     "Dashboard", "Clientes", "Produtos", "Pedidos", "Importações", "Relatório de vendas", "Painel gerencial", "Sobre", "Meu consumo de IA",
 ]
-OPCOES_ADMINISTRACAO = [
-    "Gerenciar Usuários", "Requisições de IA", "Configuração da IA", "IA por usuário",
-    "Log do Telegram", "Remetentes do Telegram", "Configuração do Telegram", "Configuração da importação",
-]
+OPCOES_ADMINISTRACAO = ["Gerenciar Usuários", "Gerenciar IA", "Gerenciar Telegram"]
 
 
 class SidebarTests(TestCase):
@@ -82,10 +79,31 @@ class SidebarTests(TestCase):
             with self.subTest(rota=rota):
                 self.assertEqual(self.opcao_atual(rota), [opcao])
 
+    def test_telas_de_ia_e_telegram_marcam_a_pagina_gerenciar(self):
+        self.entrar(self.admin)
+        casos = [
+            ("ia:gerenciar", "Gerenciar IA"),
+            ("ia:configuracao", "Gerenciar IA"),
+            ("ia:usuario-list", "Gerenciar IA"),
+            ("ia:requisicao-list", "Gerenciar IA"),
+            ("telegram:gerenciar", "Gerenciar Telegram"),
+            ("telegram:configuracao", "Gerenciar Telegram"),
+            ("telegram:remetente-list", "Gerenciar Telegram"),
+            ("telegram:mensagem-list", "Gerenciar Telegram"),
+            ("importacao:configuracao", "Gerenciar Telegram"),
+            # Telas de cada usuário continuam com a própria opção
+            ("ia:meu-consumo", "Meu consumo de IA"),
+            ("importacao:lista", "Importações"),
+        ]
+        for rota, opcao in casos:
+            with self.subTest(rota=rota):
+                self.assertEqual(self.opcao_atual(rota), [opcao])
+
     def test_pagina_fora_do_menu_nao_marca_nenhuma_opcao(self):
         self.entrar(self.gerente)
 
         self.assertEqual(self.opcao_atual("my-profile"), [])
+        self.assertEqual(self.opcao_atual("telegram:conexao"), [])
 
     def test_mostra_empresa_papel_e_usuario(self):
         self.entrar(self.gerente)

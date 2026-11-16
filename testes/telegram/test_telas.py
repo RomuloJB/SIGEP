@@ -37,6 +37,7 @@ class TelasTelegramTestCase(TestCase):
 
     def urls(self):
         return [
+            reverse("telegram:gerenciar"),
             reverse("telegram:mensagem-list"),
             reverse("telegram:mensagem-detail", args=[self.entrada.pk]),
             reverse("telegram:remetente-list"),
@@ -67,15 +68,20 @@ class TelasTelegramTestCase(TestCase):
         for url in self.urls():
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
-        resposta = self.client.get(reverse("telegram:conexao"))
-        for rota in ("telegram:mensagem-list", "telegram:remetente-list", "telegram:configuracao"):
-            self.assertContains(resposta, 'href="{}"'.format(reverse(rota)))
+        # O menu leva ao hub "Gerenciar Telegram", e o hub leva a cada tela
+        menu = self.client.get(reverse("telegram:conexao"))
+        self.assertContains(menu, 'href="{}"'.format(reverse("telegram:gerenciar")))
+        hub = self.client.get(reverse("telegram:gerenciar"))
+        for rota in ("telegram:configuracao", "telegram:remetente-list", "importacao:configuracao", "telegram:mensagem-list"):
+            with self.subTest(rota=rota):
+                self.assertContains(hub, 'href="{}"'.format(reverse(rota)))
 
     def test_menu_de_quem_nao_e_superusuario_nao_tem_as_telas(self):
         self.client.force_login(self.comum)
 
         resposta = self.client.get(reverse("telegram:conexao"))
 
+        self.assertNotContains(resposta, reverse("telegram:gerenciar"))
         self.assertNotContains(resposta, reverse("telegram:mensagem-list"))
         self.assertNotContains(resposta, reverse("telegram:configuracao"))
 

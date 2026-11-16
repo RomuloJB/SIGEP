@@ -58,7 +58,9 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
 Limites por pessoa e prazos de retenção do log não ficam no `.env`: são ajustados na tela
-**Configuração do Telegram** (`/telegram/configuracao/`, só superusuário).
+**Configuração do Telegram** (`/telegram/configuracao/`, só superusuário). No menu, ela e as
+outras telas de administração do bot (Remetentes, Log e Configuração da importação) ficam em
+**Gerenciar Telegram** (`/telegram/gerenciar/`).
 
 ### 3. Desenvolvimento com ngrok
 
@@ -158,5 +160,5 @@ curl -H "X-Tarefas-Segredo: SEU_SEGREDO" https://seu-projeto.appspot.com/telegra
 | `--info` mostra outra URL | O endereço mudou (ngrok ou outra máquina): rode `telegram_definir_webhook` de novo |
 | `--info` mostra pendentes e erro `Wrong response from the webhook: 400 Bad Request` | O domínio não está em `ALLOWED_HOSTS` no `.env`, ou o `runserver` não foi reiniciado |
 | `--info` mostra erro `403 Forbidden` | O segredo do `.env` mudou depois do registro: rode o comando de novo |
-| O bot não responde e não há erro | Você pode estar bloqueado pelos limites: veja **Remetentes do Telegram** (`/telegram/remetentes/`) e use **Liberar** |
-| O que o bot recebeu e respondeu | **Log do Telegram** (`/telegram/log/`, só superusuário) |
+| O bot não responde e não há erro | Você pode estar bloqueado pelos limites: em **Gerenciar Telegram**, abra **Remetentes do Telegram** (`/telegram/remetentes/`) e use **Liberar** |
+| O que o bot recebeu e respondeu | **Gerenciar Telegram** › **Log do Telegram** (`/telegram/log/`, só superusuário) |

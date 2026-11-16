@@ -165,6 +165,16 @@ body {
   line-height: 1.25rem;
 }
 
+/* Ícone do sprite da sidebar (static/assets/icons/sidebar.svg) no título: é de traço,
+   e não de preenchimento como os do Font Awesome */
+.page-title > svg.page-title__traco {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .page-subtitle {
   margin: 0.3rem 0 0;
   color: var(--sg-muted);
@@ -349,6 +359,91 @@ body {
 .kpi-warning { --kpi-color: var(--sg-warning); --kpi-soft: var(--sg-warning-soft); }
 .kpi-danger { --kpi-color: var(--sg-danger); --kpi-soft: var(--sg-danger-soft); }
 .kpi-neutral { --kpi-color: var(--sg-neutral); --kpi-soft: var(--sg-neutral-soft); }
+
+/* Atalho: o card inteiro é um link para outra tela (páginas "Gerenciar").
+   Uso: {% include 'website/componentes/atalho-card.html' with ... %} */
+.atalho-card {
+  --atalho-cor: var(--sg-primary);
+  --atalho-suave: var(--sg-primary-soft);
+  height: 100%;
+  text-decoration: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+.app-content .atalho-card > .card-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+}
+
+.app-content .atalho-card:hover {
+  border-color: var(--atalho-cor);
+  box-shadow: var(--sg-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.atalho-icone {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.8rem;
+  background: var(--atalho-suave);
+  color: var(--atalho-cor);
+  font-size: 1.2rem;
+}
+
+.atalho-corpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.atalho-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sg-ink);
+}
+
+.atalho-texto {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--sg-muted);
+}
+
+.atalho-seta {
+  flex-shrink: 0;
+  color: var(--sg-muted);
+  font-size: 0.85rem;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.atalho-card:hover .atalho-seta {
+  color: var(--atalho-cor);
+  transform: translateX(3px);
+}
+
+.atalho-primary { --atalho-cor: var(--sg-primary); --atalho-suave: var(--sg-primary-soft); }
+.atalho-info { --atalho-cor: var(--sg-info); --atalho-suave: var(--sg-info-soft); }
+.atalho-warning { --atalho-cor: var(--sg-warning); --atalho-suave: var(--sg-warning-soft); }
+.atalho-danger { --atalho-cor: var(--sg-danger); --atalho-suave: var(--sg-danger-soft); }
+.atalho-neutral { --atalho-cor: var(--sg-neutral); --atalho-suave: var(--sg-neutral-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .atalho-card,
+  .atalho-seta {
+    transition: none;
+  }
+
+  .app-content .atalho-card:hover,
+  .atalho-card:hover .atalho-seta {
+    transform: none;
+  }
+}
 
 /* Gráficos */
 .chart-card {

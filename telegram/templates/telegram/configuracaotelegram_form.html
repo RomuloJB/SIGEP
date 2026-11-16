@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'telegram:gerenciar' %}">Gerenciar Telegram</a></li>
     <li class="breadcrumb-item active" aria-current="page">Configuração do Telegram</li>
 {% endblock breadcrumb %}
 
@@ -26,7 +27,7 @@
 
             <div class="cadastros-actions mt-4">
                 <span class="small text-muted me-auto">Última alteração: {{ object.atualizado_em|date:"d/m/Y H:i" }}</span>
-                {% include 'cadastros/botao-voltar.html' %}
+                {% url 'telegram:gerenciar' as url_voltar %}{% include 'cadastros/botao-voltar.html' with fallback=url_voltar %}
                 <button type="submit" class="btn btn-primary btnLoading">
                     <i class="fas fa-floppy-disk"></i> Salvar configuração
                 </button>

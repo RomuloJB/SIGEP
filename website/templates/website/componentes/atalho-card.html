@@ -1,0 +1,22 @@
+{% comment %}
+Card de atalho: o card inteiro é um link para outra tela (ex.: páginas "Gerenciar IA" e
+"Gerenciar Telegram"). Fundo branco, ícone colorido num bloco suave, seta à direita.
+Uso:
+    {% url 'ia:configuracao' as url %}
+    {% include 'website/componentes/atalho-card.html' with url=url titulo="Configuração da IA" texto="O que a tela faz." icone="fa-gear" cor="primary" %}
+- url: endereço da tela.
+- titulo: nome da tela, igual ao título dela.
+- texto: uma frase curta com o que se faz lá.
+- icone: classe Font Awesome sólida (fa-*), um diferente em cada card da página.
+- cor: primary (padrão) | info | warning | danger | neutral.
+{% endcomment %}
+<a class="card atalho-card atalho-{{ cor|default:'primary' }}" href="{{ url }}">
+    <span class="card-body">
+        <span class="atalho-icone" aria-hidden="true"><i class="fas {{ icone }}"></i></span>
+        <span class="atalho-corpo">
+            <span class="atalho-titulo">{{ titulo }}</span>
+            <span class="atalho-texto">{{ texto }}</span>
+        </span>
+        <span class="atalho-seta" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+    </span>
+</a>

@@ -1,0 +1,33 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Gerenciar IA</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <svg class="page-title__traco" aria-hidden="true"><use href="{% static 'assets/icons/sidebar.svg' %}#ia"></use></svg>
+            Gerenciar IA
+        </h1>
+        <p class="page-subtitle">Configuração, limites por usuário e histórico das chamadas à IA.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-4">
+        {% url 'ia:configuracao' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Configuração da IA" texto="Modelo, limites e preços usados em todas as chamadas à IA. Tem o teste de conexão." icone="fa-gear" cor="primary" %}
+    </div>
+    <div class="col-md-6 col-xl-4">
+        {% url 'ia:usuario-list' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="IA por usuário" texto="Limite efetivo e uso do mês de cada usuário. Desligue a IA ou dê um limite próprio." icone="fa-user-gear" cor="neutral" %}
+    </div>
+    <div class="col-md-6 col-xl-4">
+        {% url 'ia:requisicao-list' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Requisições de IA" texto="Cada chamada à IA, com tokens, custo estimado e resultado." icone="fa-list-check" cor="info" %}
+    </div>
+</div>
+{% endblock cadastros_content %}

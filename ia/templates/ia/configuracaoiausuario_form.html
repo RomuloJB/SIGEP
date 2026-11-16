@@ -3,6 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'ia:gerenciar' %}">Gerenciar IA</a></li>
     <li class="breadcrumb-item"><a href="{% url 'ia:usuario-list' %}">IA por usuário</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ object.usuario.username }}</li>
 {% endblock breadcrumb %}

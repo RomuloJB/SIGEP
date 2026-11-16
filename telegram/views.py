@@ -67,6 +67,13 @@ class DesconectarTelegramView(BaseLoginMixin, View):
         return redirect("telegram:conexao")
 
 
+# ─── Gerenciar Telegram (só superusuário): cards para as telas abaixo ─────────
+# Inclui a Configuração da importação (app importacao), que limita o que chega pelo bot.
+
+class GerenciarTelegramView(SuperuserRequiredMixin, BaseLoginMixin, TemplateView):
+    template_name = "telegram/gerenciar.html"
+
+
 # ─── Log do Telegram (só superusuário) ────────────────────────────────────────
 
 class MensagemTelegramList(SuperuserRequiredMixin, BaseLoginMixin, PaginatedFilterView):

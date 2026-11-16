@@ -1,0 +1,37 @@
+{% extends "cadastros/form.html" %}
+{% load static %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item active" aria-current="page">Gerenciar Telegram</li>
+{% endblock breadcrumb %}
+
+{% block cadastros_content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <svg class="page-title__traco" aria-hidden="true"><use href="{% static 'assets/icons/sidebar.svg' %}#telegram"></use></svg>
+            Gerenciar Telegram
+        </h1>
+        <p class="page-subtitle">Configuração do bot, quem fala com ele, o log das mensagens e os limites da importação.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        {% url 'telegram:configuracao' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Configuração do Telegram" texto="Limites de uso do bot e prazos do log." icone="fa-gear" cor="primary" %}
+    </div>
+    <div class="col-md-6">
+        {% url 'telegram:remetente-list' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Remetentes do Telegram" texto="Quem já falou com o bot, mensagens descartadas e quem está bloqueado agora." icone="fa-users" cor="neutral" %}
+    </div>
+    <div class="col-md-6">
+        {% url 'importacao:configuracao' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Configuração da importação" texto="Limites de envio por pessoa e prazos dos rascunhos de importação." icone="fa-file-arrow-up" cor="warning" %}
+    </div>
+    <div class="col-md-6">
+        {% url 'telegram:mensagem-list' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Log do Telegram" texto="Tudo o que entrou e saiu do bot, com o resultado de cada mensagem." icone="fa-list-check" cor="info" %}
+    </div>
+</div>
+{% endblock cadastros_content %}

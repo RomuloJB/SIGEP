@@ -2,6 +2,7 @@
 {% load l10n %}
 
 {% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{% url 'telegram:gerenciar' %}">Gerenciar Telegram</a></li>
     <li class="breadcrumb-item"><a href="{% url 'telegram:mensagem-list' %}">Log do Telegram</a></li>
     <li class="breadcrumb-item active" aria-current="page">Mensagem #{{ object.pk }}</li>
 {% endblock breadcrumb %}

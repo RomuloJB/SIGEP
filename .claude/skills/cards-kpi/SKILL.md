@@ -27,6 +27,23 @@ Layout: linha `row g-4 mb-4` com colunas iguais (`col-xl-3 col-md-6` para 4 card
 `col-md-4` para 3). Associe cores ao significado, não à posição: dinheiro = primary,
 quantidade = warning, tempo/ticket = info, erro = danger, pessoas = neutral.
 
+# Card de atalho (páginas "Gerenciar")
+
+Página que só leva a outras telas (ex.: `ia/gerenciar.html`, `telegram/gerenciar.html`):
+um card-link por tela, sempre via include:
+
+```django
+{% url 'ia:configuracao' as url %}
+{% include 'website/componentes/atalho-card.html' with url=url titulo="Configuração da IA" texto="Modelo, limites e preços." icone="fa-gear" cor="primary" %}
+```
+
+- `titulo` igual ao título da tela de destino; `texto` numa frase do que se faz lá.
+- Um ícone diferente por card; `cor` pelo significado, como no KPI (configuração =
+  primary, pessoas = neutral, log/histórico = info).
+- Layout: `row g-4` com `col-md-6` (2 por linha) ou `col-md-6 col-xl-4` (3 por linha).
+- A opção da sidebar da página "Gerenciar" lista em `ativo_em` as rotas das telas de
+  destino (`website/templatetags/sidebar.py`), para continuar marcada dentro delas.
+
 # Padrão de todo card
 
 Dashboard, relatórios, detalhes e formulários usam o mesmo `.card`:
