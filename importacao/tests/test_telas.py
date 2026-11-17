@@ -47,6 +47,20 @@ class TelasTestCase(ImportacaoTestCase):
         filtrada = self.client.get(reverse("importacao:lista"), {"situacao": "pronta"})
         self.assertEqual(list(filtrada.context["importacao_list"]), [minha_pronta])
 
+    def test_busca_geral_pelo_arquivo_situacao_e_numero(self):
+        pronta = self.criar(situacao=S.PRONTA, arquivo_nome="Nota Fiscal Março.pdf")
+        falhou = self.criar(situacao=S.FALHOU, arquivo_nome="recibo.jpg")
+        self.criar(usuario=self.bia, situacao=S.PRONTA, arquivo_nome="nota-da-bia.pdf")
+
+        def buscar(termo):
+            resposta_http = self.client.get(reverse("importacao:lista"), {"q": termo})
+            return list(resposta_http.context["importacao_list"])
+
+        self.assertEqual(buscar("NOTA marco"), [pronta])  # sem acento e sem diferenciar maiúsculas
+        self.assertEqual(buscar("para revisar"), [pronta])  # rótulo da situação
+        self.assertEqual(buscar("#{}".format(falhou.pk)), [falhou])
+        self.assertEqual(buscar("da-bia"), [])  # só as importações da pessoa
+
     def test_sem_importadores_avisa_e_esconde_o_botao(self):
         with mock.patch.dict(REGISTRO, {}, clear=True):
             resposta_http = self.client.get(reverse("importacao:lista"))

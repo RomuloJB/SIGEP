@@ -1,0 +1,21 @@
+{% comment %}
+Campo "Buscar" das listagens paginadas: procura em todos os registros (?q=), não só
+na página atual. A view precisa do BuscaGeralMixin (website/busca.py). Fica no
+card-tools, antes do filtro:
+    <div class="card-tools">
+        {% include 'website/componentes/busca-lista.html' %}
+        {% include 'cadastros/form-filter.html' %}
+    </div>
+Enter busca; limpar o campo volta à lista sem a busca. Os filtros ativos continuam,
+e a paginação volta para a página 1. Com este campo, o tabela-lista.js não cria a
+busca só da página.
+{% endcomment %}
+<form class="tabela-busca tabela-busca-geral" method="get" action="" role="search">
+    {% for chave, valores in request.GET.lists %}{% if chave != "q" and chave != "page" %}{% for valor in valores %}
+    <input type="hidden" name="{{ chave }}" value="{{ valor }}">
+    {% endfor %}{% endif %}{% endfor %}
+    <label class="visually-hidden" for="busca-lista">Buscar em todos os registros</label>
+    <svg class="tabela-busca-icone" viewBox="0 0 512 512" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7l126.6 126.7a32 32 0 0 1-45.2 45.2L330.7 376A208 208 0 1 1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 0 0 0 288z"/></svg>
+    <input type="search" id="busca-lista" name="q" value="{{ busca }}" class="form-control" placeholder="Buscar e tecle Enter…"
+           title="Procura em todos os registros, não só nesta página" autocomplete="off" enterkeyhint="search" maxlength="100">
+</form>

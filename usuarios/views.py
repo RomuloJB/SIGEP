@@ -8,6 +8,7 @@ from django.contrib import messages
 from cadastros import consultas
 from cadastros.models import Company, User_Profile
 from cadastros.forms import PhoneField, CPFField
+from website.busca import BuscaGeralMixin
 
 class FormErrorMessagesMixin:
     """
@@ -232,12 +233,17 @@ class MyProfileForm(UserProfileFieldsForm):
 
 # ─── Gerenciamento de Usuários (Apenas Superuser) ─────────────────────────────
 
-class UserListView(SuperuserRequiredMixin, ListView):
+class UserListView(BuscaGeralMixin, SuperuserRequiredMixin, ListView):
     model = User
     template_name = "usuarios/user_list.html"
     context_object_name = "users"
     queryset = User.objects.select_related("profile").prefetch_related("groups").order_by("username")
     paginate_by = 10
+    busca_campos = ("username", "profile__name", "email")
+
+    def get_queryset(self):
+        # Sem django-filter: a busca do campo "Buscar" entra aqui
+        return self.aplicar_busca(super().get_queryset())
 
 
 class UserCreateView(SuperuserRequiredMixin, FormErrorMessagesMixin, SuccessMessageMixin, CreateView):

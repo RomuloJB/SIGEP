@@ -18,6 +18,8 @@
         {# method="get": a busca vai para a URL, e não fica escondida em um POST #}
         <form action="" method="get">
             {# Sem csrf_token: ele só é necessário em formulários POST #}
+            {# Filtrar mantém o que está no campo "Buscar" (website/componentes/busca-lista.html) #}
+            {% if busca %}<input type="hidden" name="q" value="{{ busca }}">{% endif %}
             <div class="filter-fields">
                 {{ filter.form|crispy }}
             </div>

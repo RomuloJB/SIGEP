@@ -80,12 +80,12 @@ class TelasIATestCase(TestCase):
             with self.subTest(url=url):
                 self.assertEqual(self.client.get(url).status_code, 200)
 
-    def test_gerenciar_ia_leva_as_telas_de_administracao(self):
+    def test_gerenciar_ia_leva_a_cada_tela(self):
         self.client.force_login(self.admin)
 
         resposta = self.client.get(reverse("ia:gerenciar"))
 
-        for rota in ("ia:configuracao", "ia:usuario-list", "ia:requisicao-list"):
+        for rota in ("ia:configuracao", "ia:usuario-list", "ia:requisicao-list", "ia:meu-consumo"):
             with self.subTest(rota=rota):
                 self.assertContains(resposta, 'href="{}"'.format(reverse(rota)))
         # O menu lateral leva ao próprio hub

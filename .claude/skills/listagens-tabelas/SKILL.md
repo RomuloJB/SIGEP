@@ -29,7 +29,10 @@ de tabela: não adicione nenhuma.
             <h2 class="card-title"><i class="fas fa-list"></i> Lista de produtos</h2>
             <span class="card-meta">{{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }}</span>
         </div>
-        <div class="card-tools">{% include 'cadastros/form-filter.html' %}</div>
+        <div class="card-tools">
+            {% include 'website/componentes/busca-lista.html' %}
+            {% include 'cadastros/form-filter.html' %}
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0 table-lista"> ... </table>
@@ -39,13 +42,22 @@ de tabela: não adicione nenhuma.
 ```
 
 1. Título à esquerda no `card-header`; à direita ficam as ferramentas (`card-tools`):
-   o campo "Buscar nesta página…" (criado pelo JS, sempre o primeiro) e o filtro.
+   o campo de busca (sempre o primeiro) e o filtro.
+   - Listagem paginada: o campo é o `website/componentes/busca-lista.html`, que
+     procura em **todos os registros** no servidor (`?q=`). A view declara onde
+     procurar com os `busca_*` do `BuscaGeralMixin` (`website/busca.py`; a
+     `PaginatedFilterView` já tem o mixin): `busca_campos` (texto, sem diferenciar
+     maiúsculas e acentos), `busca_escolhas` (campos com choices, pelo rótulo
+     exibido), `busca_digitos` (CPF/CNPJ/telefone) e `busca_numeros` (ID, "#12").
+     Coloque os campos das colunas que a tabela mostra.
+   - Tabela sem paginação (detalhe, relatório): sem include; o `tabela-lista.js`
+     cria o campo "Buscar nesta página…", que filtra as linhas já carregadas.
 2. O filtro do django-filter é o botão de ícone claro do `form-filter.html`, dentro
    do `card-tools`. Quando o filtro vale para a página toda (ex.: relatório), use no
    `page-actions` com `rotulo="Filtros"`. Ver skill `django-filter-listagens`.
 3. A tabela leva `table-lista`, sem `table-striped` e sem `table-light`.
-4. A paginação continua sendo do Django (`cadastros/paginacao.html`). A busca e a
-   ordenação só atuam nas linhas da página atual.
+4. A paginação continua sendo do Django (`cadastros/paginacao.html`), e repete o
+   `?q=` da busca. A ordenação do JS só atua nas linhas da página atual.
 5. Título e subtítulo da página: o título é o nome da tela; o subtítulo diz, em uma
    frase, o que dá para fazer ali. Todo `h1` do `page-title` leva um ícone.
 
@@ -103,8 +115,9 @@ de tabela: não adicione nenhuma.
 
 # Conferência antes de terminar
 
-1. Campo de busca à direita do título; digitar esconde linhas e mostra "Nenhum
-   registro encontrado" quando nada bate.
+1. Campo de busca à direita do título. Paginada: buscar um registro que está em
+   outra página e conferir que ele aparece (Enter); limpar o campo volta à lista.
+   Sem paginação: digitar esconde linhas e mostra "Nenhum registro encontrado".
 2. Ordenar valor em reais, data brasileira e ID numérico (`#10` depois de `#9`).
 3. Coluna "Ações" sem botão de ordenação.
 4. O menu de ações da última linha abre inteiro, sem ser cortado.

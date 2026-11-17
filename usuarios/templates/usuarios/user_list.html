@@ -24,6 +24,9 @@
                 <h2 class="card-title"><i class="fas fa-list"></i> Lista de usuários</h2>
                 <span class="card-meta">{{ page_obj.paginator.count }} registro{{ page_obj.paginator.count|pluralize }}</span>
             </div>
+            <div class="card-tools">
+                {% include 'website/componentes/busca-lista.html' %}
+            </div>
         </div>
 
         <div class="table-responsive">

@@ -47,6 +47,8 @@ class RequisicaoIAList(SuperuserRequiredMixin, BaseLoginMixin, PaginatedFilterVi
     template_name = "ia/requisicaoia_list.html"
     ordering = ["-criado_em"]
     filterset_class = RequisicaoIAFilter
+    busca_campos = ("usuario__username", "finalidade")
+    busca_escolhas = ("situacao",)
 
     def get_queryset(self):
         return super().get_queryset().select_related("usuario", "referencia_tipo").prefetch_related("referencia")
@@ -149,6 +151,7 @@ class UsuarioIAList(SuperuserRequiredMixin, BaseLoginMixin, PaginatedFilterView)
     template_name = "ia/usuario_ia_list.html"
     ordering = ["username"]
     filterset_class = UsuarioIAFilter
+    busca_campos = ("username", "first_name", "last_name")
 
     def get_queryset(self):
         uso_do_mes = ConsumoIA.objects.filter(usuario=OuterRef("pk"), mes=cota.mes_atual()).values("tokens_total")

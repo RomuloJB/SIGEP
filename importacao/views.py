@@ -18,7 +18,7 @@ from django.views.generic import DetailView, FormView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
 from django_filters.views import FilterView
 
-from . import services, tarefas
+from . import busca, services, tarefas
 from .filters import ImportacaoFilter
 from .forms import ArquivoForm, ConfiguracaoImportacaoForm, NovaImportacaoForm, TipoForm
 from .importadores import REGISTRO, ImportacaoInvalida
@@ -42,11 +42,23 @@ class SuperuserRequiredMixin(UserPassesTestMixin):
 
 
 class PaginatedFilterView(FilterView):
-    """Igual à de cadastros/views.py: 10 por página e o número de filtros ativos para o botão."""
+    """
+    Igual à de cadastros/views.py: 10 por página, o número de filtros ativos para o botão e
+    a busca geral do campo "Buscar" (?q=, em todos os registros; ver importacao/busca.py).
+    """
     paginate_by = 10
+
+    def termo_da_busca(self):
+        return self.request.GET.get(busca.PARAMETRO, "").strip()[:busca.TAMANHO_MAXIMO]
+
+    def get_filterset_kwargs(self, filterset_class):
+        kwargs = super().get_filterset_kwargs(filterset_class)
+        kwargs["queryset"] = busca.buscar_importacoes(kwargs["queryset"], self.termo_da_busca())
+        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["busca"] = self.termo_da_busca()
         form = self.filterset.form
         if form.is_valid():
             context["active_filters"] = sum(1 for valor in form.cleaned_data.values() if valor not in (None, "", []))

@@ -52,6 +52,10 @@ Confira a base (já existe hoje; só recrie se tiver sumido):
 3. `get_queryset` sempre parte de `super().get_queryset()` (é ali que entra o filtro
    por empresa ativa); o django-filter é aplicado por cima.
 4. Se a tabela mostra atributos de relações (`obj.client.name`), use `select_related`.
+5. Busca geral (campo "Buscar" do card, em todos os registros): declare os `busca_*`
+   do `BuscaGeralMixin` (`website/busca.py`) com os campos das colunas da tabela e
+   inclua `website/componentes/busca-lista.html` no `card-tools`, antes do filtro.
+   A busca vale junto com o filtro: o formulário de filtros já leva o `?q=`.
 
 # O template da lista
 

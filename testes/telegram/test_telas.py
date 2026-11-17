@@ -143,6 +143,14 @@ class TelasTelegramTestCase(TestCase):
         self.client.force_login(self.admin)
         return self.client.get(reverse("telegram:remetente-list"), filtros)
 
+    def test_busca_de_remetentes_pelo_usuario_nome_e_id(self):
+        # usuario_site e nome_telegram são anotações da view: a busca entra depois delas
+        casos = [("comum", [BLOQUEADA]), ("ana souza", [BLOQUEADA]), (str(LIVRE), [LIVRE]), ("ninguem", [])]
+        for termo, esperados in casos:
+            with self.subTest(termo=termo):
+                resposta = self.listar_remetentes(q=termo)
+                self.assertEqual([r.telegram_id for r in resposta.context["object_list"]], esperados)
+
     def test_remetentes_mostra_contadores_e_quem_esta_conectado(self):
         resposta = self.listar_remetentes()
 

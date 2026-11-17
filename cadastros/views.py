@@ -29,6 +29,7 @@ from .filters import CompanyFilter, ClientFilter, ProductFilter, OrderFilter, Pr
 # Importar o LoginRequiredMixin para proteger as views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from usuarios.views import ActiveCompanyRequiredMixin, FormErrorMessagesMixin
+from website.busca import BuscaGeralMixin
 
 # Define a permissão de um certo grupo para certas ações
 from braces.views import GroupRequiredMixin
@@ -144,7 +145,9 @@ class IndexView(ActiveCompanyRequiredMixin, TemplateView):
 
 # Listas Paginadas e com filtros de busca (django-filter)
 # FilterView faz o papel da ListView e ainda aplica o filterset_class por cima do get_queryset
-class PaginatedFilterView(FilterView):
+class PaginatedFilterView(BuscaGeralMixin, FilterView):
+    # Busca do campo "Buscar" do card em todos os registros: cada listagem declara os
+    # busca_* (website/busca.py) e inclui website/componentes/busca-lista.html
     paginate_by = 10
 
     def get_context_data(self, **kwargs):
@@ -219,6 +222,9 @@ class CompanyList(GroupRequiredMixin, BaseLoginMixin, PaginatedFilterView):
     template_name = "cadastros/list/company_list.html"
     ordering = ['name']
     filterset_class = CompanyFilter
+    busca_campos = ("name", "session_name")
+    busca_digitos = ("cnpj",)
+    busca_numeros = ("pk",)
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -275,6 +281,9 @@ class ClientList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     template_name = "cadastros/list/client_list.html"
     ordering = ['name']
     filterset_class = ClientFilter
+    busca_campos = ("name", "uf")
+    busca_digitos = ("cnpj_cpf",)
+    busca_numeros = ("pk",)
 
 class ClientDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Client
@@ -320,6 +329,8 @@ class ProductList(ActiveCompanyRequiredMixin, PaginatedFilterView):
     template_name = "cadastros/list/product_list.html"
     ordering = ['name']
     filterset_class = ProductFilter
+    busca_campos = ("sku", "name", "color")
+    busca_numeros = ("pk",)
 
 class ProductDetail(ActiveCompanyRequiredMixin, DetailView):
     model = Product
@@ -586,6 +597,9 @@ class OrderList(PedidosVisiveisMixin, ActiveCompanyRequiredMixin, PaginatedFilte
     template_name = "cadastros/list/order_list.html"
     ordering = ['-id']
     filterset_class = OrderFilter
+    busca_campos = ("client__name",)
+    busca_escolhas = ("payment_method", "status")
+    busca_numeros = ("pk",)
 
     def get_queryset(self):
         # A tabela mostra o cliente de cada pedido
@@ -719,6 +733,8 @@ class ProductOrderList(ItensVisiveisMixin, ActiveCompanyRequiredMixin, Paginated
     template_name = "cadastros/list/productorder_list.html"
     ordering = ['id']
     filterset_class = ProductOrderFilter
+    busca_campos = ("order__client__name", "product__name", "product__sku")
+    busca_numeros = ("pk", "order_id")
 
     def get_queryset(self):
         # A tabela mostra o pedido, o cliente do pedido e o produto de cada item

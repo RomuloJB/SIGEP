@@ -12,22 +12,27 @@
             <svg class="page-title__traco" aria-hidden="true"><use href="{% static 'assets/icons/sidebar.svg' %}#ia"></use></svg>
             Gerenciar IA
         </h1>
-        <p class="page-subtitle">Configuração, limites por usuário e histórico das chamadas à IA.</p>
+        <p class="page-subtitle">Configuração, limites por usuário, histórico das chamadas e o seu consumo de IA.</p>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-6">
         {% url 'ia:configuracao' as url %}
         {% include 'website/componentes/atalho-card.html' with url=url titulo="Configuração da IA" texto="Modelo, limites e preços usados em todas as chamadas à IA. Tem o teste de conexão." icone="fa-gear" cor="primary" %}
     </div>
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-6">
         {% url 'ia:usuario-list' as url %}
         {% include 'website/componentes/atalho-card.html' with url=url titulo="IA por usuário" texto="Limite efetivo e uso do mês de cada usuário. Desligue a IA ou dê um limite próprio." icone="fa-user-gear" cor="neutral" %}
     </div>
-    <div class="col-md-6 col-xl-4">
+    <div class="col-md-6">
         {% url 'ia:requisicao-list' as url %}
         {% include 'website/componentes/atalho-card.html' with url=url titulo="Requisições de IA" texto="Cada chamada à IA, com tokens, custo estimado e resultado." icone="fa-list-check" cor="info" %}
+    </div>
+    {# Tela de todo usuário (também fica no menu, em Adicionais); aqui mostra o consumo do próprio administrador #}
+    <div class="col-md-6">
+        {% url 'ia:meu-consumo' as url %}
+        {% include 'website/componentes/atalho-card.html' with url=url titulo="Meu consumo de IA" texto="Os tokens que você usou neste mês e quanto ainda resta da sua cota." icone="fa-gauge-high" cor="warning" %}
     </div>
 </div>
 {% endblock cadastros_content %}

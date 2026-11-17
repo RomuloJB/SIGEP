@@ -1,8 +1,13 @@
 // Busca rápida e ordenação das tabelas de listagem (<table class="table-lista">),
 // em JS puro. Só atua nas linhas que já estão na página (a paginação é do Django).
 //
-// - Busca: um campo no card-header, à direita, esconde as linhas sem a ocorrência
-//   (ignora maiúsculas e acentos). Colunas com data-searchable="false" não entram.
+// - Busca geral: nas listagens paginadas, o card já traz o campo do servidor
+//   (website/componentes/busca-lista.html, form.tabela-busca-geral), que procura em
+//   todos os registros. Aí este script não cria a busca da página; só cuida de
+//   limpar o campo (volta à lista sem a busca) e de não mandar "?q=" vazio.
+// - Busca da página: nas outras tabelas (detalhes, relatórios), um campo no
+//   card-header esconde as linhas sem a ocorrência (ignora maiúsculas e acentos).
+//   Colunas com data-searchable="false" não entram.
 // - Ordenação: cada <th> vira um botão: 1º clique crescente, 2º decrescente,
 //   3º volta à ordem original. Colunas com data-orderable="false" ficam sem botão.
 // - Valores: usa data-sort da célula quando existe; senão lê o texto no formato
@@ -100,8 +105,10 @@
         const pesquisaveis = cabecalhos.map(function (th) { return th.dataset.searchable !== 'false'; });
 
         // ---- busca ----
+        // Com a busca geral (do servidor) no card, não há busca só da página
         const card = tabela.closest('.card');
-        const campo = card ? criarCampoBusca(card) : null;
+        const temBuscaGeral = card && card.querySelector('form.tabela-busca-geral');
+        const campo = card && !temBuscaGeral ? criarCampoBusca(card) : null;
         function filtrar() {
             const termo = normalizar(campo.value.trim());
             let visiveis = 0;
@@ -162,7 +169,24 @@
         });
     }
 
+    // Busca geral: Enter envia o formulário (GET). Campo vazio não vai na URL, e
+    // limpar pelo "x" do campo, com uma busca ativa, volta à lista sem ela.
+    function iniciarBuscaGeral(formulario) {
+        const campo = formulario.querySelector('input[name="q"]');
+        if (!campo) return;
+        const buscaAtual = campo.value.trim();
+        formulario.addEventListener('submit', function () {
+            if (campo.value.trim() === '') campo.disabled = true;
+        });
+        campo.addEventListener('search', function () {
+            if (campo.value.trim() === '' && buscaAtual !== '') formulario.requestSubmit();
+        });
+        // Voltar pelo navegador traz a página do cache com o campo desativado
+        window.addEventListener('pageshow', function () { campo.disabled = false; });
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('form.tabela-busca-geral').forEach(iniciarBuscaGeral);
         document.querySelectorAll('table.table-lista').forEach(iniciar);
     });
 

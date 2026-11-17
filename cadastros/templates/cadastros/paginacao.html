@@ -30,6 +30,6 @@
         </ul>
     </nav>
     {% else %}
-    <span class="small text-muted">Mostrando todos os registros.</span>
+    <span class="small text-muted">{% if busca or active_filters %}Mostrando todos os resultados.{% else %}Mostrando todos os registros.{% endif %}</span>
     {% endif %}
 </div>

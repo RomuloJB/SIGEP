@@ -81,6 +81,8 @@ class MensagemTelegramList(SuperuserRequiredMixin, BaseLoginMixin, PaginatedFilt
     template_name = "telegram/mensagemtelegram_list.html"
     ordering = ["-criado_em"]
     filterset_class = MensagemTelegramFilter
+    busca_campos = ("tipo", "metodo_api", "usuario__username", "texto")
+    busca_escolhas = ("direcao", "situacao")
 
     def get_queryset(self):
         return super().get_queryset().select_related("usuario").defer("conteudo")
@@ -107,6 +109,9 @@ class RemetenteTelegramList(SuperuserRequiredMixin, BaseLoginMixin, PaginatedFil
     template_name = "telegram/limitetelegram_list.html"
     ordering = ["-ultima_vez"]
     filterset_class = RemetenteTelegramFilter
+    # usuario_site e nome_telegram são as anotações do get_queryset abaixo
+    busca_campos = ("usuario_site", "nome_telegram")
+    busca_numeros = ("telegram_id",)
 
     def get_queryset(self):
         vinculo = VinculoTelegram.objects.filter(telegram_id=OuterRef("telegram_id"))
