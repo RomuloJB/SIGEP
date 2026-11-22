@@ -36,3 +36,6 @@ error_handlers:
 # Fora do App Engine o DEBUG vem do settings.py (True só no Windows); aqui fica explícito
 env_variables:
   DEBUG: "False"
+  SITE_URL: "https://sigep-497823.rj.r.appspot.com"
+  TELEGRAM_BOT_WEBHOOK_URL: "https://sigep-497823.rj.r.appspot.com/telegram/webhook/"
+  TAREFAS_BACKEND: "cloud_tasks"
