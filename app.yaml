@@ -24,14 +24,12 @@ automatic_scaling:
   min_instances: 0
   max_instances: 2
 
-# Páginas estáticas para falhas do próprio App Engine (timeout, cota, instância fora do ar).
+# Página estática para falhas do próprio App Engine (timeout, cota, instância fora do ar).
+# Sem error_code, ela vale para todos os tipos; repetir o mesmo arquivo em mais de uma
+# entrada faz o deploy falhar ("Multiple files with the same path").
 # Erros do Django (400/403/404/500) são tratados pelo app erros.
 error_handlers:
 - file: erros/paginas/erro_app_engine.html
-- error_code: over_quota
-  file: erros/paginas/erro_app_engine.html
-- error_code: timeout
-  file: erros/paginas/erro_app_engine.html
 
 # Fora do App Engine o DEBUG vem do settings.py (True só no Windows); aqui fica explícito
 env_variables:
